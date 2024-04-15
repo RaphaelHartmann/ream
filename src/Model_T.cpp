@@ -31,6 +31,7 @@ double Model_T::approx_dt(double* phi, double dt_scale) const {
 
   /* seed rng */
   // srand(seed);
+  GetRNGstate();
 
   /* simulate model to determine time step */
   for (ii = 0; ii < N_sims; ii++) {
@@ -66,6 +67,7 @@ double Model_T::approx_dt(double* phi, double dt_scale) const {
 
     }
   }
+  PutRNGstate();
 
   /* if no threshold crossing, set time step to max */
   if (fpt == 0.0) {
