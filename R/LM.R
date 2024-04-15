@@ -256,8 +256,8 @@ pLM <- function(rt,
 #' @useDynLib "rbeam", .registration=TRUE
 #' @export
 rLM <- function(n,
-                 phi = c(0.3, 0.5, 1.0, 0.5, 1.0, 0.5, 0.0, 0.0, 1.0),
-                 dt = 0.00001) {
+                phi = c(0.3, 0.5, 1.0, 0.5, 1.0, 0.5, 0.0, 0.0, 1.0),
+                dt = 0.00001) {
 
   # check arguments
   if (!is.numeric(n) | n %% 1 != 0) stop("n must be a whole number")
