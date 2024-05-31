@@ -55,6 +55,8 @@ dLM <- function(rt,
   if (length(phi) != 9) stop("phi must be of length 9 for the LM")
   if (!x_res %in% char_res) stop("x_res has not a valid entry")
   if (!t_res %in% char_res) stop("t_res has not a valid entry")
+  if (length(resp) != length(rt) & length(resp) != 1) stop("resp must be the same length as rt or of length one")
+  if (length(resp) == 1) resp <- rep(resp, length(rt))
 
   # more checks needed for limits etc.
 
@@ -165,6 +167,8 @@ pLM <- function(rt,
   if (length(phi) != 9) stop("phi must be of length 9 for the LM")
   if (!x_res %in% char_res) stop("x_res has not a valid entry")
   if (!t_res %in% char_res) stop("t_res has not a valid entry")
+  if (length(resp) != length(rt) & length(resp) != 1) stop("resp must be the same length as rt or of length one")
+  if (length(resp) == 1) resp <- rep(resp, length(rt))
 
   # more checks needed for limits etc.
 
