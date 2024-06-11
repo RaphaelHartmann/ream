@@ -813,7 +813,11 @@ int Model_XT::cdf(double *RsumlogCDF, double *RCDFlow, double *RCDFupp, double *
   /* interpolate to find logCDF of data */
   kk = 0;
   for (ii = 0; ii < N_rtu; ii++){
-    if ( (rtu[ii] >= p_fpt[0][N_cut]) || (rtu[ii] <= p_fpt[0][0]) ) {
+    if ( (rtu[ii] >= p_fpt[0][N_cut]) ) {
+      RCDFupp[ii] = cdf[0][N_cut];
+      RlogCDFupp[ii] = log(RCDFupp[ii]);
+      logCDF += RlogCDFupp[ii];
+    } else if ( (rtu[ii] <= p_fpt[0][0]) ) {
       RCDFupp[ii] = p_fpt_min;
       RlogCDFupp[ii] = log(RCDFupp[ii]);
       logCDF += RlogCDFupp[ii];
@@ -832,7 +836,11 @@ int Model_XT::cdf(double *RsumlogCDF, double *RCDFlow, double *RCDFupp, double *
 
   kk = 0;
   for (ii = 0; ii < N_rtl; ii++){
-    if ( (rtl[ii] >= p_fpt[0][N_cut]) || (rtl[ii] <= p_fpt[0][0]) ) {
+    if ( (rtl[ii] >= p_fpt[0][N_cut]) ) {
+      RCDFlow[ii] = cdf[1][N_cut];
+      RlogCDFlow[ii] = log(RCDFlow[ii]);
+      logCDF += RlogCDFlow[ii];
+    } else if ( (rtl[ii] <= p_fpt[0][0]) ) {
       RCDFlow[ii] = p_fpt_min;
       RlogCDFlow[ii] = log(RCDFlow[ii]);
       logCDF += RlogCDFlow[ii];
@@ -891,24 +899,24 @@ int Model_XT::rand(double *Rrt, double *phi) const {
 
     while ((jj < 1) && (tt <= tsim_max)) {
 
-      /* update time step */
-      tt += dt;
-
-      /* update drift rate, diffusion rate, and decision threhsolds */
+      /* update drift rate, diffusion rate, and decision thresholds */
       vv = drift(phi, xx, tt);
       DD = diffusion(phi, xx, tt);
-      bu = upper_threshold(phi, tt);
-      bl = lower_threshold(phi, tt);
 
       /* draw random number for simulating diffusion */
       u1 = unif_L();
       u2 = unif_L();
-      // u1 = rand()/(RAND_MAX*1.0);
-      // u2 = rand()/(RAND_MAX*1.0);
+      // u1 = std::rand()/(RAND_MAX*1.0);
+      // u2 = std::rand()/(RAND_MAX*1.0);
       uu = sqrt(-2.0*log(u1))*cos(2.0*M_PI*u2);
 
       /* calculate accumulated evidence */
       xx += dt*vv + sqrtdt*DD*uu;
+
+      /* update time step */
+      tt += dt;
+      bu = upper_threshold(phi, tt);
+      bl = lower_threshold(phi, tt);
 
       /* check if accumulated evidence has crossed a decision threshold */
       if (xx >= bu) {

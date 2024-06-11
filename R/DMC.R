@@ -61,6 +61,8 @@ dDMC <- function(rt,
   if (length(phi) != 12) stop("phi must be of length 12 for the DMC")
   if (!x_res %in% char_res) stop("x_res has not a valid entry")
   if (!t_res %in% char_res) stop("t_res has not a valid entry")
+  if (length(resp) != length(rt) & length(resp) != 1) stop("resp must be the same length as rt or of length one")
+  if (length(resp) == 1) resp <- rep(resp, length(rt))
 
   # more checks needed for limits etc.
 
@@ -178,6 +180,8 @@ pDMC <- function(rt,
   if (length(phi) != 12) stop("phi must be of length 12 for the DMC")
   if (!x_res %in% char_res) stop("x_res has not a valid entry")
   if (!t_res %in% char_res) stop("t_res has not a valid entry")
+  if (length(resp) != length(rt) & length(resp) != 1) stop("resp must be the same length as rt or of length one")
+  if (length(resp) == 1) resp <- rep(resp, length(rt))
 
   # more checks needed for limits etc.
 
@@ -358,8 +362,8 @@ dDMC_grid <- function(rt_max = 10.0,
   char_res <- c("A", "B", "C", "D")
 
   # checking input
-  if (any(rt < 0)) stop("rt must be larger than 0.")
-  if (!all(resp %in% c("lower", "upper"))) stop("resp must be either \"upper\" or \"lower\".")
+  if (rt_max < 0) stop("rt_max must be larger than 0.")
+  #if (!all(resp %in% c("lower", "upper"))) stop("resp must be either \"upper\" or \"lower\".")
   if (length(phi) != 12) stop("phi must be of length 12 for the DMC")
   if (!x_res %in% char_res) stop("x_res has not a valid entry")
   if (!t_res %in% char_res) stop("t_res has not a valid entry")
