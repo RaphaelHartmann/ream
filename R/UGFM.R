@@ -6,10 +6,9 @@
 
 
 
-#' PDF of the Urgency Gating Model
+#' PDF of the Urgency Gating Flip Model
 #'
-#' Calculation the (Log-)PDF of the urgency gating model (UGM) by Cisek, Puskas, and
-#'   El-Murr (2009)
+#' Calculation the (Log-)PDF of the urgency gating flip model (UGFM)
 #'
 #' @param rt vector of response times
 #' @param resp vector of responses ("upper" and "lower")
@@ -17,6 +16,7 @@
 #'   \itemize{
 #'     \item non-decision time
 #'     \item relative starting point
+#'     \item ?
 #'     \item ?
 #'     \item ?
 #'     \item ?
@@ -35,17 +35,14 @@
 #'   inference for a wide class of binary evidence accumulation models.
 #'   \emph{Behavior Research Methods}, 1-21.
 #'
-#' Cisek, P., Puskas, G. A., & El-Murr, S. (2009). Decisions in changing conditions:
-#'   the urgency-gating model. \emph{Journal of Neuroscience, 29}(37), 11560-11571.
-#'
 #' @examples
 #' # here come some examples
 #' @author Raphael Hartmann & Matthew Murrow
 #' @useDynLib "rbeam", .registration=TRUE
 #' @export
-dUGM <- function(rt,
+dUGFM <- function(rt,
                  resp,
-                 phi = c(0.3, 0.5, 1.0, 0.5, 0.5, 1.0, 1.5, 0.0, 0.0, 1.0),
+                 phi = c(0.3, 0.5, 1.0, 0.5, 0.5, 0.5, 1.0, 1.5, 0.0, 0.0, 1.0),
                  x_res = "A",
                  t_res = "A") {
 
@@ -56,7 +53,7 @@ dUGM <- function(rt,
   # checking input
   if (any(rt < 0)) stop("rt must be larger than 0.")
   if (!all(resp %in% c("lower", "upper"))) stop("resp must be either \"upper\" or \"lower\".")
-  if (length(phi) != 10) stop("phi must be of length 10 for the UGM")
+  if (length(phi) != 11) stop("phi must be of length 11 for the UGFM")
   if (!x_res %in% char_res) stop("x_res has not a valid entry")
   if (!t_res %in% char_res) stop("t_res has not a valid entry")
   if (length(resp) != length(rt) & length(resp) != 1) stop("resp must be the same length as rt or of length one")
@@ -89,7 +86,7 @@ dUGM <- function(rt,
   REAL_RTL <- as.double(RTL[order_l])
   REAL_RTU <- as.double(RTU[order_u])
   INTEGER <- c(N_deps = N_deps, N_rtl = length(REAL_RTL), N_rtu = length(REAL_RTU), Nphi = length(phi))
-  CHAR <- "UGM"
+  CHAR <- "UGFM"
 
 
   # call C++ function
@@ -122,10 +119,9 @@ dUGM <- function(rt,
 
 
 
-#' CDF of the Urgency Gating Model
+#' CDF of the Urgency Gating Flip Model
 #'
-#' Calculation the (Log-)CDF of the urgency gating model (UGM) by Cisek, Puskas, and
-#'   El-Murr (2009)
+#' Calculation the (Log-)CDF of the urgency gating flip model (UGFM)
 #'
 #' @param rt vector of response times
 #' @param resp vector of responses ("upper" and "lower")
@@ -133,6 +129,7 @@ dUGM <- function(rt,
 #'   \itemize{
 #'     \item non-decision time
 #'     \item relative starting point
+#'     \item ?
 #'     \item ?
 #'     \item ?
 #'     \item ?
@@ -151,17 +148,14 @@ dUGM <- function(rt,
 #'   inference for a wide class of binary evidence accumulation models.
 #'   \emph{Behavior Research Methods}, 1-21.
 #'
-#' Cisek, P., Puskas, G. A., & El-Murr, S. (2009). Decisions in changing conditions:
-#'   the urgency-gating model. \emph{Journal of Neuroscience, 29}(37), 11560-11571.
-#'
 #' @examples
 #' # here come some examples
 #' @author Raphael Hartmann & Matthew Murrow
 #' @useDynLib "rbeam", .registration=TRUE
 #' @export
-pUGM <- function(rt,
+pUGFM <- function(rt,
                  resp,
-                 phi = c(0.3, 0.5, 1.0, 0.5, 0.5, 1.0, 1.5, 0.0, 0.0, 1.0),
+                 phi = c(0.3, 0.5, 1.0, 0.5, 0.5, 0.5, 1.0, 1.5, 0.0, 0.0, 1.0),
                  x_res = "A",
                  t_res = "A") {
 
@@ -172,7 +166,7 @@ pUGM <- function(rt,
   # checking input
   if (any(rt < 0)) stop("rt must be larger than 0.")
   if (!all(resp %in% c("lower", "upper"))) stop("resp must be either \"upper\" or \"lower\".")
-  if (length(phi) != 10) stop("phi must be of length 10 for the UGM")
+  if (length(phi) != 11) stop("phi must be of length 11 for the UGFM")
   if (!x_res %in% char_res) stop("x_res has not a valid entry")
   if (!t_res %in% char_res) stop("t_res has not a valid entry")
   if (length(resp) != length(rt) & length(resp) != 1) stop("resp must be the same length as rt or of length one")
@@ -205,7 +199,7 @@ pUGM <- function(rt,
   REAL_RTL <- as.double(RTL[order_l])
   REAL_RTU <- as.double(RTU[order_u])
   INTEGER <- c(N_deps = N_deps, N_rtl = length(REAL_RTL), N_rtu = length(REAL_RTU), Nphi = length(phi))
-  CHAR <- "UGM"
+  CHAR <- "UGFM"
 
   # call C++ function
   out <- .Call("CDF",
@@ -237,9 +231,9 @@ pUGM <- function(rt,
 
 
 
-#' Sampling From the Urgency Gating Model
+#' Sampling From the Urgency Gating Flip Model
 #'
-#' Sampling from the urgency gating model (UGM) by Cisek, Puskas, and El-Murr (2009)
+#' Sampling from the urgency gating flip model (UGFM)
 #'
 #' @param n number of samples
 #' @param phi parameter vector in the following order:
@@ -249,34 +243,32 @@ pUGM <- function(rt,
 #'     \item ?
 #'     \item ?
 #'     \item ?
+#'     \item ?
 #'     \item diffusion rate
 #'     \item upper threshold (equals negative lower threshold)
 #'     \item contamination strength
 #'     \item contamination probability for the lower response
 #'     \item contamination probability for the upper response
 #'   }
-#' @param dt step size of time. We recommend 0.00001 for the UGM
+#' @param dt step size of time. We recommend 0.00001 for the UGFM
 #' @return list of response times (rt) and response threholds (resp)
 #' @references
 #' Murrow, M., & Holmes, W. R. (2023). PyBEAM: A Bayesian approach to parameter
 #'   inference for a wide class of binary evidence accumulation models.
 #'   \emph{Behavior Research Methods}, 1-21.
 #'
-#' Cisek, P., Puskas, G. A., & El-Murr, S. (2009). Decisions in changing conditions:
-#'   the urgency-gating model. \emph{Journal of Neuroscience, 29}(37), 11560-11571.
-#'
 #' @examples
 #' rdmc(n = 100, phi = c(0.3, 0.5, -1.0, 0.2, 0.05, 2.5, 3.0, 1.0, 0.5, 0.0, 0.0, 1.0))
 #' @author Raphael Hartmann & Matthew Murrow
 #' @useDynLib "rbeam", .registration=TRUE
 #' @export
-rUGM <- function(n,
-                 phi = c(0.3, 0.5, 1.0, 0.5, 0.5, 1.0, 1.5, 0.0, 0.0, 1.0),
+rUGFM <- function(n,
+                 phi = c(0.3, 0.5, 1.0, 0.5, 0.5, 0.5, 1.0, 1.5, 0.0, 0.0, 1.0),
                  dt = 0.00001) {
 
   # check arguments
   if (!is.numeric(n) | n %% 1 != 0) stop("n must be a whole number")
-  if (length(phi) != 10) stop("phi must be of length 10 for the RDMC")
+  if (length(phi) != 11) stop("phi must be of length 11 for the RDMC")
   if (!is.numeric(dt)) stop("dt must be a numeric value")
 
   # more checks needed for limits etc.
@@ -285,7 +277,7 @@ rUGM <- function(n,
   # prepare arguments for .Call
   REAL <- c(dt = dt, phi = phi)
   INTEGER <- c(N = n, Nphi = length(phi))
-  CHAR <- "UGM"
+  CHAR <- "UGFM"
 
 
   # call C++ function
@@ -311,7 +303,7 @@ rUGM <- function(n,
 
 
 
-#' Generate Grid for PDF of the Urgency Gating Model
+#' Generate Grid for PDF of the Urgency Gating Flip Model
 #'
 #' Beschreibung.
 #'
@@ -320,6 +312,7 @@ rUGM <- function(n,
 #'   \itemize{
 #'     \item non-decision time
 #'     \item relative starting point
+#'     \item ?
 #'     \item ?
 #'     \item ?
 #'     \item ?
@@ -336,16 +329,13 @@ rUGM <- function(n,
 #' Murrow, M., & Holmes, W. R. (2023). PyBEAM: A Bayesian approach to parameter inference for a wide class of binary evidence accumulation models.
 #'   Behavior Research Methods.
 #'
-#' Cisek, P., Puskas, G. A., & El-Murr, S. (2009). Decisions in changing conditions:
-#'   the urgency-gating model. \emph{Journal of Neuroscience, 29}(37), 11560-11571.
-#'
 #' @examples
 #' # here come some examples
 #' @author Raphael Hartmann & Matthew Murrow
 #' @useDynLib "rbeam", .registration=TRUE
 #' @export
-dUGM_grid <- function(rt_max = 10.0,
-                      phi = c(0.3, 0.5, 1.0, 0.5, 0.5, 1.0, 1.5, 0.0, 0.0, 1.0),
+dUGFM_grid <- function(rt_max = 10.0,
+                      phi = c(0.3, 0.5, 1.0, 0.5, 0.5, 0.5, 1.0, 1.5, 0.0, 0.0, 1.0),
                       x_res = "A",
                       t_res = "A") {
 
@@ -356,7 +346,7 @@ dUGM_grid <- function(rt_max = 10.0,
   # checking input
   if (any(rt < 0)) stop("rt must be larger than 0.")
   if (!all(resp %in% c("lower", "upper"))) stop("resp must be either \"upper\" or \"lower\".")
-  if (length(phi) != 10) stop("phi must be of length 10 for the UGM")
+  if (length(phi) != 11) stop("phi must be of length 11 for the UGFM")
   if (!x_res %in% char_res) stop("x_res has not a valid entry")
   if (!t_res %in% char_res) stop("t_res has not a valid entry")
 
@@ -371,7 +361,7 @@ dUGM_grid <- function(rt_max = 10.0,
   dt_scale <- 0.025 * c(1, 0.75, .5, 0.25)[t_ind]
 
   # prepare arguments for r
-  CHAR <- "UGM"
+  CHAR <- "UGFM"
 
   REAL <- c(dt_scale = dt_scale, rt_max = rt_max, phi = phi)
 
