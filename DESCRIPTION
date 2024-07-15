@@ -1,4 +1,4 @@
-Package: rbeam
+Package: ream
 Title: Evidence Acumulation Models
 Version: 0.0.0.9000
 Authors@R: 
@@ -8,6 +8,6 @@ Description: What the package does (one paragraph).
 License: GPL (>= 3)
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.3.1
+RoxygenNote: 7.3.2
 URL: https://github.com/RaphaelHartmann/rbeam
 BugReports: https://github.com/RaphaelHartmann/rbeam/issues

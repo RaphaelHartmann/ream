@@ -32,7 +32,6 @@
 #'     \item contamination probability for the lower response
 #'     \item contamination probability for the upper response
 #'   }
-#' @param rt_max maximal response time <- max(rt)
 #' @param x_res spatial/evidence resolution
 #' @param t_res time resolution
 #' @return a list of PDF values, log-PDF values, and the sum of the log-PDFs
@@ -48,38 +47,30 @@
 #' @examples
 #' # here come some examples
 #' @author Raphael Hartmann & Matthew Murrow
-#' @useDynLib "rbeam", .registration=TRUE
+#' @useDynLib "ream", .registration=TRUE
 #' @export
 dSSP <- function(rt,
                  resp,
                  phi = c(0.25, 0.5, 1.5, 0.02, -0.3, -0.3, 0.3, 1.5, 0.5, 1.5, -0.5, 0.5, 0.1, 0.04, 0.0, 0.0, 1.0),
-                 x_res = "A",
-                 t_res = "A") {
+                 x_res = "default",
+                 t_res = "default") {
 
 
   # constants
-  char_res <- c("A", "B", "C", "D")
+  modelname <- "SSP"
+  Nphi <- 17
 
-  # checking input
-  if (any(rt < 0)) stop("rt must be larger than 0.")
-  if (!all(resp %in% c("lower", "upper"))) stop("resp must be either \"upper\" or \"lower\".")
-  if (length(phi) != 17) stop("phi must be of length 17 for the SSP")
-  if (!x_res %in% char_res) stop("x_res has not a valid entry")
-  if (!t_res %in% char_res) stop("t_res has not a valid entry")
-  if (length(resp) != length(rt) & length(resp) != 1) stop("resp must be the same length as rt or of length one")
-  if (length(resp) == 1) resp <- rep(resp, length(rt))
 
-  # more checks needed for limits etc.
+  # check
+  dist_checks(rt, resp, phi, Nphi, x_res, t_res, modelname)
+
+
+  # more specific checks
 
 
   # setting options
-  x_ind <- which(char_res == x_res)
-  t_ind <- which(char_res == t_res)
+  opt <- dist_options(rt, x_res, t_res)
 
-  N_deps <- 151 + c(0, 100, 200, 300)[x_ind]
-  dt_scale <- 0.025 * c(1, 0.75, .5, 0.25)[t_ind]
-
-  rt_max <- max(rt)
 
   # get separated RTs for lower and upper response and get order
   len_rt <- length(rt)
@@ -92,11 +83,11 @@ dSSP <- function(rt,
 
 
   # prepare arguments for .Call
-  REAL <- c(dt_scale = dt_scale, rt_max = rt_max, phi = phi)
+  REAL <- c(dt_scale = opt[[3]], rt_max = opt[[1]], phi = phi)
   REAL_RTL <- as.double(RTL[order_l])
   REAL_RTU <- as.double(RTU[order_u])
-  INTEGER <- c(N_deps = N_deps, N_rtl = length(REAL_RTL), N_rtu = length(REAL_RTU), Nphi = length(phi))
-  CHAR <- "SSP"
+  INTEGER <- c(N_deps = opt[[2]], N_rtl = length(REAL_RTL), N_rtu = length(REAL_RTU), Nphi = length(phi))
+  CHAR <- modelname
 
 
   # call C++ function
@@ -155,7 +146,6 @@ dSSP <- function(rt,
 #'     \item contamination probability for the lower response
 #'     \item contamination probability for the upper response
 #'   }
-#' @param rt_max maximal response time <- max(rt)
 #' @param x_res spatial/evidence resolution
 #' @param t_res time resolution
 #' @return a list of PDF values, log-PDF values, and the sum of the log-PDFs
@@ -171,38 +161,30 @@ dSSP <- function(rt,
 #' @examples
 #' # here come some examples
 #' @author Raphael Hartmann & Matthew Murrow
-#' @useDynLib "rbeam", .registration=TRUE
+#' @useDynLib "ream", .registration=TRUE
 #' @export
 pSSP <- function(rt,
                  resp,
                  phi = c(0.25, 0.5, 1.5, 0.02, -0.3, -0.3, 0.3, 1.5, 0.5, 1.5, -0.5, 0.5, 0.1, 0.04, 0.0, 0.0, 1.0),
-                 x_res = "A",
-                 t_res = "A") {
+                 x_res = "default",
+                 t_res = "default") {
 
 
   # constants
-  char_res <- c("A", "B", "C", "D")
+  modelname <- "SSP"
+  Nphi <- 17
 
-  # checking input
-  if (any(rt < 0)) stop("rt must be larger than 0.")
-  if (!all(resp %in% c("lower", "upper"))) stop("resp must be either \"upper\" or \"lower\".")
-  if (length(phi) != 17) stop("phi must be of length 17 for the SSP")
-  if (!x_res %in% char_res) stop("x_res has not a valid entry")
-  if (!t_res %in% char_res) stop("t_res has not a valid entry")
-  if (length(resp) != length(rt) & length(resp) != 1) stop("resp must be the same length as rt or of length one")
-  if (length(resp) == 1) resp <- rep(resp, length(rt))
 
-  # more checks needed for limits etc.
+  # check
+  dist_checks(rt, resp, phi, Nphi, x_res, t_res, modelname)
+
+
+  # more specific checks
 
 
   # setting options
-  x_ind <- which(char_res == x_res)
-  t_ind <- which(char_res == t_res)
+  opt <- dist_options(rt, x_res, t_res)
 
-  N_deps <- 151 + c(0, 100, 200, 300)[x_ind]
-  dt_scale <- 0.025 * c(1, 0.75, .5, 0.25)[t_ind]
-
-  rt_max <- max(rt)
 
   # get separated RTs for lower and upper response and get order
   len_rt <- length(rt)
@@ -215,11 +197,12 @@ pSSP <- function(rt,
 
 
   # prepare arguments for .Call
-  REAL <- c(dt_scale = dt_scale, rt_max = rt_max, phi = phi)
+  REAL <- c(dt_scale = opt[[3]], rt_max = opt[[1]], phi = phi)
   REAL_RTL <- as.double(RTL[order_l])
   REAL_RTU <- as.double(RTU[order_u])
-  INTEGER <- c(N_deps = N_deps, N_rtl = length(REAL_RTL), N_rtu = length(REAL_RTU), Nphi = length(phi))
-  CHAR <- "SSP"
+  INTEGER <- c(N_deps = opt[[2]], N_rtl = length(REAL_RTL), N_rtu = length(REAL_RTU), Nphi = length(phi))
+  CHAR <- modelname
+
 
   # call C++ function
   out <- .Call("CDF",
@@ -290,16 +273,20 @@ pSSP <- function(rt,
 #' @examples
 #' rSSP(n = 100, phi = c(0.25, 0.5, 1.5, 0.02, -0.3, -0.3, 0.3, 1.5, 0.5, 1.5, -0.5, 0.5, 0.1, 0.04, 0.0, 0.0, 1.0))
 #' @author Raphael Hartmann & Matthew Murrow
-#' @useDynLib "rbeam", .registration=TRUE
+#' @useDynLib "ream", .registration=TRUE
 #' @export
 rSSP <- function(n,
                  phi = c(0.25, 0.5, 1.5, 0.02, -0.3, -0.3, 0.3, 1.5, 0.5, 1.5, -0.5, 0.5, 0.1, 0.04, 0.0, 0.0, 1.0),
                  dt = 0.00001) {
 
+  # constants
+  modelname <- "SSP"
+  Nphi <- 17
+
+
   # check arguments
-  if (!is.numeric(n) | n %% 1 != 0) stop("n must be a whole number")
-  if (length(phi) != 17) stop("phi must be of length 17 for the SSP")
-  if (!is.numeric(dt)) stop("dt must be a numeric value")
+  sim_checks(n, phi, Nphi, dt, modelname)
+
 
   # more checks needed for limits etc.
 
@@ -307,7 +294,7 @@ rSSP <- function(n,
   # prepare arguments for .Call
   REAL <- c(dt = dt, phi = phi)
   INTEGER <- c(N = n, Nphi = length(phi))
-  CHAR <- "SSP"
+  CHAR <- modelname
 
 
   # call C++ function
@@ -372,36 +359,32 @@ rSSP <- function(n,
 #' @examples
 #' # here come some examples
 #' @author Raphael Hartmann & Matthew Murrow
-#' @useDynLib "rbeam", .registration=TRUE
+#' @useDynLib "ream", .registration=TRUE
 #' @export
 dSSP_grid <- function(rt_max = 10.0,
                       phi = c(0.25, 0.5, 1.5, 0.02, -0.3, -0.3, 0.3, 1.5, 0.5, 1.5, -0.5, 0.5, 0.1, 0.04, 0.0, 0.0, 1.0),
-                      x_res = "A",
-                      t_res = "A") {
+                      x_res = "default",
+                      t_res = "default") {
 
 
   # constants
-  char_res <- c("A", "B", "C", "D")
+  modelname <- "SSP"
+  Nphi <- 17
+
 
   # checking input
-  if (any(rt < 0)) stop("rt must be larger than 0.")
-  if (!all(resp %in% c("lower", "upper"))) stop("resp must be either \"upper\" or \"lower\".")
-  if (length(phi) != 17) stop("phi must be of length 17 for the SSP")
-  if (!x_res %in% char_res) stop("x_res has not a valid entry")
-  if (!t_res %in% char_res) stop("t_res has not a valid entry")
+  grid_checks(rt_max, phi, Nphi, x_res, t_res, modelname)
 
-  # more checks needed for limits etc.
+
+  # more specific checks
 
 
   # setting options
-  x_ind <- which(char_res == x_res)
-  t_ind <- which(char_res == t_res)
+  opt <- grid_options(x_res, t_res)
 
-  N_deps <- 151 + c(0, 100, 200, 300)[x_ind]
-  dt_scale <- 0.025 * c(1, 0.75, .5, 0.25)[t_ind]
 
   # prepare arguments for r
-  CHAR <- "SSP"
+  CHAR <- modelname
 
   REAL <- c(dt_scale = dt_scale, rt_max = rt_max, phi = phi)
 
@@ -419,5 +402,3 @@ dSSP_grid <- function(rt_max = 10.0,
   return(out)
 
 }
-
-

@@ -7,9 +7,9 @@
 pDSTP(
   rt,
   resp,
-  phi = c(0.35, 0.5, 7.5, 40, 5, 5, 1, 0.5, 0, 0, 1),
-  x_res = "A",
-  t_res = "A"
+  phi = c(0.3, 0.5, 0.5, 1, 1, 0.5, 1, 1, 3, 50, 1, 0.5, 0, 0, 1),
+  x_res = "default",
+  t_res = "default"
 )
 }
 \arguments{
@@ -39,8 +39,6 @@ pDSTP(
 \item{x_res}{spatial/evidence resolution}
 
 \item{t_res}{time resolution}
-
-\item{rt_max}{maximal response time <- max(rt)}
 }
 \value{
 a list of PDF values, log-PDF values, and the sum of the log-PDFs

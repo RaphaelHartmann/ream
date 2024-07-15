@@ -1,0 +1,114 @@
+---
+title: "ream: guideline"
+author: "Raphael Hartmann and Matthew Murrow"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{ream: guideline}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+# R Package to Calculate the PDF and CDF of Evidence Accumulation Models
+
+## Overview
+
+In the package the following functions are implemented: 
+
+- random sampling first-passage times (and their thresholds)
+- calculating the defective probability density function (for simplicity just called PDF) 
+- calculating the defective cumulative distribution (for simplicity just called CDF)
+- simple plotting function for the PDF
+
+All these functions can be used for the following evidence accumulation models (EAM):
+
+| Model name                          | Short model name |
+| :---------------------------------- | :--------------- |
+| Simple DDM                          | SDDM             |
+| Leaky integration model             | LM               |
+| Linear threshold model              | LTM              |
+| Exponential threshold model         | ETM              |
+| Weibull threshold model             | WTM              |
+| Urgency gating model                | UGM              |
+| Diffusion model of conflict         | DMC              |
+| Revised diffusion model of conflict | RDMC             |
+| Shrinking spotlight model           | SSP              |
+| Dual process model                  | DPM              |
+| Dual-stage two-process model        | DSTP             |
+
+In this guideline the following use cases are discussed:
+
+1. Sampling from a specific EAM
+2. Calculating the PDF and CDF of a specific EAM (and plotting the PDF)
+3. Fitting a specific EAM to data
+4. Implement your custom EAM
+
+## 0 Preparation
+
+The package can be installed from CRAN directly or through GitHub using these function calls:
+```{r, eval=FALSE}
+devtools::install_github("RaphaelHartmann/ream")  # installing from GitHub
+```
+Load the package as you typically would:
+```{r, eval=TRUE}
+library(ream)
+```
+
+```{r, eval=TRUE, echo=FALSE}
+set.seed(12345)
+```
+
+## 1 Random Sampling
+For taking random samples (first-passage/response times and thresholds/responses) you can use the same logic as for R-native random sampling functions like `rnorm()`; Just prepend an `r` in front of the short model name (see table above; e.g., for the DMC it would be `rDMC()`). The random sampling function has three arguments: `n` the number of random samples, `phi` the vector of model parameters in a specific order which can be found on its help file, and `dt` the step size of the time in the trajectory.
+
+For example, sampling from the diffusion model of conflict (DMC) one would call the function `rDMC()` like this: 
+```{r, eval=TRUE}
+?rDMC # check the help file
+(samp <- rDMC(n = 10, phi = c(0.3, 0.5, -1, 0.2, 0.05, 2.5, 3, 1, 0.5, 0, 0, 1), dt = 1e-4))
+```
+
+
+## 2 Calculating the PDF and CDF
+For calculating the PDF and CDF you can also use the same logic as for native PDFs and CDFs like `dnorm()` and `pnorm()`, respectively; Just prepend a `d` or `p`, respectively, in front of the short model name (see table above; e.g., for the DMC it would be `dDMC()` and `pDMC()`, respectively). These functions have five arguments: `rt` the response times (in seconds) as a vector, `resp` the responses (`"upper"` and `"lower"`), `phi` the vector of model parameters in a specific order which can be found on its help file, `x_res` the spatial/evidence resolution (`"A"`, `"B"`, `"C"`, or `"D"`), and `t_res` the time resolution (`"A"`, `"B"`, `"C"`, or `"D"`).
+
+For example, calculating the PDF and CDF of the above samples `samp` for the diffusion model of conflict (DMC) would look like this: 
+```{r, eval=TRUE}
+?dDMC # check the help file
+(PDF <- dDMC(rt = samp$rt, resp = samp$resp, phi = c(0.3, 0.5, -1, 0.2, 0.05, 2.5, 3, 1, 0.5, 0, 0, 1), x_res = "A", t_res = "A"))
+(CDF <- dDMC(rt = samp$rt, resp = samp$resp, phi = c(0.3, 0.5, -1, 0.2, 0.05, 2.5, 3, 1, 0.5, 0, 0, 1), x_res = "A", t_res = "A"))
+```
+The functions calculate the PDF (or CDF), their log values, and the sum of the log values all together and save them in a list.
+
+GRID
+
+## 3 Fitting a Model to Data
+For fitting an EAM to data one can use the `optim()` function with the `"L-BFGS-B"` method (or `nlminb()` function). The `"L-BFGS-B"` method allows for defining lower and upper bounds for the parameters to be fitted.
+
+Before we fit a model, we generate some data. For simplicity we simulate only one subject with 100 congruent and 100 incongruent trials.
+```{r, eval=TRUE}
+N <- 100
+con <- rDMC(n = N, phi = c(0.3, 0.5, 1, 0.2, 0.05, 2.5, 3, 1, 0.5, 0, 0, 1), dt = 1e-05)
+incon <- rDMC(n = N, phi = c(0.3, 0.5, -1, 0.2, 0.05, 2.5, 3, 1, 0.5, 0, 0, 1), dt = 1e-05)
+data <- data.frame(congruency = rep(1:2, each = N), rt = c(con$rt, incon$rt), resp = c(con$resp, incon$resp))
+```
+We now want to fit the DMC to the data. We start with defining the function to maximize.
+```{r, eval=TRUE}
+deviation <- function(pars, data) {
+  ind_con <- which(data$congruency==1)
+  ind_incon <- which(data$congruency==2)
+  ls_con <- dDMC(rt = data$rt[ind_con], resp = data$resp[ind_con], phi = c(pars[1:2], 1, pars[3:6], 1, 0.5, 0, 0, 1), x_res = "C", t_res = "C")$sum_log_pdf
+  ls_incon <- dDMC(rt = data$rt[ind_incon], resp = data$resp[ind_incon], phi = c(pars[1:2], -1, pars[3:6], 1, 0.5, 0, 0, 1), x_res = "C", t_res = "C")$sum_log_pdf
+  return(-2*(ls_con+ls_incon))
+}
+```
+Now we only need to call the `optim()` function.
+```{r, eval=TRUE}
+# start_pars <- c(runif(1, .2, .6), runif(1, .3, .7), runif(1, .1, .6), runif(1, 0, .1), runif(1, 1.5, 4.5), runif(1, 0, 5))
+start_pars <- c(0.3, 0.5, 0.2, 0.05, 2.5, 2.5)
+optim(par = start_pars, fn = deviation, method = "L-BFGS-B", lower = c(.2, .1, .1, 0, 1, 0), upper = c(.6, .9, .6, .1, 5, 5), data = data)
+```
+
+
+## References
+* Murrow, M., & Holmes, W. R. (2023). PyBEAM: A Bayesian approach to parameter inference for a wide class of binary evidence accumulation models. *Behavior Research Methods*, 56(3), 2636–2656. https://doi.org/10.3758/s13428-023-02162-w
+* R Core Team (2023). R: A language and environment for statistical computing. *R Foundation for Statistical Computing*, Vienna, Austria. https://www.R-project.org/.

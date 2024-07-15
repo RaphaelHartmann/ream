@@ -6,9 +6,9 @@
 \usage{
 dDSTP_grid(
   rt_max = 10,
-  phi = c(0.35, 0.5, 7.5, 40, 5, 5, 1, 0.5, 0, 0, 1),
-  x_res = "A",
-  t_res = "A"
+  phi = c(0.3, 0.5, 0.5, 1, 1, 0.5, 1, 1, 3, 50, 1, 0.5, 0, 0, 1),
+  x_res = "default",
+  t_res = "default"
 )
 }
 \arguments{

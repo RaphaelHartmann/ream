@@ -7,8 +7,8 @@
 dWTM_grid(
   rt_max = 10,
   phi = c(0.3, 0.5, 1, 1, 1.5, 0.2, 0.5, -1, 0, 0, 1),
-  x_res = "A",
-  t_res = "A"
+  x_res = "default",
+  t_res = "default"
 )
 }
 \arguments{

@@ -4,7 +4,11 @@
 \alias{rDSTP}
 \title{Sampling From the Dual-Stage Two-Phase Model of Selective Attention}
 \usage{
-rDSTP(n, phi = c(0.35, 0.5, 7.5, 40, 5, 5, 1, 0.5, 0, 0, 1), dt = 1e-05)
+rDSTP(
+  n,
+  phi = c(0.3, 0.5, 0.5, 1, 1, 0.5, 1, 1, 3, 50, 1, 0.5, 0, 0, 1),
+  dt = 1e-05
+)
 }
 \arguments{
 \item{n}{number of samples}
@@ -38,7 +42,7 @@ Sampling from the dual-stage two-phase (DSTP) model of selective attention by HÃ
 Steinhauser, and Lehle (2010).
 }
 \examples{
-rdmc(n = 100, phi = c(0.3, 0.5, -1.0, 0.2, 0.05, 2.5, 3.0, 1.0, 0.5, 0.0, 0.0, 1.0))
+rdmc(n = 100, phi = c(0.3, 0.5, 0.5, 1.0, 1.0, 0.5, 1.0, 1.0, 3.0, 50, 1.0, 0.5, 0.0, 0.0, 1.0))
 }
 \references{
 Murrow, M., & Holmes, W. R. (2023). PyBEAM: A Bayesian approach to parameter

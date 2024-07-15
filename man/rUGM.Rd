@@ -16,7 +16,7 @@ rUGM(n, phi = c(0.3, 0.5, 1, 0.5, 0.5, 1, 1.5, 0, 0, 1), dt = 1e-05)
 \item ?
 \item ?
 \item ?
-\item ?
+\item diffusion rate
 \item upper threshold (equals negative lower threshold)
 \item contamination strength
 \item contamination probability for the lower response

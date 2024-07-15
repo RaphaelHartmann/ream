@@ -7,8 +7,8 @@
 dDMC_grid(
   rt_max = 10,
   phi = c(0.3, 0.5, -1, 0.2, 0.05, 2.5, 3, 1, 0.5, 0, 0, 1),
-  x_res = "A",
-  t_res = "A"
+  x_res = "default",
+  t_res = "default"
 )
 }
 \arguments{

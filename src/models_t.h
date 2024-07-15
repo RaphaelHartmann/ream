@@ -72,7 +72,7 @@ protected:
 
 
 
-class DPP : public Model_T {
+class DPM : public Model_T {
 protected:
 
   /* method for the non-decision time of process 1 */

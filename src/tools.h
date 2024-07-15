@@ -27,7 +27,7 @@ extern const char *OUTPUT3; // for l
 extern const char *ModelName;
 
 extern int N; // for simulation
-extern double dt; // for simulation
+extern double dt_; // for simulation
 
 extern int N_deps; // for ll
 extern double dt_scale; // for ll
@@ -50,7 +50,7 @@ double unif_L();
 
 /* constants used by likelihood generating function */
 const int N_deps_max = 501; /* number of spatial mesh points */
-const int N_dt = 1001; /* maximum number of time steps */
+const int N_dt = 2501; /* maximum number of time steps */
 const int N_dt_ini = 25; /* number of small, initial time steps to eliminate oscillations */
 const double dt_ini_scale = 0.01; /* uset to set initial time steps, lower value gives smaller time steps */
 const int N_dt_scaleup = 100; /* number of time steps to scale up from initial time step to normal time step */

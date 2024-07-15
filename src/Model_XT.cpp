@@ -27,7 +27,7 @@ double Model_XT::approx_dt(double* phi, double dt_scale) const {
   double xx = 0.0; /* accumulated evidence */
   double uu = 0.0; /* random number value */
   double fpt = 0.0; /* first passage time for threshold crossing */
-  double dt = 0.0; /* time step output to likelihood generation function */
+  double dt_ = 0.0; /* time step output to likelihood generation function */
 
   /* seed rng */
   // srand(seed);
@@ -57,7 +57,7 @@ double Model_XT::approx_dt(double* phi, double dt_scale) const {
       uu = unif_L() >= 0.5 ? 1.0 : -1.0;
 
       /* calculate accumulated evidence */
-      xx += dt*vv + sqrtdt*DD*uu;
+      xx += dt_*vv + sqrtdt*DD*uu;
 
       /* check if accumulated evidence has crossed a decision threshold */
       if ((xx >= bu) || (xx <= bl)) {
@@ -75,10 +75,10 @@ double Model_XT::approx_dt(double* phi, double dt_scale) const {
   }
 
   /* calculate estimated time step for likelihood generation function */
-  dt = dt_scale*fpt/N_sims;
+  dt_ = dt_scale*fpt/N_sims;
 
   /* output time step for likelihood generation function */
-  return dt;
+  return dt_;
 
 }
 
@@ -134,7 +134,7 @@ int Model_XT::pdf(double *RsumlogPDF, double *RPDFlow, double *RPDFupp, double *
 
   /* initilize constants */
   double deps = 1.0/(N_deps - 1.0);
-  double dt_base = 0.0, dt_ini = 0.0, dt = 0.0;
+  double dt_base = 0.0, dt_ini = 0.0, dt_ = 0.0;
   double t_in = 0.0;
   double bu_nm1 = 0.0, bu_n = 0.0, bu_np1 = 0.0;
   double bl_nm1 = 0.0, bl_n = 0.0, bl_np1 = 0.0;
@@ -176,7 +176,7 @@ int Model_XT::pdf(double *RsumlogPDF, double *RPDFlow, double *RPDFupp, double *
     dt_base = dt_max;
   }
   dt_ini = dt_ini_scale*dt_base;
-  dt = dt_ini;
+  dt_ = dt_ini;
 
   /* calculate initial threshold locations */
   t_in = dt_ini/10.0;
@@ -221,22 +221,22 @@ int Model_XT::pdf(double *RsumlogPDF, double *RPDFlow, double *RPDFupp, double *
 
     /* set time step */
     if (ii < N_dt_ini) {
-      dt = dt_ini;
+      dt_ = dt_ini;
     } else if ((ii >= N_dt_ini) && (ii < N_dt_ini + N_dt_scaleup)) {
-      dt = dt_ini + (ii + 1.0 - N_dt_ini)*(dt_base - dt_ini)/(N_dt_scaleup);
+      dt_ = dt_ini + (ii + 1.0 - N_dt_ini)*(dt_base - dt_ini)/(N_dt_scaleup);
     } else {
-      dt = dt_base;
+      dt_ = dt_base;
     }
 
     /* decrease time step if decision thresholds decrease too rapidly */
     jj = 0;
     kk = 0;
     while ((jj < 1) && (kk < N_decmax)) {
-      t_in = tt + dt;
+      t_in = tt + dt_;
       bu_np1 = upper_threshold(phi, t_in);
       bl_np1 = lower_threshold(phi, t_in);
 
-      t_in = tt - dt;
+      t_in = tt - dt_;
       if (t_in <= 0.0) {
         t_in = dt_ini/10.0;
         bu_nm1 = upper_threshold(phi, t_in);
@@ -260,7 +260,7 @@ int Model_XT::pdf(double *RsumlogPDF, double *RPDFlow, double *RPDFupp, double *
       }
 
       if (ds_ratio > ds_ratio_cutoff) {
-        dt = dt*dt_mod_scale;
+        dt_ = dt_*dt_mod_scale;
       } else {
         jj = 1;
       }
@@ -270,8 +270,8 @@ int Model_XT::pdf(double *RsumlogPDF, double *RPDFlow, double *RPDFupp, double *
     }
 
     /* calculate new decision thresholds */
-    dt = modify_dt(phi, tt)*dt;
-    tt += dt;
+    dt_ = modify_dt(phi, tt)*dt_;
+    tt += dt_;
 
     bu_np1 = upper_threshold(phi, tt);
     dbudt_np1 = ( upper_threshold(phi, tt+delt) - upper_threshold(phi, tt-delt) ) / (2.0*delt);
@@ -299,8 +299,8 @@ int Model_XT::pdf(double *RsumlogPDF, double *RPDFlow, double *RPDFupp, double *
 
       if (ii == 0) {
         x_n = s_n*eps[jj] + bl_n;
-        v_n[jj] = drift(phi, x_n, tt-dt);
-        sigma_n[jj] = diffusion(phi, x_n, tt-dt);
+        v_n[jj] = drift(phi, x_n, tt-dt_);
+        sigma_n[jj] = diffusion(phi, x_n, tt-dt_);
         sigma2_n[jj] = sigma_n[jj]*sigma_n[jj];
       } else {
         x_n = x_np1;
@@ -322,8 +322,8 @@ int Model_XT::pdf(double *RsumlogPDF, double *RPDFlow, double *RPDFupp, double *
 
       if (ii == 0) {
         x_n = s_n*eps[jj+1] + bl_n;
-        v_n[jj+1] = drift(phi, x_n, tt-dt);
-        sigma_n[jj+1] = diffusion(phi, x_n, tt-dt);
+        v_n[jj+1] = drift(phi, x_n, tt-dt_);
+        sigma_n[jj+1] = diffusion(phi, x_n, tt-dt_);
         sigma2_n[jj+1] = sigma_n[jj+1]*sigma_n[jj+1];
       } else {
         x_n = x_np1;
@@ -337,8 +337,8 @@ int Model_XT::pdf(double *RsumlogPDF, double *RPDFlow, double *RPDFupp, double *
       sigma_np1[jj+1] = diffusion(phi, x_np1, tt);
       sigma2_np1[jj+1] = sigma_np1[jj+1]*sigma_np1[jj+1];
 
-      alpha_n = dt/(4.0*s_n*deps);
-      alpha_np1 = dt/(4.0*s_np1*deps);
+      alpha_n = dt_/(4.0*s_n*deps);
+      alpha_np1 = dt_/(4.0*s_np1*deps);
 
       beta_n = eps[jj]*dsdt_n + dbldt_n;
       beta_np1 = eps[jj]*dsdt_np1 + dbldt_np1;
@@ -386,7 +386,7 @@ int Model_XT::pdf(double *RsumlogPDF, double *RPDFlow, double *RPDFupp, double *
     }
 
     /* determine integrated probability */
-    int_prob += p_fpt[1][ii+1]*dt + p_fpt[2][ii+1]*dt;
+    int_prob += p_fpt[1][ii+1]*dt_ + p_fpt[2][ii+1]*dt_;
 
     /* stop solver if time above rt_max or probability below p_fpt_min */
     if (p_fpt[0][ii+1] > rt_max) {
@@ -521,7 +521,7 @@ int Model_XT::cdf(double *RsumlogCDF, double *RCDFlow, double *RCDFupp, double *
 
   /* initilize constants */
   double deps = 1.0/(N_deps - 1.0);
-  double dt_base = 0.0, dt_ini = 0.0, dt = 0.0;
+  double dt_base = 0.0, dt_ini = 0.0, dt_ = 0.0;
   double t_in = 0.0;
   double bu_nm1 = 0.0, bu_n = 0.0, bu_np1 = 0.0;
   double bl_nm1 = 0.0, bl_n = 0.0, bl_np1 = 0.0;
@@ -563,7 +563,7 @@ int Model_XT::cdf(double *RsumlogCDF, double *RCDFlow, double *RCDFupp, double *
     dt_base = dt_max;
   }
   dt_ini = dt_ini_scale*dt_base;
-  dt = dt_ini;
+  dt_ = dt_ini;
 
   /* calculate initial threshold locations */
   t_in = dt_ini/10.0;
@@ -608,22 +608,22 @@ int Model_XT::cdf(double *RsumlogCDF, double *RCDFlow, double *RCDFupp, double *
 
     /* set time step */
     if (ii < N_dt_ini) {
-      dt = dt_ini;
+      dt_ = dt_ini;
     } else if ((ii >= N_dt_ini) && (ii < N_dt_ini + N_dt_scaleup)) {
-      dt = dt_ini + (ii + 1.0 - N_dt_ini)*(dt_base - dt_ini)/(N_dt_scaleup);
+      dt_ = dt_ini + (ii + 1.0 - N_dt_ini)*(dt_base - dt_ini)/(N_dt_scaleup);
     } else {
-      dt = dt_base;
+      dt_ = dt_base;
     }
 
     /* decrease time step if decision thresholds decrease too rapidly */
     jj = 0;
     kk = 0;
     while ((jj < 1) && (kk < N_decmax)) {
-      t_in = tt + dt;
+      t_in = tt + dt_;
       bu_np1 = upper_threshold(phi, t_in);
       bl_np1 = lower_threshold(phi, t_in);
 
-      t_in = tt - dt;
+      t_in = tt - dt_;
       if (t_in <= 0.0) {
         t_in = dt_ini/10.0;
         bu_nm1 = upper_threshold(phi, t_in);
@@ -647,7 +647,7 @@ int Model_XT::cdf(double *RsumlogCDF, double *RCDFlow, double *RCDFupp, double *
       }
 
       if (ds_ratio > ds_ratio_cutoff) {
-        dt = dt*dt_mod_scale;
+        dt_ = dt_*dt_mod_scale;
       } else {
         jj = 1;
       }
@@ -657,8 +657,8 @@ int Model_XT::cdf(double *RsumlogCDF, double *RCDFlow, double *RCDFupp, double *
     }
 
     /* calculate new decision thresholds */
-    dt = modify_dt(phi, tt)*dt;
-    tt += dt;
+    dt_ = modify_dt(phi, tt)*dt_;
+    tt += dt_;
 
     bu_np1 = upper_threshold(phi, tt);
     dbudt_np1 = ( upper_threshold(phi, tt+delt) - upper_threshold(phi, tt-delt) ) / (2.0*delt);
@@ -686,8 +686,8 @@ int Model_XT::cdf(double *RsumlogCDF, double *RCDFlow, double *RCDFupp, double *
 
       if (ii == 0) {
         x_n = s_n*eps[jj] + bl_n;
-        v_n[jj] = drift(phi, x_n, tt-dt);
-        sigma_n[jj] = diffusion(phi, x_n, tt-dt);
+        v_n[jj] = drift(phi, x_n, tt-dt_);
+        sigma_n[jj] = diffusion(phi, x_n, tt-dt_);
         sigma2_n[jj] = sigma_n[jj]*sigma_n[jj];
       } else {
         x_n = x_np1;
@@ -709,8 +709,8 @@ int Model_XT::cdf(double *RsumlogCDF, double *RCDFlow, double *RCDFupp, double *
 
       if (ii == 0) {
         x_n = s_n*eps[jj+1] + bl_n;
-        v_n[jj+1] = drift(phi, x_n, tt-dt);
-        sigma_n[jj+1] = diffusion(phi, x_n, tt-dt);
+        v_n[jj+1] = drift(phi, x_n, tt-dt_);
+        sigma_n[jj+1] = diffusion(phi, x_n, tt-dt_);
         sigma2_n[jj+1] = sigma_n[jj+1]*sigma_n[jj+1];
       } else {
         x_n = x_np1;
@@ -724,8 +724,8 @@ int Model_XT::cdf(double *RsumlogCDF, double *RCDFlow, double *RCDFupp, double *
       sigma_np1[jj+1] = diffusion(phi, x_np1, tt);
       sigma2_np1[jj+1] = sigma_np1[jj+1]*sigma_np1[jj+1];
 
-      alpha_n = dt/(4.0*s_n*deps);
-      alpha_np1 = dt/(4.0*s_np1*deps);
+      alpha_n = dt_/(4.0*s_n*deps);
+      alpha_np1 = dt_/(4.0*s_np1*deps);
 
       beta_n = eps[jj]*dsdt_n + dbldt_n;
       beta_np1 = eps[jj]*dsdt_np1 + dbldt_np1;
@@ -773,7 +773,7 @@ int Model_XT::cdf(double *RsumlogCDF, double *RCDFlow, double *RCDFupp, double *
     }
 
     /* determine integrated probability */
-    int_prob += p_fpt[1][ii+1]*dt + p_fpt[2][ii+1]*dt;
+    int_prob += p_fpt[1][ii+1]*dt_ + p_fpt[2][ii+1]*dt_;
 
     /* stop solver if time above rt_max or probability below p_fpt_min */
     if (p_fpt[0][ii+1] > rt_max) {
@@ -879,10 +879,13 @@ int Model_XT::rand(double *Rrt, double *phi) const {
   double bu = upper_threshold(phi, 0.0); /* upper decision threshold */
   double bl = lower_threshold(phi, 0.0); /* lower decision threshold */
   double zz = bl + ww*(bu - bl); /* calculate absolute start point */
-  double sqrtdt = sqrt(dt); /* calculate square root of time step */
+  double sqrtdt = sqrt(dt_); /* calculate square root of time step */
   double tt = 0.0; /* time */
+  double x_old = 0.0;
   double xx = 0.0; /* accumulated evidence */
-  double u1 = 0.0, u2 = 0.0, uu = 0.0; /* random number value */
+  // double u1 = 0.0, u2 = 0.0,
+  double uu = 0.0; /* random number value */
+  double t_old = 0.0;
   double rt = 0.0; /* first passage time for threshold crossing */
 
   /* seed rng */
@@ -893,7 +896,9 @@ int Model_XT::rand(double *Rrt, double *phi) const {
   for (ii = 0; ii < N; ii++) {
 
     /* reset time and space for next simulation */
+    t_old = 0.0;
     tt = 0.0;
+    x_old = 0.0;
     xx = zz;
     jj = 0;
 
@@ -903,27 +908,35 @@ int Model_XT::rand(double *Rrt, double *phi) const {
       vv = drift(phi, xx, tt);
       DD = diffusion(phi, xx, tt);
 
-      /* draw random number for simulating diffusion */
-      u1 = unif_L();
-      u2 = unif_L();
-      // u1 = std::rand()/(RAND_MAX*1.0);
-      // u2 = std::rand()/(RAND_MAX*1.0);
-      uu = sqrt(-2.0*log(u1))*cos(2.0*M_PI*u2);
-
-      /* calculate accumulated evidence */
-      xx += dt*vv + sqrtdt*DD*uu;
-
       /* update time step */
-      tt += dt;
+      t_old = tt;
+      tt += dt_;
+
+      /* update decision threshold */
       bu = upper_threshold(phi, tt);
       bl = lower_threshold(phi, tt);
 
+      /* draw random number for simulating diffusion */
+      // u1 = unif_L();
+      // u2 = unif_L();
+      // u1 = std::rand()/(RAND_MAX*1.0);
+      // u2 = std::rand()/(RAND_MAX*1.0);
+      // uu = sqrt(-2.0*log(u1))*cos(2.0*M_PI*u2);
+      // uu = norm_rand();
+      uu = Rf_rnorm(0.0, sqrtdt);
+
+      /* calculate accumulated evidence */
+      x_old = xx;
+      xx += dt_*vv + DD*uu;
+
       /* check if accumulated evidence has crossed a decision threshold */
       if (xx >= bu) {
-        Rrt[ii] = tnd + tt;
+        rt = t_old + (bu - x_old)/(xx - x_old)*(tt - t_old);
+        Rrt[ii] = tnd + rt;
         jj = 1;
       } else if (xx <= bl) {
-        Rrt[ii] = -tnd - tt;
+        rt = t_old + (bl - x_old)/(xx - x_old)*(tt - t_old);
+        Rrt[ii] = -tnd - rt;
         jj = 1;
       }
 
@@ -942,7 +955,8 @@ int Model_XT::grid_pdf(double *Rrt, double *Rpdf_u, double *Rpdf_l, double *phi)
 
   /* initialize loop indicies */
   int ii = 0, jj = 0, kk = 0;
-
+  Rprintf("N_dt = %d\n", N_dt);
+  Rprintf("N_deps_max = %d\n", N_deps_max);
   /* initialize arrays */
   double p_fpt[3][N_dt]; /* first passage time probability */
   double p_n[N_deps_max]; /* probability of evidence x at time step n */
@@ -988,7 +1002,7 @@ int Model_XT::grid_pdf(double *Rrt, double *Rpdf_u, double *Rpdf_l, double *phi)
 
   /* initilize constants */
   double deps = 1.0/(N_deps - 1.0);
-  double dt_base = 0.0, dt_ini = 0.0, dt = 0.0;
+  double dt_base = 0.0, dt_ini = 0.0, dt_ = 0.0;
   double t_in = 0.0;
   double bu_nm1 = 0.0, bu_n = 0.0, bu_np1 = 0.0;
   double bl_nm1 = 0.0, bl_n = 0.0, bl_np1 = 0.0;
@@ -1032,7 +1046,7 @@ int Model_XT::grid_pdf(double *Rrt, double *Rpdf_u, double *Rpdf_l, double *phi)
     dt_base = dt_max;
   }
   dt_ini = dt_ini_scale*dt_base;
-  dt = dt_ini;
+  dt_ = dt_ini;
 
   /* calculate initial threshold locations */
   t_in = dt_ini/10.0;
@@ -1077,22 +1091,22 @@ int Model_XT::grid_pdf(double *Rrt, double *Rpdf_u, double *Rpdf_l, double *phi)
 
     /* set time step */
     if (ii < N_dt_ini) {
-      dt = dt_ini;
+      dt_ = dt_ini;
     } else if ((ii >= N_dt_ini) && (ii < N_dt_ini + N_dt_scaleup)) {
-      dt = dt_ini + (ii + 1.0 - N_dt_ini)*(dt_base - dt_ini)/(N_dt_scaleup);
+      dt_ = dt_ini + (ii + 1.0 - N_dt_ini)*(dt_base - dt_ini)/(N_dt_scaleup);
     } else {
-      dt = dt_base;
+      dt_ = dt_base;
     }
 
     /* decrease time step if decision thresholds decrease too rapidly */
     jj = 0;
     kk = 0;
     while ((jj < 1) && (kk < N_decmax)) {
-      t_in = tt + dt;
+      t_in = tt + dt_;
       bu_np1 = upper_threshold(phi, t_in);
       bl_np1 = lower_threshold(phi, t_in);
 
-      t_in = tt - dt;
+      t_in = tt - dt_;
       if (t_in <= 0.0) {
         t_in = dt_ini/10.0;
         bu_nm1 = upper_threshold(phi, t_in);
@@ -1116,7 +1130,7 @@ int Model_XT::grid_pdf(double *Rrt, double *Rpdf_u, double *Rpdf_l, double *phi)
       }
 
       if (ds_ratio > ds_ratio_cutoff) {
-        dt = dt*dt_mod_scale;
+        dt_ = dt_*dt_mod_scale;
       } else {
         jj = 1;
       }
@@ -1126,8 +1140,8 @@ int Model_XT::grid_pdf(double *Rrt, double *Rpdf_u, double *Rpdf_l, double *phi)
     }
 
     /* calculate new decision thresholds */
-    dt = modify_dt(phi, tt)*dt;
-    tt += dt;
+    dt_ = modify_dt(phi, tt)*dt_;
+    tt += dt_;
 
     bu_np1 = upper_threshold(phi, tt);
     dbudt_np1 = ( upper_threshold(phi, tt+delt) - upper_threshold(phi, tt-delt) ) / (2.0*delt);
@@ -1155,8 +1169,8 @@ int Model_XT::grid_pdf(double *Rrt, double *Rpdf_u, double *Rpdf_l, double *phi)
 
       if (ii == 0) {
         x_n = s_n*eps[jj] + bl_n;
-        v_n[jj] = drift(phi, x_n, tt-dt);
-        sigma_n[jj] = diffusion(phi, x_n, tt-dt);
+        v_n[jj] = drift(phi, x_n, tt-dt_);
+        sigma_n[jj] = diffusion(phi, x_n, tt-dt_);
         sigma2_n[jj] = sigma_n[jj]*sigma_n[jj];
       } else {
         x_n = x_np1;
@@ -1178,8 +1192,8 @@ int Model_XT::grid_pdf(double *Rrt, double *Rpdf_u, double *Rpdf_l, double *phi)
 
       if (ii == 0) {
         x_n = s_n*eps[jj+1] + bl_n;
-        v_n[jj+1] = drift(phi, x_n, tt-dt);
-        sigma_n[jj+1] = diffusion(phi, x_n, tt-dt);
+        v_n[jj+1] = drift(phi, x_n, tt-dt_);
+        sigma_n[jj+1] = diffusion(phi, x_n, tt-dt_);
         sigma2_n[jj+1] = sigma_n[jj+1]*sigma_n[jj+1];
       } else {
         x_n = x_np1;
@@ -1193,8 +1207,8 @@ int Model_XT::grid_pdf(double *Rrt, double *Rpdf_u, double *Rpdf_l, double *phi)
       sigma_np1[jj+1] = diffusion(phi, x_np1, tt);
       sigma2_np1[jj+1] = sigma_np1[jj+1]*sigma_np1[jj+1];
 
-      alpha_n = dt/(4.0*s_n*deps);
-      alpha_np1 = dt/(4.0*s_np1*deps);
+      alpha_n = dt_/(4.0*s_n*deps);
+      alpha_np1 = dt_/(4.0*s_np1*deps);
 
       beta_n = eps[jj]*dsdt_n + dbldt_n;
       beta_np1 = eps[jj]*dsdt_np1 + dbldt_np1;
@@ -1242,7 +1256,7 @@ int Model_XT::grid_pdf(double *Rrt, double *Rpdf_u, double *Rpdf_l, double *phi)
     }
 
     /* determine integrated probability */
-    int_prob += p_fpt[1][ii+1]*dt + p_fpt[2][ii+1]*dt;
+    int_prob += p_fpt[1][ii+1]*dt_ + p_fpt[2][ii+1]*dt_;
 
     /* stop solver if time above rt_max or probability below p_fpt_min */
     if (p_fpt[0][ii+1] > rt_max) {

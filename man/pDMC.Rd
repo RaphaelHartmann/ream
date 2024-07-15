@@ -8,8 +8,8 @@ pDMC(
   rt,
   resp,
   phi = c(0.1, 0.5, 0, 0.2, 0.05, 2.5, 3, 1, 0.5, 0, 0, 1),
-  x_res = "A",
-  t_res = "A"
+  x_res = "default",
+  t_res = "default"
 )
 }
 \arguments{
@@ -36,8 +36,6 @@ pDMC(
 \item{x_res}{spatial/evidence resolution}
 
 \item{t_res}{time resolution}
-
-\item{rt_max}{maximal response time <- max(rt)}
 }
 \value{
 a list of PDF values, log-PDF values, and the sum of the log-PDFs

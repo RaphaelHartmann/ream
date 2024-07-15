@@ -3,7 +3,8 @@
 // Authors: Raphael Hartmann
 
 #define R_NO_REMAP
-
+#include <chrono>
+#include <thread>
 #include "Model.h"
 #include "models_t.h"
 #include "models_xt.h"
@@ -19,7 +20,7 @@ const char *ModelName;
 
   // for RAND
 int N;
-double dt;
+double dt_;
 
   // for PDF and CDF
 const char *RTL;
@@ -44,8 +45,8 @@ std::unique_ptr<Model> createModel(const std::string& modelName) {
     return std::make_unique<DMC>();
   } else if (modelName == "DSTP") {
     return std::make_unique<DSTP>();
-  } else if (modelName == "DPP") {
-    return std::make_unique<DPP>();
+  } else if (modelName == "DPM") {
+    return std::make_unique<DPM>();
   } else if (modelName == "ETM") {
     return std::make_unique<ETM>();
   } else if (modelName == "LTM") {
@@ -280,7 +281,7 @@ extern "C" {
 		N = INTEGER(in)[0];
 		N_phi = INTEGER(in)[1];
 
-		dt = REAL(re)[0];
+		dt_ = REAL(re)[0];
 		double *phi = (double*)R_Calloc(N_phi, double);
 		for(int i=0; i<N_phi; i++) {
 		  phi[i] = REAL(re)[i+1];
@@ -354,14 +355,15 @@ extern "C" {
       phi[i] = REAL(re)[i+2];
     }
 
-
+    Rprintf("wrapper 1\n");
+    std::this_thread::sleep_for(std::chrono::seconds(5));
     /* declare R objects for output */
     int outCnt = 0, prtCnt = 0;
-    SEXP rt = PROTECT(Rf_allocVector(REALSXP, 307));
+    SEXP rt = PROTECT(Rf_allocVector(REALSXP, N_dt));
     outCnt++;
-    SEXP pdf_u = PROTECT(Rf_allocVector(REALSXP, 307));
+    SEXP pdf_u = PROTECT(Rf_allocVector(REALSXP, N_dt));
     outCnt++;
-    SEXP pdf_l = PROTECT(Rf_allocVector(REALSXP, 307));
+    SEXP pdf_l = PROTECT(Rf_allocVector(REALSXP, N_dt));
     outCnt++;
     SEXP out = PROTECT(Rf_allocVector(VECSXP, outCnt));
     prtCnt = outCnt + 1;
@@ -372,7 +374,8 @@ extern "C" {
     double *Rpdf_u = REAL(pdf_u);
     double *Rpdf_l = REAL(pdf_l);
 
-
+    Rprintf("wrapper 2\n");
+    std::this_thread::sleep_for(std::chrono::seconds(5));
     /* model creation */
     auto model = createModel(ModelName);
     if (!model) {
@@ -383,7 +386,8 @@ extern "C" {
     /* main likelihood function */
     model->grid_pdf(Rrt, Rpdf_u, Rpdf_l, phi);
 
-
+    Rprintf("wrapper 3\n");
+    std::this_thread::sleep_for(std::chrono::seconds(5));
     /* set elements of list out */
     SET_VECTOR_ELT(out,0,rt);
     SET_VECTOR_ELT(out,1,pdf_u);
@@ -396,7 +400,8 @@ extern "C" {
     SET_STRING_ELT(names,0,Rf_mkChar("rt"));
     SET_STRING_ELT(names,1,Rf_mkChar("pdf_u"));
     SET_STRING_ELT(names,2,Rf_mkChar("pdf_l"));
-
+    Rprintf("wrapper 4\n");
+    std::this_thread::sleep_for(std::chrono::seconds(5));
     Rf_setAttrib(out,R_NamesSymbol,names);
 
 
@@ -404,6 +409,8 @@ extern "C" {
     UNPROTECT(prtCnt);
 
     R_Free(phi);
+    Rprintf("wrapper 5\n");
+    std::this_thread::sleep_for(std::chrono::seconds(5));
 
 
     return(out);

@@ -9,6 +9,9 @@
 #include "tools.h"
 #include <vector>
 #include <memory>
+#include <R.h>
+#include <R_ext/Random.h>
+#include <Rmath.h>
 
 
 /* -------------------------------------------------- */
