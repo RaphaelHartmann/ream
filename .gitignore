@@ -2,3 +2,5 @@
 .Rbuildignore
 .Rhistory
 rbeam.Rproj
+/src/*.o
+/src/*.so
