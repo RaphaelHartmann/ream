@@ -6,9 +6,9 @@
 
 
 
-#' PDF of the Dual-Stage Two-Phase Model of Selective Attention
+#' PDF of the Continuous Dual-Stage Two-Phase Model of Selective Attention
 #'
-#' Calculation the (Log-)PDF of the dual-stage two-phase (DSTP) model of selective
+#' Calculation the (Log-)PDF of the continuous dual-stage two-phase (CDSTP) model of selective
 #'   attention by Hübner, Steinhauser, and Lehle (2010).
 #'
 #' @param rt vector of response times
@@ -47,7 +47,7 @@
 #' @author Raphael Hartmann & Matthew Murrow
 #' @useDynLib "ream", .registration=TRUE
 #' @export
-dDSTP <- function(rt,
+dCDSTP <- function(rt,
                   resp,
                   phi = c(0.3, 0.5, 0.5, 1.0, 1.0, 0.5, 1.0, 1.0, 3.0, 50, 1.0, 0.5, 0.0, 0.0, 1.0),
                   x_res = "default",
@@ -118,9 +118,9 @@ dDSTP <- function(rt,
 
 
 
-#' CDF of the Dual-Stage Two-Phase Model of Selective Attention
+#' CDF of the Continuous Dual-Stage Two-Phase Model of Selective Attention
 #'
-#' Calculation the (Log-)CDF of the dual-stage two-phase (DSTP) model of selective
+#' Calculation the (Log-)CDF of the continuous dual-stage two-phase (CDSTP) model of selective
 #'   attention by Hübner, Steinhauser, and Lehle (2010).
 #'
 #' @param rt vector of response times
@@ -159,7 +159,7 @@ dDSTP <- function(rt,
 #' @author Raphael Hartmann & Matthew Murrow
 #' @useDynLib "ream", .registration=TRUE
 #' @export
-pDSTP <- function(rt,
+pCDSTP <- function(rt,
                   resp,
                   phi = c(0.3, 0.5, 0.5, 1.0, 1.0, 0.5, 1.0, 1.0, 3.0, 50, 1.0, 0.5, 0.0, 0.0, 1.0),
                   x_res = "default",
@@ -230,9 +230,9 @@ pDSTP <- function(rt,
 
 
 
-#' Sampling From the Dual-Stage Two-Phase Model of Selective Attention
+#' Sampling From the Continuous Dual-Stage Two-Phase Model of Selective Attention
 #'
-#' Sampling from the dual-stage two-phase (DSTP) model of selective attention by Hübner,
+#' Sampling from the continuous dual-stage two-phase (CDSTP) model of selective attention by Hübner,
 #'   Steinhauser, and Lehle (2010).
 #'
 #' @param n number of samples
@@ -269,7 +269,7 @@ pDSTP <- function(rt,
 #' @author Raphael Hartmann & Matthew Murrow
 #' @useDynLib "ream", .registration=TRUE
 #' @export
-rDSTP <- function(n,
+rCDSTP <- function(n,
                   phi = c(0.3, 0.5, 0.5, 1.0, 1.0, 0.5, 1.0, 1.0, 3.0, 50, 1.0, 0.5, 0.0, 0.0, 1.0),
                   dt = 0.00001) {
 
@@ -314,7 +314,7 @@ rDSTP <- function(n,
 
 
 
-#' Generate Grid for PDF of the Dual-Stage Two-Phase Model of Selective Attention
+#' Generate Grid for PDF of the Continuous Dual-Stage Two-Phase Model of Selective Attention
 #'
 #' Beschreibung.
 #'
@@ -352,7 +352,7 @@ rDSTP <- function(n,
 #' @author Raphael Hartmann & Matthew Murrow
 #' @useDynLib "ream", .registration=TRUE
 #' @export
-dDSTP_grid <- function(rt_max = 10.0,
+dCDSTP_grid <- function(rt_max = 10.0,
                        phi = c(0.3, 0.5, 0.5, 1.0, 1.0, 0.5, 1.0, 1.0, 3.0, 50, 1.0, 0.5, 0.0, 0.0, 1.0),
                        x_res = "default",
                        t_res = "default") {
