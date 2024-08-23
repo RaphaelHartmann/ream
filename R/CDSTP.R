@@ -1,61 +1,83 @@
 
 
 
-
-########### PDF ###########
-
-
-
-#' PDF of the Continuous Dual-Stage Two-Phase Model of Selective Attention
+#' Continuous Dual-Stage Two-Phase Model of Selective Attention
 #'
-#' Calculation the (Log-)PDF of the continuous dual-stage two-phase (CDSTP) model of selective
-#'   attention by Hübner, Steinhauser, and Lehle (2010).
+#' Density (PDF), distribution function (CDF), and random sampler for the continuous
+#'   dual-stage two-phase (CDSTP) model of selective attention by Hübner, Steinhauser,
+#'   and Lehle (2010).
 #'
 #' @param rt vector of response times
 #' @param resp vector of responses ("upper" and "lower")
+#' @param n number of samples
 #' @param phi parameter vector in the following order:
 #'   \itemize{
 #'     \item non-decision time of process 1
 #'     \item relative starting point of process 1
 #'     \item relative starting point for process 2
-#'     \item drift rate for process 2
-#'     \item diffusion rate for process 2
-#'     \item threshold separation for process 2
-#'     \item drift rate for target in process 1
-#'     \item drift rate for flanker in process 1
-#'     \item stage 2 drift rate for process 1
 #'     \item ?
-#'     \item diffusion rate of process 1
+#'     \item ?
+#'     \item ?
+#'     \item ?
+#'     \item ?
+#'     \item ?
+#'     \item ?
 #'     \item upper threshold of process 1 (equals negative lower threshold)
+#'     \item upper threshold of process 2 (equals negative lower threshold)
 #'     \item contamination strength of process 1
 #'     \item contamination probability for the lower response of process 1
 #'     \item contamination probability for the upper response of process 1
 #'   }
 #' @param x_res spatial/evidence resolution
 #' @param t_res time resolution
-#' @return a list of PDF values, log-PDF values, and the sum of the log-PDFs
+#' @param dt step size of time. We recommend 0.00001 (1e-5)
+#' @return For the density a list of PDF values, log-PDF values, and the sum of the
+#'   log-PDFs, for the distribution function a list of of CDF values, log-CDF values,
+#'   and the sum of the log-CDFs, and for the random sampler a list of response
+#'   times (rt) and response thresholds (resp).
 #' @references
+#' Hübner, R., Steinhauser, M., & Lehle, C. (2010). A dual-stage two-phase model of
+#'   selective attention. \emph{Psychological review, 117}(3), 759.
+#'
 #' Murrow, M., & Holmes, W. R. (2023). PyBEAM: A Bayesian approach to parameter
 #'   inference for a wide class of binary evidence accumulation models.
 #'   \emph{Behavior Research Methods}, 1-21.
 #'
-#' Hübner, R., Steinhauser, M., & Lehle, C. (2010). A dual-stage two-phase model of
-#'   selective attention. \emph{Psychological review, 117}(3), 759.
-#'
 #' @examples
-#' # here come some examples
+#' # Probability density function
+#' dCDSTP(rt = c(1.2, 0.6, 0.4), resp = c("upper", "lower", "lower"),
+#'        phi = c(0.3, 0.5, 0.5, -0.5, -1.0, -0.5, 8.0, 4.0, 1.0, 2.0, 1.3, 1.3, 0.0, 0.0, 1.0))
+#'
+#' # Cumulative distribution function
+#' pCDSTP(rt = c(1.2, 0.6, 0.4), resp = c("upper", "lower", "lower"),
+#'        phi = c(0.3, 0.5, 0.5, -0.5, -1.0, -0.5, 8.0, 4.0, 1.0, 2.0, 1.3, 1.3, 0.0, 0.0, 1.0))
+#'
+#' # Random sampling
+#' rCDSTP(n = 100, phi = c(0.3, 0.5, 0.5, -0.5, -1.0, -0.5, 8.0, 4.0, 1.0, 2.0, 1.3, 1.3,
+#'                         0.0, 0.0, 1.0))
 #' @author Raphael Hartmann & Matthew Murrow
+#' @name CDSTP
+NULL
+
+
+
+
+########### PDF ###########
+
+
+
+#' @rdname CDSTP
 #' @useDynLib "ream", .registration=TRUE
 #' @export
 dCDSTP <- function(rt,
                   resp,
-                  phi = c(0.3, 0.5, 0.5, 1.0, 1.0, 0.5, 1.0, 1.0, 3.0, 50, 1.0, 0.5, 0.0, 0.0, 1.0),
+                  phi = c(0.3, 0.5, 0.5, -0.5, -1.0, -0.5, 8.0, 4.0, 1.0, 2.0, 1.3, 1.3, 0.0, 0.0, 1.0),
                   x_res = "default",
                   t_res = "default") {
 
 
   # constants
-  modelname <- "DSTP"
+  modelname <- "CDSTP"
   Nphi <- 15
 
 
@@ -81,6 +103,7 @@ dCDSTP <- function(rt,
 
 
   # prepare arguments for .Call
+  dt_scale <- N_deps <- NULL
   REAL <- c(dt_scale = opt[[3]], rt_max = opt[[1]], phi = phi)
   REAL_RTL <- as.double(RTL[order_l])
   REAL_RTU <- as.double(RTU[order_u])
@@ -118,56 +141,18 @@ dCDSTP <- function(rt,
 
 
 
-#' CDF of the Continuous Dual-Stage Two-Phase Model of Selective Attention
-#'
-#' Calculation the (Log-)CDF of the continuous dual-stage two-phase (CDSTP) model of selective
-#'   attention by Hübner, Steinhauser, and Lehle (2010).
-#'
-#' @param rt vector of response times
-#' @param resp vector of responses ("upper" and "lower")
-#' @param phi parameter vector in the following order:
-#'   \itemize{
-#'     \item non-decision time of process 1
-#'     \item relative starting point of process 1
-#'     \item relative starting point for process 2
-#'     \item drift rate for process 2
-#'     \item diffusion rate for process 2
-#'     \item threshold separation for process 2
-#'     \item drift rate for target in process 1
-#'     \item drift rate for flanker in process 1
-#'     \item stage 2 drift rate for process 1
-#'     \item ?
-#'     \item diffusion rate of process 1
-#'     \item upper threshold of process 1 (equals negative lower threshold)
-#'     \item contamination strength of process 1
-#'     \item contamination probability for the lower response of process 1
-#'     \item contamination probability for the upper response of process 1
-#'   }
-#' @param x_res spatial/evidence resolution
-#' @param t_res time resolution
-#' @return a list of PDF values, log-PDF values, and the sum of the log-PDFs
-#' @references
-#' Murrow, M., & Holmes, W. R. (2023). PyBEAM: A Bayesian approach to parameter
-#'   inference for a wide class of binary evidence accumulation models.
-#'   \emph{Behavior Research Methods}, 1-21.
-#'
-#' Hübner, R., Steinhauser, M., & Lehle, C. (2010). A dual-stage two-phase model of
-#'   selective attention. \emph{Psychological review, 117}(3), 759.
-#'
-#' @examples
-#' # here come some examples
-#' @author Raphael Hartmann & Matthew Murrow
+#' @rdname CDSTP
 #' @useDynLib "ream", .registration=TRUE
 #' @export
 pCDSTP <- function(rt,
                   resp,
-                  phi = c(0.3, 0.5, 0.5, 1.0, 1.0, 0.5, 1.0, 1.0, 3.0, 50, 1.0, 0.5, 0.0, 0.0, 1.0),
+                  phi = c(0.3, 0.5, 0.5, -0.5, -1.0, -0.5, 8.0, 4.0, 1.0, 2.0, 1.3, 1.3, 0.0, 0.0, 1.0),
                   x_res = "default",
                   t_res = "default") {
 
 
   # constants
-  modelname <- "DSTP"
+  modelname <- "CDSTP"
   Nphi <- 15
 
 
@@ -193,6 +178,7 @@ pCDSTP <- function(rt,
 
 
   # prepare arguments for .Call
+  dt_scale <- N_deps <- NULL
   REAL <- c(dt_scale = opt[[3]], rt_max = opt[[1]], phi = phi)
   REAL_RTL <- as.double(RTL[order_l])
   REAL_RTU <- as.double(RTU[order_u])
@@ -230,51 +216,15 @@ pCDSTP <- function(rt,
 
 
 
-#' Sampling From the Continuous Dual-Stage Two-Phase Model of Selective Attention
-#'
-#' Sampling from the continuous dual-stage two-phase (CDSTP) model of selective attention by Hübner,
-#'   Steinhauser, and Lehle (2010).
-#'
-#' @param n number of samples
-#' @param phi parameter vector in the following order:
-#'   \itemize{
-#'     \item non-decision time of process 1
-#'     \item relative starting point of process 1
-#'     \item relative starting point for process 2
-#'     \item drift rate for process 2
-#'     \item diffusion rate for process 2
-#'     \item threshold separation for process 2
-#'     \item drift rate for target in process 1
-#'     \item drift rate for flanker in process 1
-#'     \item stage 2 drift rate for process 1
-#'     \item ?
-#'     \item diffusion rate of process 1
-#'     \item upper threshold of process 1 (equals negative lower threshold)
-#'     \item contamination strength of process 1
-#'     \item contamination probability for the lower response of process 1
-#'     \item contamination probability for the upper response of process 1
-#'   }
-#' @param dt step size of time. We recommend 0.00001 for the DMC
-#' @return list of response times (rt) and response threholds (resp)
-#' @references
-#' Murrow, M., & Holmes, W. R. (2023). PyBEAM: A Bayesian approach to parameter
-#'   inference for a wide class of binary evidence accumulation models.
-#'   \emph{Behavior Research Methods}, 1-21.
-#'
-#' Hübner, R., Steinhauser, M., & Lehle, C. (2010). A dual-stage two-phase model of
-#'   selective attention. \emph{Psychological review, 117}(3), 759.
-#'
-#' @examples
-#' rdmc(n = 100, phi = c(0.3, 0.5, 0.5, 1.0, 1.0, 0.5, 1.0, 1.0, 3.0, 50, 1.0, 0.5, 0.0, 0.0, 1.0))
-#' @author Raphael Hartmann & Matthew Murrow
+#' @rdname CDSTP
 #' @useDynLib "ream", .registration=TRUE
 #' @export
 rCDSTP <- function(n,
-                  phi = c(0.3, 0.5, 0.5, 1.0, 1.0, 0.5, 1.0, 1.0, 3.0, 50, 1.0, 0.5, 0.0, 0.0, 1.0),
-                  dt = 0.00001) {
+                   phi = c(0.3, 0.5, 0.5, -0.5, -1.0, -0.5, 8.0, 4.0, 1.0, 2.0, 1.3, 1.3, 0.0, 0.0, 1.0),
+                   dt = 0.00001) {
 
   # constants
-  modelname <- "DSTP"
+  modelname <- "CDSTP"
   Nphi <- 15
 
 
@@ -324,19 +274,18 @@ rCDSTP <- function(n,
 #'     \item non-decision time of process 1
 #'     \item relative starting point of process 1
 #'     \item relative starting point for process 2
-#'     \item drift rate for process 2
-#'     \item diffusion rate for process 2
-#'     \item threshold separation for process 2
-#'     \item drift rate for target in process 1
-#'     \item drift rate for flanker in process 1
-#'     \item stage 2 drift rate for process 1
 #'     \item ?
-#'     \item diffusion rate of process 1
+#'     \item ?
+#'     \item ?
+#'     \item ?
+#'     \item ?
+#'     \item ?
+#'     \item ?
 #'     \item upper threshold of process 1 (equals negative lower threshold)
+#'     \item upper threshold of process 2 (equals negative lower threshold)
 #'     \item contamination strength of process 1
 #'     \item contamination probability for the lower response of process 1
-#'     \item contamination probability for the upper response of process 1
-#'   }
+#'     \item contamination probability for the upper response of process 1#'   }
 #' @param x_res spatial/evidence resolution
 #' @param t_res time resolution
 #' @return such and such
@@ -353,13 +302,13 @@ rCDSTP <- function(n,
 #' @useDynLib "ream", .registration=TRUE
 #' @export
 dCDSTP_grid <- function(rt_max = 10.0,
-                       phi = c(0.3, 0.5, 0.5, 1.0, 1.0, 0.5, 1.0, 1.0, 3.0, 50, 1.0, 0.5, 0.0, 0.0, 1.0),
-                       x_res = "default",
-                       t_res = "default") {
+                        phi = c(0.3, 0.5, 0.5, -0.5, -1.0, -0.5, 8.0, 4.0, 1.0, 2.0, 1.3, 1.3, 0.0, 0.0, 1.0),
+                        x_res = "default",
+                        t_res = "default") {
 
 
   # constants
-  modelname <- "DSTP"
+  modelname <- "CDSTP"
   Nphi <- 15
 
 
@@ -375,6 +324,8 @@ dCDSTP_grid <- function(rt_max = 10.0,
 
 
   # prepare arguments for r
+  dt_scale <- N_deps <- NULL
+
   CHAR <- modelname
 
   REAL <- c(dt_scale = dt_scale, rt_max = rt_max, phi = phi)

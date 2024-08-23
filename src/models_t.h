@@ -154,92 +154,92 @@ protected:
 
 
 
-class DSTP : public Model_T {
-protected:
-
-  /* method for the non-decision time of process 1 */
-  double non_decision(const double phi[15]) const override {
-    return phi[0];
-  }
-
-  /* method for the start point of process 1 */
-  double relative_start(const double phi[15]) const override {
-    return phi[1];
-  }
-
-  /* method for the drift rate of process 1 */
-  double drift(const double phi[15], double t) const override {
-  double w2 = phi[2]; /* relative start point for process 2 */
-  double v2 = phi[3]; /* drift rate for process 2 */
-  double sigma2 = phi[4]; /* diffusion rate for process 2 */
-  double a2 = phi[5]; /* threshold separation for process 2 */
-  double z2 = w2*a2; /* start point for process 2 */
-  double mu_tar = phi[6]; /* drift rate for target in process 1 */
-  double mu_fl = phi[7]; /* drift rate for flanker in process 1 */
-  double mu_rs2 = phi[8]; /* stage 2 drift rate for process 1 */
-  double v = 0.0; /* total summed drift rate for process 1 */
-  int kk = 0, N_k = phi[9];
-
-  /* calculate probability p of process 2 crossing upper and lower threhsolds */
-  double p_upper = ( exp(-2.0*(-v2)*a2/(sigma2*sigma2)) - exp(-2.0*(-v2)*(a2-z2)/(sigma2*sigma2)) ) / ( exp(-2.0*(-v2)*a2/(sigma2*sigma2)) - 1.0 );
-  double p_lower = ( exp(-2.0*v2*a2/(sigma2*sigma2)) - exp(-2.0*v2*z2/(sigma2*sigma2)) ) / ( exp(-2.0*v2*a2/(sigma2*sigma2)) - 1.0 );
-
-  /* calculate cumulative probability g for upper and lower threhsolds */
-  double g_upper = 0.0;
-  double g_lower = 0.0;
-  double weight = 0.0;
-
-  for (kk = 1; kk < N_k + 1; kk++){
-    g_upper += 2.0*kk*sin(kk*M_PI*(a2-z2)/a2)*exp(-0.5*t*((-v2)*(-v2)/(sigma2*sigma2) + (M_PI*M_PI)*(kk*kk)*(sigma2*sigma2)/(a2*a2))) / ((-v2)*(-v2)/(sigma2*sigma2) + (M_PI*M_PI)*(kk*kk)*(sigma2*sigma2)/(a2*a2));
-    g_lower += 2.0*kk*sin(kk*M_PI*z2/a2)*exp(-0.5*t*((v2*v2)/(sigma2*sigma2) + (M_PI*M_PI)*(kk*kk)*(sigma2*sigma2)/(a2*a2))) / ((v2*v2)/(sigma2*sigma2) + (M_PI*M_PI)*(kk*kk)*(sigma2*sigma2)/(a2*a2));
-  }
-  g_upper = p_upper - M_PI*(sigma2*sigma2)/(a2*a2)*exp(v2*(a2-z2)/(sigma2*sigma2))*g_upper;
-  g_lower = p_lower - M_PI*(sigma2*sigma2)/(a2*a2)*exp(-v2*z2/(sigma2*sigma2))*g_lower;
-
-  /* calculate weighted drift rate*/
-  weight = g_upper + g_lower;
-  v = (1.0 - weight)*(mu_tar + mu_fl) + weight*mu_rs2;
-
-  return v;
-  }
-
-  /* method for the diffusion rate of process 1 */
-  double diffusion(const double phi[15], double x, double t) const override {
-    return phi[10];
-  }
-
-  /* method for the upper threshold of process 1 */
-  double upper_threshold(const double phi[15], double t) const override {
-    return phi[11];
-  }
-
-  /* method for the lower threshold of process 1 */
-  double lower_threshold(const double phi[15], double t) const override {
-    return -phi[11];
-  }
-
-  /* method for the contamination strength of process 1 */
-  double contamination_strength(const double phi[15]) const override {
-    return phi[12];
-  }
-
-  /* method for the contamination probability distribution of process 1 */
-  double contamination_probability(const double phi[15], double t) const override {
-    double gl = phi[13];
-    double gu = phi[14];
-    double pg = 0.0;
-    if ((t >= gl) && (t <= gu)) {
-      pg = 1.0/(gu - gl);
-    }
-    return pg;
-  }
-
-  /* method for locally modifying the time step size */
-  double modify_dt(const double phi[15], double t) const override {
-    return 1.0;
-  }
-
-};
+// class DSTP : public Model_T {
+// protected:
+//
+//   /* method for the non-decision time of process 1 */
+//   double non_decision(const double phi[15]) const override {
+//     return phi[0];
+//   }
+//
+//   /* method for the start point of process 1 */
+//   double relative_start(const double phi[15]) const override {
+//     return phi[1];
+//   }
+//
+//   /* method for the drift rate of process 1 */
+//   double drift(const double phi[15], double t) const override {
+//   double w2 = phi[2]; /* relative start point for process 2 */
+//   double v2 = phi[3]; /* drift rate for process 2 */
+//   double sigma2 = phi[4]; /* diffusion rate for process 2 */
+//   double a2 = phi[5]; /* threshold separation for process 2 */
+//   double z2 = w2*a2; /* start point for process 2 */
+//   double mu_tar = phi[6]; /* drift rate for target in process 1 */
+//   double mu_fl = phi[7]; /* drift rate for flanker in process 1 */
+//   double mu_rs2 = phi[8]; /* stage 2 drift rate for process 1 */
+//   double v = 0.0; /* total summed drift rate for process 1 */
+//   int kk = 0, N_k = phi[9];
+//
+//   /* calculate probability p of process 2 crossing upper and lower threhsolds */
+//   double p_upper = ( exp(-2.0*(-v2)*a2/(sigma2*sigma2)) - exp(-2.0*(-v2)*(a2-z2)/(sigma2*sigma2)) ) / ( exp(-2.0*(-v2)*a2/(sigma2*sigma2)) - 1.0 );
+//   double p_lower = ( exp(-2.0*v2*a2/(sigma2*sigma2)) - exp(-2.0*v2*z2/(sigma2*sigma2)) ) / ( exp(-2.0*v2*a2/(sigma2*sigma2)) - 1.0 );
+//
+//   /* calculate cumulative probability g for upper and lower threhsolds */
+//   double g_upper = 0.0;
+//   double g_lower = 0.0;
+//   double weight = 0.0;
+//
+//   for (kk = 1; kk < N_k + 1; kk++){
+//     g_upper += 2.0*kk*sin(kk*M_PI*(a2-z2)/a2)*exp(-0.5*t*((-v2)*(-v2)/(sigma2*sigma2) + (M_PI*M_PI)*(kk*kk)*(sigma2*sigma2)/(a2*a2))) / ((-v2)*(-v2)/(sigma2*sigma2) + (M_PI*M_PI)*(kk*kk)*(sigma2*sigma2)/(a2*a2));
+//     g_lower += 2.0*kk*sin(kk*M_PI*z2/a2)*exp(-0.5*t*((v2*v2)/(sigma2*sigma2) + (M_PI*M_PI)*(kk*kk)*(sigma2*sigma2)/(a2*a2))) / ((v2*v2)/(sigma2*sigma2) + (M_PI*M_PI)*(kk*kk)*(sigma2*sigma2)/(a2*a2));
+//   }
+//   g_upper = p_upper - M_PI*(sigma2*sigma2)/(a2*a2)*exp(v2*(a2-z2)/(sigma2*sigma2))*g_upper;
+//   g_lower = p_lower - M_PI*(sigma2*sigma2)/(a2*a2)*exp(-v2*z2/(sigma2*sigma2))*g_lower;
+//
+//   /* calculate weighted drift rate*/
+//   weight = g_upper + g_lower;
+//   v = (1.0 - weight)*(mu_tar + mu_fl) + weight*mu_rs2;
+//
+//   return v;
+//   }
+//
+//   /* method for the diffusion rate of process 1 */
+//   double diffusion(const double phi[15], double x, double t) const override {
+//     return phi[10];
+//   }
+//
+//   /* method for the upper threshold of process 1 */
+//   double upper_threshold(const double phi[15], double t) const override {
+//     return phi[11];
+//   }
+//
+//   /* method for the lower threshold of process 1 */
+//   double lower_threshold(const double phi[15], double t) const override {
+//     return -phi[11];
+//   }
+//
+//   /* method for the contamination strength of process 1 */
+//   double contamination_strength(const double phi[15]) const override {
+//     return phi[12];
+//   }
+//
+//   /* method for the contamination probability distribution of process 1 */
+//   double contamination_probability(const double phi[15], double t) const override {
+//     double gl = phi[13];
+//     double gu = phi[14];
+//     double pg = 0.0;
+//     if ((t >= gl) && (t <= gu)) {
+//       pg = 1.0/(gu - gl);
+//     }
+//     return pg;
+//   }
+//
+//   /* method for locally modifying the time step size */
+//   double modify_dt(const double phi[15], double t) const override {
+//     return 1.0;
+//   }
+//
+// };
 
 
 
@@ -492,62 +492,63 @@ class SSP : public Model_T {
 protected:
 
   /* method for the non-decision time of process 1 */
-  double non_decision(const double phi[17]) const override {
+  double non_decision(const double phi[16]) const override {
     return phi[0];
   }
 
   /* method for the start point of process 1 */
-  double relative_start(const double phi[17]) const override {
+  double relative_start(const double phi[16]) const override {
     return phi[1];
   }
 
   /* method for the drift rate of process 1 */
-  double drift(const double phi[17], double t) const override {
+  double drift(const double phi[16], double t) const override {
     double sd_a0 = phi[2];
     double r_d = phi[3];
-    double p_outer = phi[4];
-    double p_inner = phi[5];
-    double p_target = phi[6];
-    double lb_outer = phi[7];
-    double lb_inner = phi[8];
-    double ub_inner = phi[9];
-    double lb_target = phi[10];
-    double ub_target = phi[11];
-    double sqrt2 = sqrt(2.0);
-
-    double sd_a = sd_a0 - r_d*t;
-    double a_outer = 0.5*( sd_a - sd_a*erf(lb_outer/(sqrt2*sd_a)) );
-    double a_inner = 0.5*( sd_a*erf(ub_inner/(sqrt2*sd_a)) - sd_a*erf(lb_inner/(sqrt2*sd_a)) );
-    double a_target = 0.5*( sd_a*erf(ub_target/(sqrt2*sd_a)) - sd_a*erf(lb_target/(sqrt2*sd_a)) );
-    double v = 2.0*p_outer*a_outer + 2.0*p_inner*a_inner + p_target*a_target;
-
+    double sd_a = sd_a0 - r_d * t;
+    double c = phi[4];
+    if (sd_a < 0.001) {
+      sd_a = 0.001;
+    }
+    double lb_target = phi[5];
+    double ub_target = phi[6];
+    double lb_inner = ub_target;
+    double ub_inner = phi[7];
+    double lb_outer = ub_inner;
+    double p_target = phi[8];
+    double p_inner = c*phi[9];
+    double p_outer = c*phi[10];
+    double v_target = ncdf(ub_target/sd_a) - ncdf(lb_target/sd_a);
+    double v_inner = 2.0*(ncdf(ub_inner/sd_a) - ncdf(lb_inner/sd_a));
+    double v_outer = 2.0*(1.0 - ncdf(lb_outer/sd_a));
+    double v = p_target*v_target + p_inner*v_inner + p_outer*v_outer;
     return v;
   }
 
   /* method for the diffusion rate of process 1 */
-  double diffusion(const double phi[17], double x, double t) const override {
-    return phi[12];
+  double diffusion(const double phi[16], double x, double t) const override {
+    return phi[11];
   }
 
   /* method for the upper threshold of process 1 */
-  double upper_threshold(const double phi[17], double t) const override {
-    return phi[13];
+  double upper_threshold(const double phi[16], double t) const override {
+    return phi[12];
   }
 
   /* method for the lower threshold of process 1 */
-  double lower_threshold(const double phi[17], double t) const override {
-    return -phi[13];
+  double lower_threshold(const double phi[16], double t) const override {
+    return -phi[12];
   }
 
   /* method for the contamination strength of process 1 */
-  double contamination_strength(const double phi[17]) const override {
-    return phi[14];
+  double contamination_strength(const double phi[16]) const override {
+    return phi[13];
   }
 
   /* method for the contamination probability distribution of process 1 */
-  double contamination_probability(const double phi[17], double t) const override {
-    double gl = phi[15];
-    double gu = phi[16];
+  double contamination_probability(const double phi[16], double t) const override {
+    double gl = phi[14];
+    double gu = phi[15];
     double pg = 0.0;
     if ((t >= gl) && (t <= gu)) {
       pg = 1.0/(gu - gl);
@@ -556,7 +557,7 @@ protected:
   }
 
   /* method for locally modifying the time step size */
-  double modify_dt(const double phi[17], double t) const override {
+  double modify_dt(const double phi[16], double t) const override {
     return 1.0;
   }
 

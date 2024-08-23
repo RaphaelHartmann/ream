@@ -6,8 +6,7 @@
 \usage{
 dSSP_grid(
   rt_max = 10,
-  phi = c(0.25, 0.5, 1.5, 0.02, -0.3, -0.3, 0.3, 1.5, 0.5, 1.5, -0.5, 0.5, 0.1, 0.04, 0,
-    0, 1),
+  phi = c(0.3, 0.5, 1, 7.5, -1, -0.5, 0.5, 1.5, 3.75, 3.75, 3.75, 1, 0.75, 0, 0, 1),
   x_res = "default",
   t_res = "default"
 )
@@ -21,14 +20,13 @@ dSSP_grid(
 \item relative starting point
 \item width of the spotlight at t = 0 (sd_a(0))
 \item rate with which the width decreases (r_d)
-\item perceptual input strength of outer flanker
-\item perceptual input strength of inner flanker
-\item perceptual input strength of target
-\item lower bound of integral for a_outer (typically fixed to 1.5)
-\item lower bound of integral for a_inner (typically fixed to 0.5)
-\item upper bound of integral for a_inner (typically fixed to 1.5)
+\item (c)
 \item lower bound of integral for a_target (typically fixed to -0.5)
 \item upper bound of integral for a_target (typically fixed to 0.5)
+\item upper bound of integral for a_inner (typically fixed to 1.5)
+\item perceptual input strength of target
+\item perceptual input strength of inner flanker divided by c
+\item perceptual input strength of outer flanker divided by c
 \item diffusion rate
 \item upper threshold (equals negative lower threshold)
 \item contamination strength

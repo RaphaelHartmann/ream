@@ -74,8 +74,8 @@ For calculating the PDF and CDF you can also use the same logic as for native PD
 For example, calculating the PDF and CDF of the above samples `samp` for the diffusion model of conflict (DMC) would look like this: 
 ```{r, eval=TRUE}
 ?dDMC # check the help file
-(PDF <- dDMC(rt = samp$rt, resp = samp$resp, phi = c(0.3, 0.5, -1, 0.2, 0.05, 2.5, 3, 1, 0.5, 0, 0, 1), x_res = "A", t_res = "A"))
-(CDF <- dDMC(rt = samp$rt, resp = samp$resp, phi = c(0.3, 0.5, -1, 0.2, 0.05, 2.5, 3, 1, 0.5, 0, 0, 1), x_res = "A", t_res = "A"))
+(PDF <- dDMC(rt = samp$rt, resp = samp$resp, phi = c(0.3, 0.5, -1, 0.2, 0.05, 2.5, 3, 1, 0.5, 0, 0, 1), x_res = "default", t_res = "default"))
+(CDF <- dDMC(rt = samp$rt, resp = samp$resp, phi = c(0.3, 0.5, -1, 0.2, 0.05, 2.5, 3, 1, 0.5, 0, 0, 1), x_res = "default", t_res = "default"))
 ```
 The functions calculate the PDF (or CDF), their log values, and the sum of the log values all together and save them in a list.
 
@@ -96,8 +96,8 @@ We now want to fit the DMC to the data. We start with defining the function to m
 deviation <- function(pars, data) {
   ind_con <- which(data$congruency==1)
   ind_incon <- which(data$congruency==2)
-  ls_con <- dDMC(rt = data$rt[ind_con], resp = data$resp[ind_con], phi = c(pars[1:2], 1, pars[3:6], 1, 0.5, 0, 0, 1), x_res = "C", t_res = "C")$sum_log_pdf
-  ls_incon <- dDMC(rt = data$rt[ind_incon], resp = data$resp[ind_incon], phi = c(pars[1:2], -1, pars[3:6], 1, 0.5, 0, 0, 1), x_res = "C", t_res = "C")$sum_log_pdf
+  ls_con <- dDMC(rt = data$rt[ind_con], resp = data$resp[ind_con], phi = c(pars[1:2], 1, pars[3:6], 1, 0.5, 0, 0, 1), x_res = "higher", t_res = "higher")$sum_log_pdf
+  ls_incon <- dDMC(rt = data$rt[ind_incon], resp = data$resp[ind_incon], phi = c(pars[1:2], -1, pars[3:6], 1, 0.5, 0, 0, 1), x_res = "higher", t_res = "higher")$sum_log_pdf
   return(-2*(ls_con+ls_incon))
 }
 ```
@@ -107,7 +107,6 @@ Now we only need to call the `optim()` function.
 start_pars <- c(0.3, 0.5, 0.2, 0.05, 2.5, 2.5)
 optim(par = start_pars, fn = deviation, method = "L-BFGS-B", lower = c(.2, .1, .1, 0, 1, 0), upper = c(.6, .9, .6, .1, 5, 5), data = data)
 ```
-
 
 ## References
 * Murrow, M., & Holmes, W. R. (2023). PyBEAM: A Bayesian approach to parameter inference for a wide class of binary evidence accumulation models. *Behavior Research Methods*, 56(3), 2636–2656. https://doi.org/10.3758/s13428-023-02162-w

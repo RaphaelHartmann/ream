@@ -1,17 +1,14 @@
 
 
 
-
-########### PDF ###########
-
-
-
-#' PDF of the Leakage Flip Model
+#' Leakage Flip Model
 #'
-#' Calculation the (Log-)PDF of the leakage flip model (LFM)
+#' Density (PDF), distribution function (CDF), and random sampler for the leakage
+#'   flip model (LFM).
 #'
 #' @param rt vector of response times
 #' @param resp vector of responses ("upper" and "lower")
+#' @param n number of samples
 #' @param phi parameter vector in the following order:
 #'   \itemize{
 #'     \item non-decision time
@@ -27,23 +24,45 @@
 #'   }
 #' @param x_res spatial/evidence resolution
 #' @param t_res time resolution
-#' @return a list of PDF values, log-PDF values, and the sum of the log-PDFs
+#' @param dt step size of time. We recommend 0.00001 (1e-5)
+#' @return For the density a list of PDF values, log-PDF values, and the sum of the
+#'   log-PDFs, for the distribution function a list of of CDF values, log-CDF values,
+#'   and the sum of the log-CDFs, and for the random sampler a list of response
+#'   times (rt) and response thresholds (resp).
 #' @references
 #' Murrow, M., & Holmes, W. R. (2023). PyBEAM: A Bayesian approach to parameter
 #'   inference for a wide class of binary evidence accumulation models.
 #'   \emph{Behavior Research Methods}, 1-21.
-#'
-#'
 #' @examples
-#' # here come some examples
+#' # Probability density function
+#' dLFM(rt = c(1.2, 0.6, 0.4), resp = c("upper", "lower", "lower"),
+#'      phi = c(0.3, 0.5, 1.0, 0.5, 0.5, 1.0, 0.5, 0.0, 0.0, 1.0))
+#'
+#' # Cumulative distribution function
+#' pLFM(rt = c(1.2, 0.6, 0.4), resp = c("upper", "lower", "lower"),
+#'      phi = c(0.3, 0.5, 1.0, 0.5, 0.5, 1.0, 0.5, 0.0, 0.0, 1.0))
+#'
+#' # Random sampling
+#' rLFM(n = 100, phi = c(0.3, 0.5, 1.0, 0.5, 0.5, 1.0, 0.5, 0.0, 0.0, 1.0))
 #' @author Raphael Hartmann & Matthew Murrow
+#' @name LFM
+NULL
+
+
+
+
+########### PDF ###########
+
+
+
+#' @rdname LFM
 #' @useDynLib "ream", .registration=TRUE
 #' @export
 dLFM <- function(rt,
-                resp,
-                phi = c(0.3, 0.5, 1.0, 0.5, 0.5, 1.0, 0.5, 0.0, 0.0, 1.0),
-                x_res = "default",
-                t_res = "default") {
+                 resp,
+                 phi = c(0.3, 0.5, 1.0, 0.5, 0.5, 1.0, 0.5, 0.0, 0.0, 1.0),
+                 x_res = "default",
+                 t_res = "default") {
 
 
   # constants
@@ -73,6 +92,7 @@ dLFM <- function(rt,
 
 
   # prepare arguments for .Call
+  dt_scale <- N_deps <- NULL
   REAL <- c(dt_scale = opt[[3]], rt_max = opt[[1]], phi = phi)
   REAL_RTL <- as.double(RTL[order_l])
   REAL_RTU <- as.double(RTU[order_u])
@@ -110,44 +130,14 @@ dLFM <- function(rt,
 
 
 
-#' CDF of the Leakage Flip Model
-#'
-#' Calculation the (Log-)CDF of the leakage flip model (LFM)
-#'
-#' @param rt vector of response times
-#' @param resp vector of responses ("upper" and "lower")
-#' @param phi parameter vector in the following order:
-#'   \itemize{
-#'     \item non-decision time
-#'     \item relative starting point
-#'     \item ?
-#'     \item ?
-#'     \item ?
-#'     \item diffusion rate
-#'     \item upper threshold (equals negative lower threshold)
-#'     \item contamination strength
-#'     \item contamination probability for the lower response
-#'     \item contamination probability for the upper response
-#'   }
-#' @param x_res spatial/evidence resolution
-#' @param t_res time resolution
-#' @return a list of PDF values, log-PDF values, and the sum of the log-PDFs
-#' @references
-#' Murrow, M., & Holmes, W. R. (2023). PyBEAM: A Bayesian approach to parameter
-#'   inference for a wide class of binary evidence accumulation models.
-#'   \emph{Behavior Research Methods}, 1-21.
-#'
-#'
-#' @examples
-#' # here come some examples
-#' @author Raphael Hartmann & Matthew Murrow
+#' @rdname LFM
 #' @useDynLib "ream", .registration=TRUE
 #' @export
 pLFM <- function(rt,
-                resp,
-                phi = c(0.3, 0.5, 1.0, 0.5, 0.5, 1.0, 0.5, 0.0, 0.0, 1.0),
-                x_res = "default",
-                t_res = "default") {
+                 resp,
+                 phi = c(0.3, 0.5, 1.0, 0.5, 0.5, 1.0, 0.5, 0.0, 0.0, 1.0),
+                 x_res = "default",
+                 t_res = "default") {
 
 
   # constants
@@ -177,6 +167,7 @@ pLFM <- function(rt,
 
 
   # prepare arguments for .Call
+  dt_scale <- N_deps <- NULL
   REAL <- c(dt_scale = opt[[3]], rt_max = opt[[1]], phi = phi)
   REAL_RTL <- as.double(RTL[order_l])
   REAL_RTU <- as.double(RTU[order_u])
@@ -213,40 +204,12 @@ pLFM <- function(rt,
 
 
 
-#' Sampling From the Leakage Flip Model
-#'
-#' Sampling from the leakage flip model (WTM)
-#'
-#' @param n number of samples
-#' @param phi parameter vector in the following order:
-#'   \itemize{
-#'     \item non-decision time
-#'     \item relative starting point
-#'     \item ?
-#'     \item ?
-#'     \item ?
-#'     \item diffusion rate
-#'     \item upper threshold (equals negative lower threshold)
-#'     \item contamination strength
-#'     \item contamination probability for the lower response
-#'     \item contamination probability for the upper response
-#'   }
-#' @param dt step size of time. We recommend 0.00001 for the WTM
-#' @return list of response times (rt) and response threholds (resp)
-#' @references
-#' Murrow, M., & Holmes, W. R. (2023). PyBEAM: A Bayesian approach to parameter
-#'   inference for a wide class of binary evidence accumulation models.
-#'   \emph{Behavior Research Methods}, 1-21.
-#'
-#'
-#' @examples
-#' rLFM(n = 100, phi = c(0.3, 0.5, 1.0, 0.5, 1.0, 0.5, 0.0, 0.0, 1.0))
-#' @author Raphael Hartmann & Matthew Murrow
+#' @rdname LFM
 #' @useDynLib "ream", .registration=TRUE
 #' @export
 rLFM <- function(n,
-                phi = c(0.3, 0.5, 1.0, 0.5, 0.5, 1.0, 0.5, 0.0, 0.0, 1.0),
-                dt = 0.00001) {
+                 phi = c(0.3, 0.5, 1.0, 0.5, 0.5, 1.0, 0.5, 0.0, 0.0, 1.0),
+                 dt = 0.00001) {
 
   # constants
   modelname <- "LFM"
@@ -343,6 +306,8 @@ dLFM_grid <- function(rt_max = 10.0,
 
 
   # prepare arguments for r
+  dt_scale <- N_deps <- NULL
+
   CHAR <- modelname
 
   REAL <- c(dt_scale = dt_scale, rt_max = rt_max, phi = phi)

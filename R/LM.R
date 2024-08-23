@@ -1,17 +1,13 @@
 
 
 
-
-########### PDF ###########
-
-
-
-#' PDF of the Leakage Model
+#' Leakage Model
 #'
-#' Calculation the (Log-)PDF of the leakage model (LM)
+#' Density (PDF), distribution function (CDF), and random sampler for the leakage model (LM).
 #'
 #' @param rt vector of response times
 #' @param resp vector of responses ("upper" and "lower")
+#' @param n number of samples
 #' @param phi parameter vector in the following order:
 #'   \itemize{
 #'     \item non-decision time
@@ -26,16 +22,38 @@
 #'   }
 #' @param x_res spatial/evidence resolution
 #' @param t_res time resolution
-#' @return a list of PDF values, log-PDF values, and the sum of the log-PDFs
+#' @param dt step size of time. We recommend 0.00001 (1e-5)
+#' @return For the density a list of PDF values, log-PDF values, and the sum of the
+#'   log-PDFs, for the distribution function a list of of CDF values, log-CDF values,
+#'   and the sum of the log-CDFs, and for the random sampler a list of response
+#'   times (rt) and response thresholds (resp).
 #' @references
 #' Murrow, M., & Holmes, W. R. (2023). PyBEAM: A Bayesian approach to parameter
 #'   inference for a wide class of binary evidence accumulation models.
 #'   \emph{Behavior Research Methods}, 1-21.
-#'
-#'
 #' @examples
-#' # here come some examples
+#' # Probability density function
+#' dLM(rt = c(1.2, 0.6, 0.4), resp = c("upper", "lower", "lower"),
+#'      phi = c(0.3, 0.5, 1.0, 0.5, 1.0, 0.5, 0.0, 0.0, 1.0))
+#'
+#' # Cumulative distribution function
+#' pLM(rt = c(1.2, 0.6, 0.4), resp = c("upper", "lower", "lower"),
+#'      phi = c(0.3, 0.5, 1.0, 0.5, 1.0, 0.5, 0.0, 0.0, 1.0))
+#'
+#' # Random sampling
+#' rLM(n = 100, phi = c(0.3, 0.5, 1.0, 0.5, 1.0, 0.5, 0.0, 0.0, 1.0))
 #' @author Raphael Hartmann & Matthew Murrow
+#' @name LM
+NULL
+
+
+
+
+########### PDF ###########
+
+
+
+#' @rdname LM
 #' @useDynLib "ream", .registration=TRUE
 #' @export
 dLM <- function(rt,
@@ -72,6 +90,7 @@ dLM <- function(rt,
 
 
   # prepare arguments for .Call
+  dt_scale <- N_deps <- NULL
   REAL <- c(dt_scale = opt[[3]], rt_max = opt[[1]], phi = phi)
   REAL_RTL <- as.double(RTL[order_l])
   REAL_RTU <- as.double(RTU[order_u])
@@ -109,36 +128,7 @@ dLM <- function(rt,
 
 
 
-#' CDF of the Leakage Model
-#'
-#' Calculation the (Log-)CDF of the leakage model (LM)
-#'
-#' @param rt vector of response times
-#' @param resp vector of responses ("upper" and "lower")
-#' @param phi parameter vector in the following order:
-#'   \itemize{
-#'     \item non-decision time
-#'     \item relative starting point
-#'     \item ?
-#'     \item ?
-#'     \item diffusion rate
-#'     \item upper threshold (equals negative lower threshold)
-#'     \item contamination strength
-#'     \item contamination probability for the lower response
-#'     \item contamination probability for the upper response
-#'   }
-#' @param x_res spatial/evidence resolution
-#' @param t_res time resolution
-#' @return a list of PDF values, log-PDF values, and the sum of the log-PDFs
-#' @references
-#' Murrow, M., & Holmes, W. R. (2023). PyBEAM: A Bayesian approach to parameter
-#'   inference for a wide class of binary evidence accumulation models.
-#'   \emph{Behavior Research Methods}, 1-21.
-#'
-#'
-#' @examples
-#' # here come some examples
-#' @author Raphael Hartmann & Matthew Murrow
+#' @rdname LM
 #' @useDynLib "ream", .registration=TRUE
 #' @export
 pLM <- function(rt,
@@ -175,6 +165,7 @@ pLM <- function(rt,
 
 
   # prepare arguments for .Call
+  dt_scale <- N_deps <- NULL
   REAL <- c(dt_scale = opt[[3]], rt_max = opt[[1]], phi = phi)
   REAL_RTL <- as.double(RTL[order_l])
   REAL_RTU <- as.double(RTU[order_u])
@@ -211,34 +202,7 @@ pLM <- function(rt,
 
 
 
-#' Sampling From the Leakage Model
-#'
-#' Sampling from the leakage model (WTM)
-#'
-#' @param n number of samples
-#' @param phi parameter vector in the following order:
-#'   \itemize{
-#'     \item non-decision time
-#'     \item relative starting point
-#'     \item ?
-#'     \item ?
-#'     \item diffusion rate
-#'     \item upper threshold (equals negative lower threshold)
-#'     \item contamination strength
-#'     \item contamination probability for the lower response
-#'     \item contamination probability for the upper response
-#'   }
-#' @param dt step size of time. We recommend 0.00001 for the WTM
-#' @return list of response times (rt) and response threholds (resp)
-#' @references
-#' Murrow, M., & Holmes, W. R. (2023). PyBEAM: A Bayesian approach to parameter
-#'   inference for a wide class of binary evidence accumulation models.
-#'   \emph{Behavior Research Methods}, 1-21.
-#'
-#'
-#' @examples
-#' rLM(n = 100, phi = c(0.3, 0.5, 1.0, 0.5, 1.0, 0.5, 0.0, 0.0, 1.0))
-#' @author Raphael Hartmann & Matthew Murrow
+#' @rdname LM
 #' @useDynLib "ream", .registration=TRUE
 #' @export
 rLM <- function(n,
@@ -339,6 +303,8 @@ dLM_grid <- function(rt_max = 10.0,
 
 
   # prepare arguments for r
+  dt_scale <- N_deps <- NULL
+
   CHAR <- modelname
 
   REAL <- c(dt_scale = opt[[2]], rt_max = rt_max, phi = phi)

@@ -1,17 +1,14 @@
 
 
 
-
-########### PDF ###########
-
-
-
-#' PDF of the Linear Threshold Model
+#' Linear Threshold Model
 #'
-#' Calculation the (Log-)PDF of the linear threshold model (LTM)
+#' Density (PDF), distribution function (CDF), and random sampler for the linear
+#'   threshold model (LTM).
 #'
 #' @param rt vector of response times
 #' @param resp vector of responses ("upper" and "lower")
+#' @param n number of samples
 #' @param phi parameter vector in the following order:
 #'   \itemize{
 #'     \item non-decision time
@@ -26,19 +23,38 @@
 #'   }
 #' @param x_res spatial/evidence resolution
 #' @param t_res time resolution
-#' @return a list of PDF values, log-PDF values, and the sum of the log-PDFs
+#' @param dt step size of time. We recommend 0.00001 (1e-5)
+#' @return For the density a list of PDF values, log-PDF values, and the sum of the
+#'   log-PDFs, for the distribution function a list of of CDF values, log-CDF values,
+#'   and the sum of the log-CDFs, and for the random sampler a list of response
+#'   times (rt) and response thresholds (resp).
 #' @references
 #' Murrow, M., & Holmes, W. R. (2023). PyBEAM: A Bayesian approach to parameter
 #'   inference for a wide class of binary evidence accumulation models.
 #'   \emph{Behavior Research Methods}, 1-21.
-#'
-#' Kempe, D., Kleinberg, J., & Tardos, É. (2003, August). Maximizing the spread
-#'   of influence through a social network. In Proceedings of the ninth ACM SIGKDD
-#'   international conference on Knowledge discovery and data mining (pp. 137-146).
-#'
 #' @examples
-#' # here come some examples
+#' # Probability density function
+#' dLTM(rt = c(1.2, 0.6, 0.4), resp = c("upper", "lower", "lower"),
+#'      phi = c(0.3, 0.5, 1.0, 1.0, 1.5, 1.0, 0.0, 0.0, 1.0))
+#'
+#' # Cumulative distribution function
+#' pLTM(rt = c(1.2, 0.6, 0.4), resp = c("upper", "lower", "lower"),
+#'      phi = c(0.3, 0.5, 1.0, 1.0, 1.5, 1.0, 0.0, 0.0, 1.0))
+#'
+#' # Random sampling
+#' rLTM(n = 100, phi = c(0.3, 0.5, 1.0, 1.0, 1.5, 1.0, 0.0, 0.0, 1.0))
 #' @author Raphael Hartmann & Matthew Murrow
+#' @name LTM
+NULL
+
+
+
+
+########### PDF ###########
+
+
+
+#' @rdname LTM
 #' @useDynLib "ream", .registration=TRUE
 #' @export
 dLTM <- function(rt,
@@ -50,7 +66,7 @@ dLTM <- function(rt,
 
   # constants
   modelname <- "LTM"
-  Nphi <- 11
+  Nphi <- 9
 
 
   # check
@@ -75,6 +91,7 @@ dLTM <- function(rt,
 
 
   # prepare arguments for .Call
+  dt_scale <- N_deps <- NULL
   REAL <- c(dt_scale = opt[[3]], rt_max = opt[[1]], phi = phi)
   REAL_RTL <- as.double(RTL[order_l])
   REAL_RTU <- as.double(RTU[order_u])
@@ -112,39 +129,7 @@ dLTM <- function(rt,
 
 
 
-#' CDF of the Linear Threshold Model
-#'
-#' Calculation the (Log-)CDF of the linear threshold model (LTM)
-#'
-#' @param rt vector of response times
-#' @param resp vector of responses ("upper" and "lower")
-#' @param phi parameter vector in the following order:
-#'   \itemize{
-#'     \item non-decision time
-#'     \item relative starting point
-#'     \item drift rate
-#'     \item diffusion rate
-#'     \item ?
-#'     \item ?
-#'     \item contamination strength
-#'     \item contamination probability for the lower response
-#'     \item contamination probability for the upper response
-#'   }
-#' @param x_res spatial/evidence resolution
-#' @param t_res time resolution
-#' @return a list of PDF values, log-PDF values, and the sum of the log-PDFs
-#' @references
-#' Murrow, M., & Holmes, W. R. (2023). PyBEAM: A Bayesian approach to parameter
-#'   inference for a wide class of binary evidence accumulation models.
-#'   \emph{Behavior Research Methods}, 1-21.
-#'
-#' Kempe, D., Kleinberg, J., & Tardos, É. (2003, August). Maximizing the spread
-#'   of influence through a social network. In Proceedings of the ninth ACM SIGKDD
-#'   international conference on Knowledge discovery and data mining (pp. 137-146).
-#'
-#' @examples
-#' # here come some examples
-#' @author Raphael Hartmann & Matthew Murrow
+#' @rdname LTM
 #' @useDynLib "ream", .registration=TRUE
 #' @export
 pLTM <- function(rt,
@@ -156,7 +141,7 @@ pLTM <- function(rt,
 
   # constants
   modelname <- "LTM"
-  Nphi <- 11
+  Nphi <- 9
 
 
   # check
@@ -181,6 +166,7 @@ pLTM <- function(rt,
 
 
   # prepare arguments for .Call
+  dt_scale <- N_deps <- NULL
   REAL <- c(dt_scale = opt[[3]], rt_max = opt[[1]], phi = phi)
   REAL_RTL <- as.double(RTL[order_l])
   REAL_RTU <- as.double(RTU[order_u])
@@ -218,37 +204,7 @@ pLTM <- function(rt,
 
 
 
-#' Sampling From the Linear Threshold Model
-#'
-#' Sampling from the linear threshold model (LTM)
-#'
-#' @param n number of samples
-#' @param phi parameter vector in the following order:
-#'   \itemize{
-#'     \item non-decision time
-#'     \item relative starting point
-#'     \item drift rate
-#'     \item diffusion rate
-#'     \item ?
-#'     \item ?
-#'     \item contamination strength
-#'     \item contamination probability for the lower response
-#'     \item contamination probability for the upper response
-#'   }
-#' @param dt step size of time. We recommend 0.00001 for the LTM
-#' @return list of response times (rt) and response threholds (resp)
-#' @references
-#' Murrow, M., & Holmes, W. R. (2023). PyBEAM: A Bayesian approach to parameter
-#'   inference for a wide class of binary evidence accumulation models.
-#'   \emph{Behavior Research Methods}, 1-21.
-#'
-#' Kempe, D., Kleinberg, J., & Tardos, É. (2003, August). Maximizing the spread
-#'   of influence through a social network. In Proceedings of the ninth ACM SIGKDD
-#'   international conference on Knowledge discovery and data mining (pp. 137-146).
-#'
-#' @examples
-#' rLTM(n = 100, phi = c(0.3, 0.5, 1.0, 1.0, 1.5, 1.0, 0.0, 0.0, 1.0))
-#' @author Raphael Hartmann & Matthew Murrow
+#' @rdname LTM
 #' @useDynLib "ream", .registration=TRUE
 #' @export
 rLTM <- function(n,
@@ -257,7 +213,7 @@ rLTM <- function(n,
 
   # constants
   modelname <- "LTM"
-  Nphi <- 11
+  Nphi <- 9
 
 
   # check arguments
@@ -337,7 +293,7 @@ dLTM_grid <- function(rt_max = 10.0,
 
   # constants
   modelname <- "LTM"
-  Nphi <- 11
+  Nphi <- 9
 
 
   # checking input
@@ -352,6 +308,8 @@ dLTM_grid <- function(rt_max = 10.0,
 
 
   # prepare arguments for r
+  dt_scale <- N_deps <- NULL
+
   CHAR <- modelname
 
   REAL <- c(dt_scale = dt_scale, rt_max = rt_max, phi = phi)

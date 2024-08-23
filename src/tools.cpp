@@ -11,3 +11,8 @@ double unif_L() {
   return u;
 
 }
+
+/* function for the drift rate in SSP */
+double ncdf(double x) {
+  return 0.5 * ( 1.0 + erf(x / sqrt(2.0)) );
+}

@@ -1,18 +1,14 @@
 
 
 
-
-########### PDF ###########
-
-
-
-#' PDF of the Urgency Gating Model
+#' Urgency Gating Model
 #'
-#' Calculation the (Log-)PDF of the urgency gating model (UGM) by Cisek, Puskas, and
-#'   El-Murr (2009)
+#' Density (PDF), distribution function (CDF), and random sampler for the urgency gating
+#'   model (UGM) by Cisek, Puskas, and El-Murr (2009).
 #'
 #' @param rt vector of response times
 #' @param resp vector of responses ("upper" and "lower")
+#' @param n number of samples
 #' @param phi parameter vector in the following order:
 #'   \itemize{
 #'     \item non-decision time
@@ -28,7 +24,11 @@
 #'   }
 #' @param x_res spatial/evidence resolution
 #' @param t_res time resolution
-#' @return a list of PDF values, log-PDF values, and the sum of the log-PDFs
+#' @param dt step size of time. We recommend 0.00001 (1e-5)
+#' @return For the density a list of PDF values, log-PDF values, and the sum of the
+#'   log-PDFs, for the distribution function a list of of CDF values, log-CDF values,
+#'   and the sum of the log-CDFs, and for the random sampler a list of response
+#'   times (rt) and response thresholds (resp).
 #' @references
 #' Murrow, M., & Holmes, W. R. (2023). PyBEAM: A Bayesian approach to parameter
 #'   inference for a wide class of binary evidence accumulation models.
@@ -36,10 +36,29 @@
 #'
 #' Cisek, P., Puskas, G. A., & El-Murr, S. (2009). Decisions in changing conditions:
 #'   the urgency-gating model. \emph{Journal of Neuroscience, 29}(37), 11560-11571.
-#'
 #' @examples
-#' # here come some examples
+#' # Probability density function
+#' dUGM(rt = c(1.2, 0.6, 0.4), resp = c("upper", "lower", "lower"),
+#'      phi = c(0.3, 0.5, 1.0, 0.5, 0.5, 1.0, 1.5, 0.0, 0.0, 1.0))
+#'
+#' # Cumulative distribution function
+#' pUGM(rt = c(1.2, 0.6, 0.4), resp = c("upper", "lower", "lower"),
+#'      phi = c(0.3, 0.5, 1.0, 0.5, 0.5, 1.0, 1.5, 0.0, 0.0, 1.0))
+#'
+#' # Random sampling
+#' rUGM(n = 100, phi = c(0.3, 0.5, 1.0, 0.5, 0.5, 1.0, 1.5, 0.0, 0.0, 1.0))
 #' @author Raphael Hartmann & Matthew Murrow
+#' @name UGM
+NULL
+
+
+
+
+########### PDF ###########
+
+
+
+#' @rdname UGM
 #' @useDynLib "ream", .registration=TRUE
 #' @export
 dUGM <- function(rt,
@@ -76,6 +95,7 @@ dUGM <- function(rt,
 
 
   # prepare arguments for .Call
+  dt_scale <- N_deps <- NULL
   REAL <- c(dt_scale = opt[[3]], rt_max = opt[[1]], phi = phi)
   REAL_RTL <- as.double(RTL[order_l])
   REAL_RTU <- as.double(RTU[order_u])
@@ -113,40 +133,7 @@ dUGM <- function(rt,
 
 
 
-#' CDF of the Urgency Gating Model
-#'
-#' Calculation the (Log-)CDF of the urgency gating model (UGM) by Cisek, Puskas, and
-#'   El-Murr (2009)
-#'
-#' @param rt vector of response times
-#' @param resp vector of responses ("upper" and "lower")
-#' @param phi parameter vector in the following order:
-#'   \itemize{
-#'     \item non-decision time
-#'     \item relative starting point
-#'     \item ?
-#'     \item ?
-#'     \item ?
-#'     \item diffusion rate
-#'     \item upper threshold (equals negative lower threshold)
-#'     \item contamination strength
-#'     \item contamination probability for the lower response
-#'     \item contamination probability for the upper response
-#'   }
-#' @param x_res spatial/evidence resolution
-#' @param t_res time resolution
-#' @return a list of PDF values, log-PDF values, and the sum of the log-PDFs
-#' @references
-#' Murrow, M., & Holmes, W. R. (2023). PyBEAM: A Bayesian approach to parameter
-#'   inference for a wide class of binary evidence accumulation models.
-#'   \emph{Behavior Research Methods}, 1-21.
-#'
-#' Cisek, P., Puskas, G. A., & El-Murr, S. (2009). Decisions in changing conditions:
-#'   the urgency-gating model. \emph{Journal of Neuroscience, 29}(37), 11560-11571.
-#'
-#' @examples
-#' # here come some examples
-#' @author Raphael Hartmann & Matthew Murrow
+#' @rdname UGM
 #' @useDynLib "ream", .registration=TRUE
 #' @export
 pUGM <- function(rt,
@@ -183,6 +170,7 @@ pUGM <- function(rt,
 
 
   # prepare arguments for .Call
+  dt_scale <- N_deps <- NULL
   REAL <- c(dt_scale = opt[[3]], rt_max = opt[[1]], phi = phi)
   REAL_RTL <- as.double(RTL[order_l])
   REAL_RTU <- as.double(RTU[order_u])
@@ -220,37 +208,7 @@ pUGM <- function(rt,
 
 
 
-#' Sampling From the Urgency Gating Model
-#'
-#' Sampling from the urgency gating model (UGM) by Cisek, Puskas, and El-Murr (2009)
-#'
-#' @param n number of samples
-#' @param phi parameter vector in the following order:
-#'   \itemize{
-#'     \item non-decision time
-#'     \item relative starting point
-#'     \item ?
-#'     \item ?
-#'     \item ?
-#'     \item diffusion rate
-#'     \item upper threshold (equals negative lower threshold)
-#'     \item contamination strength
-#'     \item contamination probability for the lower response
-#'     \item contamination probability for the upper response
-#'   }
-#' @param dt step size of time. We recommend 0.00001 for the UGM
-#' @return list of response times (rt) and response threholds (resp)
-#' @references
-#' Murrow, M., & Holmes, W. R. (2023). PyBEAM: A Bayesian approach to parameter
-#'   inference for a wide class of binary evidence accumulation models.
-#'   \emph{Behavior Research Methods}, 1-21.
-#'
-#' Cisek, P., Puskas, G. A., & El-Murr, S. (2009). Decisions in changing conditions:
-#'   the urgency-gating model. \emph{Journal of Neuroscience, 29}(37), 11560-11571.
-#'
-#' @examples
-#' rdmc(n = 100, phi = c(0.3, 0.5, -1.0, 0.2, 0.05, 2.5, 3.0, 1.0, 0.5, 0.0, 0.0, 1.0))
-#' @author Raphael Hartmann & Matthew Murrow
+#' @rdname UGM
 #' @useDynLib "ream", .registration=TRUE
 #' @export
 rUGM <- function(n,
@@ -354,6 +312,8 @@ dUGM_grid <- function(rt_max = 10.0,
 
 
   # prepare arguments for r
+  dt_scale <- N_deps <- NULL
+
   CHAR <- modelname
 
   REAL <- c(dt_scale = dt_scale, rt_max = rt_max, phi = phi)

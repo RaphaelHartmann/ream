@@ -1,31 +1,27 @@
 
 
 
-
-########### PDF ###########
-
-
-
-#' PDF of the Shrinking Spotlight Model
+#' Shrinking Spotlight Model
 #'
-#' Calculation the (Log-)PDF of the shrinking spotlight model (SSP)
+#' Density (PDF), distribution function (CDF), and random sampler for the shrinking
+#'   spotlight model (SSP).
 #'
 #' @param rt vector of response times
 #' @param resp vector of responses ("upper" and "lower")
+#' @param n number of samples
 #' @param phi parameter vector in the following order:
 #'   \itemize{
 #'     \item non-decision time
 #'     \item relative starting point
 #'     \item width of the spotlight at t = 0 (sd_a(0))
 #'     \item rate with which the width decreases (r_d)
-#'     \item perceptual input strength of outer flanker
-#'     \item perceptual input strength of inner flanker
-#'     \item perceptual input strength of target
-#'     \item lower bound of integral for a_outer (typically fixed to 1.5)
-#'     \item lower bound of integral for a_inner (typically fixed to 0.5)
-#'     \item upper bound of integral for a_inner (typically fixed to 1.5)
+#'     \item (c)
 #'     \item lower bound of integral for a_target (typically fixed to -0.5)
 #'     \item upper bound of integral for a_target (typically fixed to 0.5)
+#'     \item upper bound of integral for a_inner (typically fixed to 1.5)
+#'     \item perceptual input strength of target
+#'     \item perceptual input strength of inner flanker divided by c
+#'     \item perceptual input strength of outer flanker divided by c
 #'     \item diffusion rate
 #'     \item upper threshold (equals negative lower threshold)
 #'     \item contamination strength
@@ -34,31 +30,53 @@
 #'   }
 #' @param x_res spatial/evidence resolution
 #' @param t_res time resolution
-#' @return a list of PDF values, log-PDF values, and the sum of the log-PDFs
+#' @param dt step size of time. We recommend 0.00001 (1e-5)
+#' @return For the density a list of PDF values, log-PDF values, and the sum of the
+#'   log-PDFs, for the distribution function a list of of CDF values, log-CDF values,
+#'   and the sum of the log-CDFs, and for the random sampler a list of response
+#'   times (rt) and response thresholds (resp).
 #' @references
 #' Murrow, M., & Holmes, W. R. (2023). PyBEAM: A Bayesian approach to parameter
 #'   inference for a wide class of binary evidence accumulation models.
 #'   \emph{Behavior Research Methods}, 1-21.
-#'
-#' White, C. N., Ratcliff, R., & Starns, J. J. (2011). Diffusion models of the flanker
-#'   task: Discrete versus gradual attentional selection. \emph{Cognitive psychology,
-#'   63}(4), 210-238.
-#'
 #' @examples
-#' # here come some examples
+#' # Probability density function
+#' dSSP(rt = c(1.2, 0.6, 0.4), resp = c("upper", "lower", "lower"),
+#'      phi = c(0.3, 0.5, 1.0, 7.5, -1.0, -0.5, 0.5, 1.5, 3.75, 3.75, 3.75, 1.0,
+#'              0.75, 0.0, 0.0, 1.0))
+#'
+#' # Cumulative distribution function
+#' pSSP(rt = c(1.2, 0.6, 0.4), resp = c("upper", "lower", "lower"),
+#'      phi = c(0.3, 0.5, 1.0, 7.5, -1.0, -0.5, 0.5, 1.5, 3.75, 3.75, 3.75, 1.0,
+#'              0.75, 0.0, 0.0, 1.0))
+#'
+#' # Random sampling
+#' rSSP(n = 100, phi = c(0.3, 0.5, 1.0, 7.5, -1.0, -0.5, 0.5, 1.5, 3.75, 3.75, 3.75,
+#'                       1.0, 0.75, 0.0, 0.0, 1.0))
 #' @author Raphael Hartmann & Matthew Murrow
+#' @name SSP
+NULL
+
+
+
+
+########### PDF ###########
+
+
+
+#' @rdname SSP
 #' @useDynLib "ream", .registration=TRUE
 #' @export
 dSSP <- function(rt,
                  resp,
-                 phi = c(0.25, 0.5, 1.5, 0.02, -0.3, -0.3, 0.3, 1.5, 0.5, 1.5, -0.5, 0.5, 0.1, 0.04, 0.0, 0.0, 1.0),
+                 phi = c(0.3, 0.5, 1.0, 7.5, -1.0, -0.5, 0.5, 1.5, 3.75, 3.75, 3.75, 1.0, 0.75, 0.0, 0.0, 1.0),
                  x_res = "default",
                  t_res = "default") {
 
 
   # constants
   modelname <- "SSP"
-  Nphi <- 17
+  Nphi <- 16
 
 
   # check
@@ -83,6 +101,7 @@ dSSP <- function(rt,
 
 
   # prepare arguments for .Call
+  dt_scale <- N_deps <- NULL
   REAL <- c(dt_scale = opt[[3]], rt_max = opt[[1]], phi = phi)
   REAL_RTL <- as.double(RTL[order_l])
   REAL_RTU <- as.double(RTU[order_u])
@@ -120,59 +139,19 @@ dSSP <- function(rt,
 
 
 
-#' CDF of the Shrinking Spotlight Model
-#'
-#' Calculation the (Log-)CDF of the shrinking spotlight model (SSP)
-#'
-#' @param rt vector of response times
-#' @param resp vector of responses ("upper" and "lower")
-#' @param phi parameter vector in the following order:
-#'   \itemize{
-#'     \item non-decision time
-#'     \item relative starting point
-#'     \item width of the spotlight at t = 0 (sd_a(0))
-#'     \item rate with which the width decreases (r_d)
-#'     \item perceptual input strength of outer flanker
-#'     \item perceptual input strength of inner flanker
-#'     \item perceptual input strength of target
-#'     \item lower bound of integral for a_outer (typically fixed to 1.5)
-#'     \item lower bound of integral for a_inner (typically fixed to 0.5)
-#'     \item upper bound of integral for a_inner (typically fixed to 1.5)
-#'     \item lower bound of integral for a_target (typically fixed to -0.5)
-#'     \item upper bound of integral for a_target (typically fixed to 0.5)
-#'     \item diffusion rate
-#'     \item upper threshold (equals negative lower threshold)
-#'     \item contamination strength
-#'     \item contamination probability for the lower response
-#'     \item contamination probability for the upper response
-#'   }
-#' @param x_res spatial/evidence resolution
-#' @param t_res time resolution
-#' @return a list of PDF values, log-PDF values, and the sum of the log-PDFs
-#' @references
-#' Murrow, M., & Holmes, W. R. (2023). PyBEAM: A Bayesian approach to parameter
-#'   inference for a wide class of binary evidence accumulation models.
-#'   \emph{Behavior Research Methods}, 1-21.
-#'
-#' White, C. N., Ratcliff, R., & Starns, J. J. (2011). Diffusion models of the flanker
-#'   task: Discrete versus gradual attentional selection. \emph{Cognitive psychology,
-#'   63}(4), 210-238.
-#'
-#' @examples
-#' # here come some examples
-#' @author Raphael Hartmann & Matthew Murrow
+#' @rdname SSP
 #' @useDynLib "ream", .registration=TRUE
 #' @export
 pSSP <- function(rt,
                  resp,
-                 phi = c(0.25, 0.5, 1.5, 0.02, -0.3, -0.3, 0.3, 1.5, 0.5, 1.5, -0.5, 0.5, 0.1, 0.04, 0.0, 0.0, 1.0),
+                 phi = c(0.3, 0.5, 1.0, 7.5, -1.0, -0.5, 0.5, 1.5, 3.75, 3.75, 3.75, 1.0, 0.75, 0.0, 0.0, 1.0),
                  x_res = "default",
                  t_res = "default") {
 
 
   # constants
   modelname <- "SSP"
-  Nphi <- 17
+  Nphi <- 16
 
 
   # check
@@ -197,6 +176,7 @@ pSSP <- function(rt,
 
 
   # prepare arguments for .Call
+  dt_scale <- N_deps <- NULL
   REAL <- c(dt_scale = opt[[3]], rt_max = opt[[1]], phi = phi)
   REAL_RTL <- as.double(RTL[order_l])
   REAL_RTU <- as.double(RTU[order_u])
@@ -234,54 +214,16 @@ pSSP <- function(rt,
 
 
 
-#' Sampling From the Shrinking Spotlight Model
-#'
-#' Sampling from the shrinking spotlight model (SSP)
-#'
-#' @param n number of samples
-#' @param phi parameter vector in the following order:
-#'   \itemize{
-#'     \item non-decision time
-#'     \item relative starting point
-#'     \item width of the spotlight at t = 0 (sd_a(0))
-#'     \item rate with which the width decreases (r_d)
-#'     \item perceptual input strength of outer flanker
-#'     \item perceptual input strength of inner flanker
-#'     \item perceptual input strength of target
-#'     \item lower bound of integral for a_outer (typically fixed to 1.5)
-#'     \item lower bound of integral for a_inner (typically fixed to 0.5)
-#'     \item upper bound of integral for a_inner (typically fixed to 1.5)
-#'     \item lower bound of integral for a_target (typically fixed to -0.5)
-#'     \item upper bound of integral for a_target (typically fixed to 0.5)
-#'     \item diffusion rate
-#'     \item upper threshold (equals negative lower threshold)
-#'     \item contamination strength
-#'     \item contamination probability for the lower response
-#'     \item contamination probability for the upper response
-#'   }
-#' @param dt step size of time. We recommend 0.00001 for the SSP
-#' @return list of response times (rt) and response threholds (resp)
-#' @references
-#' Murrow, M., & Holmes, W. R. (2023). PyBEAM: A Bayesian approach to parameter
-#'   inference for a wide class of binary evidence accumulation models.
-#'   \emph{Behavior Research Methods}, 1-21.
-#'
-#' White, C. N., Ratcliff, R., & Starns, J. J. (2011). Diffusion models of the flanker
-#'   task: Discrete versus gradual attentional selection. \emph{Cognitive psychology,
-#'   63}(4), 210-238.
-#'
-#' @examples
-#' rSSP(n = 100, phi = c(0.25, 0.5, 1.5, 0.02, -0.3, -0.3, 0.3, 1.5, 0.5, 1.5, -0.5, 0.5, 0.1, 0.04, 0.0, 0.0, 1.0))
-#' @author Raphael Hartmann & Matthew Murrow
+#' @rdname SSP
 #' @useDynLib "ream", .registration=TRUE
 #' @export
 rSSP <- function(n,
-                 phi = c(0.25, 0.5, 1.5, 0.02, -0.3, -0.3, 0.3, 1.5, 0.5, 1.5, -0.5, 0.5, 0.1, 0.04, 0.0, 0.0, 1.0),
+                 phi = c(0.3, 0.5, 1.0, 7.5, -1.0, -0.5, 0.5, 1.5, 3.75, 3.75, 3.75, 1.0, 0.75, 0.0, 0.0, 1.0),
                  dt = 0.00001) {
 
   # constants
   modelname <- "SSP"
-  Nphi <- 17
+  Nphi <- 16
 
 
   # check arguments
@@ -331,14 +273,13 @@ rSSP <- function(n,
 #'     \item relative starting point
 #'     \item width of the spotlight at t = 0 (sd_a(0))
 #'     \item rate with which the width decreases (r_d)
-#'     \item perceptual input strength of outer flanker
-#'     \item perceptual input strength of inner flanker
-#'     \item perceptual input strength of target
-#'     \item lower bound of integral for a_outer (typically fixed to 1.5)
-#'     \item lower bound of integral for a_inner (typically fixed to 0.5)
-#'     \item upper bound of integral for a_inner (typically fixed to 1.5)
+#'     \item (c)
 #'     \item lower bound of integral for a_target (typically fixed to -0.5)
 #'     \item upper bound of integral for a_target (typically fixed to 0.5)
+#'     \item upper bound of integral for a_inner (typically fixed to 1.5)
+#'     \item perceptual input strength of target
+#'     \item perceptual input strength of inner flanker divided by c
+#'     \item perceptual input strength of outer flanker divided by c
 #'     \item diffusion rate
 #'     \item upper threshold (equals negative lower threshold)
 #'     \item contamination strength
@@ -362,14 +303,14 @@ rSSP <- function(n,
 #' @useDynLib "ream", .registration=TRUE
 #' @export
 dSSP_grid <- function(rt_max = 10.0,
-                      phi = c(0.25, 0.5, 1.5, 0.02, -0.3, -0.3, 0.3, 1.5, 0.5, 1.5, -0.5, 0.5, 0.1, 0.04, 0.0, 0.0, 1.0),
+                      phi = c(0.3, 0.5, 1.0, 7.5, -1.0, -0.5, 0.5, 1.5, 3.75, 3.75, 3.75, 1.0, 0.75, 0.0, 0.0, 1.0),
                       x_res = "default",
                       t_res = "default") {
 
 
   # constants
   modelname <- "SSP"
-  Nphi <- 17
+  Nphi <- 16
 
 
   # checking input
@@ -384,6 +325,8 @@ dSSP_grid <- function(rt_max = 10.0,
 
 
   # prepare arguments for r
+  dt_scale <- N_deps <- NULL
+
   CHAR <- modelname
 
   REAL <- c(dt_scale = dt_scale, rt_max = rt_max, phi = phi)

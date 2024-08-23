@@ -1,18 +1,14 @@
 
 
 
-
-########### PDF ###########
-
-
-
-#' PDF of the Revised Diffusion Model for Conflict Tasks
+#' Revised Diffusion Model for Conflict Tasks
 #'
-#' Calculation the (Log-)PDF of the revised diffusion model for conflict tasks (DMC) by Lee
-#'   and Sewell (2023).
+#' Density (PDF), distribution function (CDF), and random sampler for the revised
+#'   diffusion model for conflict tasks (DMC) by Lee and Sewell (2023).
 #'
 #' @param rt vector of response times
 #' @param resp vector of responses ("upper" and "lower")
+#' @param n number of samples
 #' @param phi parameter vector in the following order:
 #'   \itemize{
 #'     \item non-decision time
@@ -29,7 +25,11 @@
 #'   }
 #' @param x_res spatial/evidence resolution
 #' @param t_res time resolution
-#' @return a list of PDF values, log-PDF values, and the sum of the log-PDFs
+#' @param dt step size of time. We recommend 0.00001 (1e-5)
+#' @return For the density a list of PDF values, log-PDF values, and the sum of the
+#'   log-PDFs, for the distribution function a list of of CDF values, log-CDF values,
+#'   and the sum of the log-CDFs, and for the random sampler a list of response
+#'   times (rt) and response thresholds (resp).
 #' @references
 #' Murrow, M., & Holmes, W. R. (2023). PyBEAM: A Bayesian approach to parameter
 #'   inference for a wide class of binary evidence accumulation models.
@@ -37,10 +37,29 @@
 #'
 #' Lee, P. S., & Sewell, D. K. (2023). A revised diffusion model for conflict tasks.
 #'   \emph{Psychonomic Bulletin & Review}, 1-31.
-#'
 #' @examples
-#' # here come some examples
+#' # Probability density function
+#' dRDMC(rt = c(1.2, 0.6, 0.4), resp = c("upper", "lower", "lower"),
+#'      phi = c(0.35, 0.5, 7.5, 40.0, 5.0, 5.0, 1.0, 0.5, 0.0, 0.0, 1.0))
+#'
+#' # Cumulative distribution function
+#' pRDMC(rt = c(1.2, 0.6, 0.4), resp = c("upper", "lower", "lower"),
+#'      phi = c(0.35, 0.5, 7.5, 40.0, 5.0, 5.0, 1.0, 0.5, 0.0, 0.0, 1.0))
+#'
+#' # Random sampling
+#' rRDMC(n = 100, phi = c(0.35, 0.5, 7.5, 40.0, 5.0, 5.0, 1.0, 0.5, 0.0, 0.0, 1.0))
 #' @author Raphael Hartmann & Matthew Murrow
+#' @name RDMC
+NULL
+
+
+
+
+########### PDF ###########
+
+
+
+#' @rdname RDMC
 #' @useDynLib "ream", .registration=TRUE
 #' @export
 dRDMC <- function(rt,
@@ -77,6 +96,7 @@ dRDMC <- function(rt,
 
 
   # prepare arguments for .Call
+  dt_scale <- N_deps <- NULL
   REAL <- c(dt_scale = opt[[3]], rt_max = opt[[1]], phi = phi)
   REAL_RTL <- as.double(RTL[order_l])
   REAL_RTU <- as.double(RTU[order_u])
@@ -114,41 +134,7 @@ dRDMC <- function(rt,
 
 
 
-#' CDF of the Revised Diffusion Model for Conflict Tasks
-#'
-#' Calculation the (Log-)CDF of the revised diffusion model for conflict tasks (DMC) by Lee
-#'   and Sewell (2023)
-#'
-#' @param rt vector of response times
-#' @param resp vector of responses ("upper" and "lower")
-#' @param phi parameter vector in the following order:
-#'   \itemize{
-#'     \item non-decision time
-#'     \item relative starting point (spBias)
-#'     \item ? peak amplitude of automatic activation (automatic drift rate; amp)
-#'     \item ? time to peak automatic activation (automatic drift rate; tau)
-#'     \item ? shape of automatic process drift rate (automatic drift rate; aaShape)
-#'     \item ? drift rate for controlled process (drc)
-#'     \item diffusion rate (typically 1.0; sigm)
-#'     \item upper threshold (equals negative lower threshold; bnds)
-#'     \item contamination strength
-#'     \item contamination probability for the lower response
-#'     \item contamination probability for the upper response
-#'   }
-#' @param x_res spatial/evidence resolution
-#' @param t_res time resolution
-#' @return a list of PDF values, log-PDF values, and the sum of the log-PDFs
-#' @references
-#' Murrow, M., & Holmes, W. R. (2023). PyBEAM: A Bayesian approach to parameter
-#'   inference for a wide class of binary evidence accumulation models.
-#'   \emph{Behavior Research Methods}, 1-21.
-#'
-#' Lee, P. S., & Sewell, D. K. (2023). A revised diffusion model for conflict tasks.
-#'   \emph{Psychonomic Bulletin & Review}, 1-31.
-#'
-#' @examples
-#' # here come some examples
-#' @author Raphael Hartmann & Matthew Murrow
+#' @rdname RDMC
 #' @useDynLib "ream", .registration=TRUE
 #' @export
 pRDMC <- function(rt,
@@ -185,6 +171,7 @@ pRDMC <- function(rt,
 
 
   # prepare arguments for .Call
+  dt_scale <- N_deps <- NULL
   REAL <- c(dt_scale = opt[[3]], rt_max = opt[[1]], phi = phi)
   REAL_RTL <- as.double(RTL[order_l])
   REAL_RTU <- as.double(RTU[order_u])
@@ -221,39 +208,7 @@ pRDMC <- function(rt,
 
 
 
-#' Sampling From the Revised Diffusion Model for Conflict Tasks
-#'
-#' Sampling from the revised diffusion model for conflict tasks (RDMC) by Lee
-#'   and Sewell (2023)
-#'
-#' @param n number of samples
-#' @param phi parameter vector in the following order:
-#'   \itemize{
-#'     \item non-decision time
-#'     \item relative starting point (spBias)
-#'     \item ? peak amplitude of automatic activation (automatic drift rate; amp)
-#'     \item ? time to peak automatic activation (automatic drift rate; tau)
-#'     \item ? shape of automatic process drift rate (automatic drift rate; aaShape)
-#'     \item ? drift rate for controlled process (drc)
-#'     \item diffusion rate (typically 1.0; sigm)
-#'     \item upper threshold (equals negative lower threshold; bnds)
-#'     \item contamination strength
-#'     \item contamination probability for the lower response
-#'     \item contamination probability for the upper response
-#'   }
-#' @param dt step size of time. We recommend 0.00001 for the RDMC
-#' @return list of response times (rt) and response threholds (resp)
-#' @references
-#' Murrow, M., & Holmes, W. R. (2023). PyBEAM: A Bayesian approach to parameter
-#'   inference for a wide class of binary evidence accumulation models.
-#'   \emph{Behavior Research Methods}, 1-21.
-#'
-#' Lee, P. S., & Sewell, D. K. (2023). A revised diffusion model for conflict tasks.
-#'   \emph{Psychonomic Bulletin & Review}, 1-31.
-#'
-#' @examples
-#' rRDMC(n = 100, phi = c(0.35, 0.5, 7.5, 40.0, 5.0, 5.0, 1.0, 0.5, 0.0, 0.0, 1.0))
-#' @author Raphael Hartmann & Matthew Murrow
+#' @rdname RDMC
 #' @useDynLib "ream", .registration=TRUE
 #' @export
 rRDMC <- function(n,
@@ -359,6 +314,8 @@ dRDMC_grid <- function(rt_max = 10.0,
 
 
   # prepare arguments for r
+  dt_scale <- N_deps <- NULL
+
   CHAR <- modelname
 
   REAL <- c(dt_scale = dt_scale, rt_max = rt_max, phi = phi)

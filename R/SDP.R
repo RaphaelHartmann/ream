@@ -1,10 +1,9 @@
 
 
 
-#' Weibull Threshold Model
+#' ?????????????????
 #'
-#' Density (PDF), distribution function (CDF), and random sampler for the Weibull
-#'   threshold model (WTM).
+#' Density (PDF), distribution function (CDF), and random sampler for the ???????????? (SDP).
 #'
 #' @param rt vector of response times
 #' @param resp vector of responses ("upper" and "lower")
@@ -12,13 +11,14 @@
 #' @param phi parameter vector in the following order:
 #'   \itemize{
 #'     \item non-decision time
-#'     \item relative starting point
+#'     \item relative starting point param 1
+#'     \item relative starting point param 2
 #'     \item drift rate
-#'     \item diffusion rate
-#'     \item ?
-#'     \item ?
-#'     \item ?
-#'     \item ?
+#'     \item drift rate ts
+#'     \item sigma
+#'     \item sigma_eff
+#'     \item upper threshold (equals negative lower threshold) of process 1
+#'     \item upper threshold (equals negative lower threshold) of process 2
 #'     \item contamination strength
 #'     \item contamination probability for the lower response
 #'     \item contamination probability for the upper response
@@ -36,17 +36,17 @@
 #'   \emph{Behavior Research Methods}, 1-21.
 #' @examples
 #' # Probability density function
-#' dWTM(rt = c(1.2, 0.6, 0.4), resp = c("upper", "lower", "lower"),
-#'      phi = c(0.3, 0.5, 1.0, 1.0, 1.5, 0.2, 0.5, -1.0, 0.0, 0.0, 1.0))
+#' dSDP(rt = c(1.2, 0.6, 0.4), resp = c("upper", "lower", "lower"),
+#'       phi = c(0.3, 1.0, 0.5, 1.0, 1.0, 1.0, 1.0, 0.75, 0.75, 0.0, 0.0, 1.0))
 #'
 #' # Cumulative distribution function
-#' pWTM(rt = c(1.2, 0.6, 0.4), resp = c("upper", "lower", "lower"),
-#'      phi = c(0.3, 0.5, 1.0, 1.0, 1.5, 0.2, 0.5, -1.0, 0.0, 0.0, 1.0))
+#' pSDP(rt = c(1.2, 0.6, 0.4), resp = c("upper", "lower", "lower"),
+#'       phi = c(0.3, 1.0, 0.5, 1.0, 1.0, 1.0, 1.0, 0.75, 0.75, 0.0, 0.0, 1.0))
 #'
 #' # Random sampling
-#' rWTM(n = 100, phi = c(0.3, 0.5, 1.0, 1.0, 1.5, 0.2, 0.5, -1.0, 0.0, 0.0, 1.0))
+#' rSDP(n = 100, phi = c(0.3, 1.0, 0.5, 1.0, 1.0, 1.0, 1.0, 0.75, 0.75, 0.0, 0.0, 1.0))
 #' @author Raphael Hartmann & Matthew Murrow
-#' @name WTM
+#' @name SDP
 NULL
 
 
@@ -56,19 +56,19 @@ NULL
 
 
 
-#' @rdname WTM
+#' @rdname SDP
 #' @useDynLib "ream", .registration=TRUE
 #' @export
-dWTM <- function(rt,
+dSDP <- function(rt,
                  resp,
-                 phi = c(0.3, 0.5, 1.0, 1.0, 1.5, 0.2, 0.5, -1.0, 0.0, 0.0, 1.0),
+                 phi = c(0.3, 1.0, 0.5, 1.0, 1.0, 1.0, 1.0, 0.75, 0.75, 0.0, 0.0, 1.0),
                  x_res = "default",
                  t_res = "default") {
 
 
   # constants
-  modelname <- "WTM"
-  Nphi <- 11
+  modelname <- "SSP"
+  Nphi <- 12
 
 
   # check
@@ -131,18 +131,19 @@ dWTM <- function(rt,
 
 
 
-#' @rdname WTM
+#' @rdname SDP
 #' @useDynLib "ream", .registration=TRUE
 #' @export
-pWTM <- function(rt,
+pSDP <- function(rt,
                  resp,
-                 phi = c(0.3, 0.5, 1.0, 1.0, 1.5, 0.2, 0.5, -1.0, 0.0, 0.0, 1.0),
+                 phi = c(0.3, 1.0, 0.5, 1.0, 1.0, 1.0, 1.0, 0.75, 0.75, 0.0, 0.0, 1.0),
                  x_res = "default",
                  t_res = "default") {
 
+
   # constants
-  modelname <- "WTM"
-  Nphi <- 11
+  modelname <- "SSP"
+  Nphi <- 12
 
 
   # check
@@ -205,16 +206,16 @@ pWTM <- function(rt,
 
 
 
-#' @rdname WTM
+#' @rdname SDP
 #' @useDynLib "ream", .registration=TRUE
 #' @export
-rWTM <- function(n,
-                 phi = c(0.3, 0.5, 1.0, 1.0, 1.5, 0.2, 0.5, -1.0, 0.0, 0.0, 1.0),
+rSDP <- function(n,
+                 phi = c(0.3, 1.0, 0.5, 1.0, 1.0, 1.0, 1.0, 0.75, 0.75, 0.0, 0.0, 1.0),
                  dt = 0.00001) {
 
   # constants
-  modelname <- "WTM"
-  Nphi <- 11
+  modelname <- "SDP"
+  Nphi <- 12
 
 
   # check arguments
@@ -253,7 +254,7 @@ rWTM <- function(n,
 
 
 
-#' Generate Grid for PDF of the Weibull Threshold Model
+#' Generate Grid for PDF of the ??????????????
 #'
 #' Beschreibung.
 #'
@@ -261,13 +262,14 @@ rWTM <- function(n,
 #' @param phi parameter vector in the following order:
 #'   \itemize{
 #'     \item non-decision time
-#'     \item relative starting point
+#'     \item relative starting point param 1
+#'     \item relative starting point param 2
 #'     \item drift rate
-#'     \item diffusion rate
-#'     \item ?
-#'     \item ?
-#'     \item ?
-#'     \item ?
+#'     \item drift rate ts
+#'     \item sigma
+#'     \item sigma_eff
+#'     \item upper threshold (equals negative lower threshold) of process 1
+#'     \item upper threshold (equals negative lower threshold) of process 2
 #'     \item contamination strength
 #'     \item contamination probability for the lower response
 #'     \item contamination probability for the upper response
@@ -279,21 +281,22 @@ rWTM <- function(n,
 #' Murrow, M., & Holmes, W. R. (2023). PyBEAM: A Bayesian approach to parameter inference for a wide class of binary evidence accumulation models.
 #'   Behavior Research Methods.
 #'
+#' ????
 #'
 #' @examples
 #' # here come some examples
 #' @author Raphael Hartmann & Matthew Murrow
 #' @useDynLib "ream", .registration=TRUE
 #' @export
-dWTM_grid <- function(rt_max = 10.0,
-                      phi = c(0.3, 0.5, 1.0, 1.0, 1.5, 0.2, 0.5, -1.0, 0.0, 0.0, 1.0),
+dSDP_grid <- function(rt_max = 10.0,
+                      phi = c(0.3, 1.0, 0.5, 1.0, 1.0, 1.0, 1.0, 0.75, 0.75, 0.0, 0.0, 1.0),
                       x_res = "default",
                       t_res = "default") {
 
 
   # constants
-  modelname <- "WTM"
-  Nphi <- 11
+  modelname <- "SDP"
+  Nphi <- 12
 
 
   # checking input

@@ -71,4 +71,16 @@ const double dt_sims = 0.025; /* time step for simulation */
 /* constants used by function simulate */
 const double tsim_max = 100.0; /* simulate until this time only */
 
+/* number of iterations in infinite sum of Wiener CDF */
+const int its_smalltime = 250; /* iteration count for small time */
+const int its_bigtime = 50; /* iteration count for big time */
+const double flip = 0.15; /* flip from small to big time iteration count */
+
+/* define pi */
+const double pi = 3.14159265358979323846;
+
+/* function for the drift rate in SSP */
+double ncdf(double x);
+
+
 #endif

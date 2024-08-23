@@ -1,17 +1,14 @@
 
 
 
-
-########### PDF ###########
-
-
-
-#' PDF of the Exponential Threshold Model
+#' Exponential Threshold Model
 #'
-#' Calculation the (Log-)PDF of the exponential threshold model (ETM)
+#' Density (PDF), distribution function (CDF), and random sampler for the exponential
+#'   threshold model (ETM).
 #'
 #' @param rt vector of response times
 #' @param resp vector of responses ("upper" and "lower")
+#' @param n number of samples
 #' @param phi parameter vector in the following order:
 #'   \itemize{
 #'     \item non-decision time
@@ -26,16 +23,38 @@
 #'   }
 #' @param x_res spatial/evidence resolution
 #' @param t_res time resolution
-#' @return a list of PDF values, log-PDF values, and the sum of the log-PDFs
+#' @param dt step size of time. We recommend 0.00001 (1e-5)
+#' @return For the density a list of PDF values, log-PDF values, and the sum of the
+#'   log-PDFs, for the distribution function a list of of CDF values, log-CDF values,
+#'   and the sum of the log-CDFs, and for the random sampler a list of response
+#'   times (rt) and response thresholds (resp).
 #' @references
 #' Murrow, M., & Holmes, W. R. (2023). PyBEAM: A Bayesian approach to parameter
 #'   inference for a wide class of binary evidence accumulation models.
 #'   \emph{Behavior Research Methods}, 1-21.
-#'
-#'
 #' @examples
-#' # here come some examples
+#' # Probability density function
+#' dETM(rt = c(1.2, 0.6, 0.4), resp = c("upper", "lower", "lower"),
+#'      phi = c(0.3, 0.5, 1.0, 1.0, 1.5, 0.5, 0.0, 0.0, 1.0))
+#'
+#' # Cumulative distribution function
+#' pETM(rt = c(1.2, 0.6, 0.4), resp = c("upper", "lower", "lower"),
+#'      phi = c(0.3, 0.5, 1.0, 1.0, 1.5, 0.5, 0.0, 0.0, 1.0))
+#'
+#' # Random sampling
+#' rETM(n = 100, phi = c(0.3, 0.5, 1.0, 1.0, 1.5, 0.5, 0.0, 0.0, 1.0))
 #' @author Raphael Hartmann & Matthew Murrow
+#' @name ETM
+NULL
+
+
+
+
+########### PDF ###########
+
+
+
+#' @rdname ETM
 #' @useDynLib "ream", .registration=TRUE
 #' @export
 dETM <- function(rt,
@@ -47,7 +66,7 @@ dETM <- function(rt,
 
   # constants
   modelname <- "ETM"
-  Nphi <- 11
+  Nphi <- 9
 
 
   # check
@@ -72,6 +91,7 @@ dETM <- function(rt,
 
 
   # prepare arguments for .Call
+  dt_scale <- N_deps <- NULL
   REAL <- c(dt_scale = opt[[3]], rt_max = opt[[1]], phi = phi)
   REAL_RTL <- as.double(RTL[order_l])
   REAL_RTU <- as.double(RTU[order_u])
@@ -109,36 +129,7 @@ dETM <- function(rt,
 
 
 
-#' CDF of the Exponential Threshold Model
-#'
-#' Calculation the (Log-)CDF of the exponential threshold model (ETM)
-#'
-#' @param rt vector of response times
-#' @param resp vector of responses ("upper" and "lower")
-#' @param phi parameter vector in the following order:
-#'   \itemize{
-#'     \item non-decision time
-#'     \item relative starting point
-#'     \item drift rate
-#'     \item diffusion rate
-#'     \item ?
-#'     \item ?
-#'     \item contamination strength
-#'     \item contamination probability for the lower response
-#'     \item contamination probability for the upper response
-#'   }
-#' @param x_res spatial/evidence resolution
-#' @param t_res time resolution
-#' @return a list of PDF values, log-PDF values, and the sum of the log-PDFs
-#' @references
-#' Murrow, M., & Holmes, W. R. (2023). PyBEAM: A Bayesian approach to parameter
-#'   inference for a wide class of binary evidence accumulation models.
-#'   \emph{Behavior Research Methods}, 1-21.
-#'
-#'
-#' @examples
-#' # here come some examples
-#' @author Raphael Hartmann & Matthew Murrow
+#' @rdname ETM
 #' @useDynLib "ream", .registration=TRUE
 #' @export
 pETM <- function(rt,
@@ -150,7 +141,7 @@ pETM <- function(rt,
 
   # constants
   modelname <- "ETM"
-  Nphi <- 11
+  Nphi <- 9
 
 
   # check
@@ -175,6 +166,7 @@ pETM <- function(rt,
 
 
   # prepare arguments for .Call
+  dt_scale <- N_deps <- NULL
   REAL <- c(dt_scale = opt[[3]], rt_max = opt[[1]], phi = phi)
   REAL_RTL <- as.double(RTL[order_l])
   REAL_RTU <- as.double(RTU[order_u])
@@ -212,34 +204,7 @@ pETM <- function(rt,
 
 
 
-#' Sampling From the Exponential Threshold Model
-#'
-#' Sampling from the exponential threshold model (ETM)
-#'
-#' @param n number of samples
-#' @param phi parameter vector in the following order:
-#'   \itemize{
-#'     \item non-decision time
-#'     \item relative starting point
-#'     \item drift rate
-#'     \item diffusion rate
-#'     \item ?
-#'     \item ?
-#'     \item contamination strength
-#'     \item contamination probability for the lower response
-#'     \item contamination probability for the upper response
-#'   }
-#' @param dt step size of time. We recommend 0.00001 for the ETM
-#' @return list of response times (rt) and response threholds (resp)
-#' @references
-#' Murrow, M., & Holmes, W. R. (2023). PyBEAM: A Bayesian approach to parameter
-#'   inference for a wide class of binary evidence accumulation models.
-#'   \emph{Behavior Research Methods}, 1-21.
-#'
-#'
-#' @examples
-#' rETM(n = 100, phi = c(0.3, 0.5, 1.0, 1.0, 1.5, 0.5, 0.0, 0.0, 1.0))
-#' @author Raphael Hartmann & Matthew Murrow
+#' @rdname ETM
 #' @useDynLib "ream", .registration=TRUE
 #' @export
 rETM <- function(n,
@@ -248,7 +213,7 @@ rETM <- function(n,
 
   # constants
   modelname <- "ETM"
-  Nphi <- 11
+  Nphi <- 9
 
 
   # check arguments
@@ -325,7 +290,7 @@ dETM_grid <- function(rt_max = 10.0,
 
   # constants
   modelname <- "ETM"
-  Nphi <- 11
+  Nphi <- 9
 
 
   # checking input
@@ -340,6 +305,8 @@ dETM_grid <- function(rt_max = 10.0,
 
 
   # prepare arguments for r
+  dt_scale <- N_deps <- NULL
+
   CHAR <- modelname
 
   REAL <- c(dt_scale = dt_scale, rt_max = rt_max, phi = phi)

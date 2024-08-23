@@ -8,6 +8,7 @@
 #include "Model.h"
 #include "models_t.h"
 #include "models_xt.h"
+#include "models_tw.h"
 #include "tools.h"
 #include <R.h>
 #include <Rinternals.h>
@@ -43,8 +44,8 @@ const char *OUTPUT3;
 std::unique_ptr<Model> createModel(const std::string& modelName) {
   if (modelName == "DMC") {
     return std::make_unique<DMC>();
-  } else if (modelName == "DSTP") {
-    return std::make_unique<DSTP>();
+  } else if (modelName == "CDSTP") {
+    return std::make_unique<CDSTP>();
   } else if (modelName == "DPM") {
     return std::make_unique<DPM>();
   } else if (modelName == "ETM") {
@@ -55,6 +56,8 @@ std::unique_ptr<Model> createModel(const std::string& modelName) {
     return std::make_unique<RDMC>();
   } else if (modelName == "SDDM") {
     return std::make_unique<SDDM>();
+  } else if (modelName == "SDP") {
+    return std::make_unique<SDP>();
   } else if (modelName == "SSP") {
     return std::make_unique<SSP>();
   } else if (modelName == "UGM") {
@@ -67,6 +70,8 @@ std::unique_ptr<Model> createModel(const std::string& modelName) {
     return std::make_unique<LM>();
   } else if (modelName == "UGFM") {
     return std::make_unique<UGFM>();
+  } else if (modelName == "WDSTP") {
+    return std::make_unique<WDSTP>();
   } else {
     Rprintf("unknown model name");
     return nullptr;

@@ -1,27 +1,32 @@
 
 
 
-#' Weibull Threshold Model
+#' W???? Dual-Stage Two-Phase Model of Selective Attention
 #'
-#' Density (PDF), distribution function (CDF), and random sampler for the Weibull
-#'   threshold model (WTM).
+#' Density (PDF), distribution function (CDF), and random sampler for the w??????
+#'   dual-stage two-phase (WDSTP) model of selective attention by Hübner, Steinhauser,
+#'   and Lehle (2010).
 #'
 #' @param rt vector of response times
 #' @param resp vector of responses ("upper" and "lower")
 #' @param n number of samples
 #' @param phi parameter vector in the following order:
 #'   \itemize{
-#'     \item non-decision time
-#'     \item relative starting point
-#'     \item drift rate
-#'     \item diffusion rate
+#'     \item non-decision time of process 1
+#'     \item relative starting point of process 1
+#'     \item relative starting point for process 2
 #'     \item ?
 #'     \item ?
 #'     \item ?
 #'     \item ?
-#'     \item contamination strength
-#'     \item contamination probability for the lower response
-#'     \item contamination probability for the upper response
+#'     \item ?
+#'     \item ?
+#'     \item ?
+#'     \item ?
+#'     \item upper threshold of process (equals negative lower threshold)
+#'     \item contamination strength of process
+#'     \item contamination probability for the lower response of process
+#'     \item contamination probability for the upper response of process
 #'   }
 #' @param x_res spatial/evidence resolution
 #' @param t_res time resolution
@@ -34,19 +39,21 @@
 #' Murrow, M., & Holmes, W. R. (2023). PyBEAM: A Bayesian approach to parameter
 #'   inference for a wide class of binary evidence accumulation models.
 #'   \emph{Behavior Research Methods}, 1-21.
+#'
 #' @examples
 #' # Probability density function
-#' dWTM(rt = c(1.2, 0.6, 0.4), resp = c("upper", "lower", "lower"),
-#'      phi = c(0.3, 0.5, 1.0, 1.0, 1.5, 0.2, 0.5, -1.0, 0.0, 0.0, 1.0))
+#' dWDSTP(rt = c(1.2, 0.6, 0.4), resp = c("upper", "lower", "lower"),
+#'        phi = c(0.3, 0.5, 1.0, 1.0, -1.0, -0.5, 8.0, 1.0, 1.0, 1.0, 2.0, 1.3, 0.0, 0.0, 1.0))
 #'
 #' # Cumulative distribution function
-#' pWTM(rt = c(1.2, 0.6, 0.4), resp = c("upper", "lower", "lower"),
-#'      phi = c(0.3, 0.5, 1.0, 1.0, 1.5, 0.2, 0.5, -1.0, 0.0, 0.0, 1.0))
+#' pWDSTP(rt = c(1.2, 0.6, 0.4), resp = c("upper", "lower", "lower"),
+#'        phi = c(0.3, 0.5, 1.0, 1.0, -1.0, -0.5, 8.0, 1.0, 1.0, 1.0, 2.0, 1.3, 0.0, 0.0, 1.0))
 #'
 #' # Random sampling
-#' rWTM(n = 100, phi = c(0.3, 0.5, 1.0, 1.0, 1.5, 0.2, 0.5, -1.0, 0.0, 0.0, 1.0))
+#' rWDSTP(n = 100, phi = c(0.3, 0.5, 1.0, 1.0, -1.0, -0.5, 8.0, 1.0, 1.0, 1.0, 2.0, 1.3,
+#'                         0.0, 0.0, 1.0))
 #' @author Raphael Hartmann & Matthew Murrow
-#' @name WTM
+#' @name WDSTP
 NULL
 
 
@@ -56,19 +63,19 @@ NULL
 
 
 
-#' @rdname WTM
+#' @rdname WDSTP
 #' @useDynLib "ream", .registration=TRUE
 #' @export
-dWTM <- function(rt,
-                 resp,
-                 phi = c(0.3, 0.5, 1.0, 1.0, 1.5, 0.2, 0.5, -1.0, 0.0, 0.0, 1.0),
-                 x_res = "default",
-                 t_res = "default") {
+dWDSTP <- function(rt,
+                   resp,
+                   phi = c(0.3, 0.5, 1.0, 1.0, -1.0, -0.5, 8.0, 1.0, 1.0, 1.0, 2.0, 1.3, 0.0, 0.0, 1.0),
+                   x_res = "default",
+                   t_res = "default") {
 
 
   # constants
-  modelname <- "WTM"
-  Nphi <- 11
+  modelname <- "WDSTP"
+  Nphi <- 15
 
 
   # check
@@ -131,18 +138,19 @@ dWTM <- function(rt,
 
 
 
-#' @rdname WTM
+#' @rdname WDSTP
 #' @useDynLib "ream", .registration=TRUE
 #' @export
-pWTM <- function(rt,
-                 resp,
-                 phi = c(0.3, 0.5, 1.0, 1.0, 1.5, 0.2, 0.5, -1.0, 0.0, 0.0, 1.0),
-                 x_res = "default",
-                 t_res = "default") {
+pWDSTP <- function(rt,
+                   resp,
+                   phi = c(0.3, 0.5, 1.0, 1.0, -1.0, -0.5, 8.0, 1.0, 1.0, 1.0, 2.0, 1.3, 0.0, 0.0, 1.0),
+                   x_res = "default",
+                   t_res = "default") {
+
 
   # constants
-  modelname <- "WTM"
-  Nphi <- 11
+  modelname <- "WDSTP"
+  Nphi <- 15
 
 
   # check
@@ -205,16 +213,16 @@ pWTM <- function(rt,
 
 
 
-#' @rdname WTM
+#' @rdname WDSTP
 #' @useDynLib "ream", .registration=TRUE
 #' @export
-rWTM <- function(n,
-                 phi = c(0.3, 0.5, 1.0, 1.0, 1.5, 0.2, 0.5, -1.0, 0.0, 0.0, 1.0),
-                 dt = 0.00001) {
+rWDSTP <- function(n,
+                   phi = c(0.3, 0.5, 1.0, 1.0, -1.0, -0.5, 8.0, 1.0, 1.0, 1.0, 2.0, 1.3, 0.0, 0.0, 1.0),
+                   dt = 0.00001) {
 
   # constants
-  modelname <- "WTM"
-  Nphi <- 11
+  modelname <- "WDSTP"
+  Nphi <- 15
 
 
   # check arguments
@@ -253,24 +261,28 @@ rWTM <- function(n,
 
 
 
-#' Generate Grid for PDF of the Weibull Threshold Model
+#' Generate Grid for PDF of the Continuous Dual-Stage Two-Phase Model of Selective Attention
 #'
 #' Beschreibung.
 #'
 #' @param rt_max maximal response time <- max(rt)
 #' @param phi parameter vector in the following order:
 #'   \itemize{
-#'     \item non-decision time
-#'     \item relative starting point
-#'     \item drift rate
-#'     \item diffusion rate
+#'     \item non-decision time of process 1
+#'     \item relative starting point of process 1
+#'     \item relative starting point for process 2
 #'     \item ?
 #'     \item ?
 #'     \item ?
 #'     \item ?
-#'     \item contamination strength
-#'     \item contamination probability for the lower response
-#'     \item contamination probability for the upper response
+#'     \item ?
+#'     \item ?
+#'     \item ?
+#'     \item ?
+#'     \item upper threshold of process (equals negative lower threshold)
+#'     \item contamination strength of process
+#'     \item contamination probability for the lower response of process
+#'     \item contamination probability for the upper response of process
 #'   }
 #' @param x_res spatial/evidence resolution
 #' @param t_res time resolution
@@ -279,21 +291,23 @@ rWTM <- function(n,
 #' Murrow, M., & Holmes, W. R. (2023). PyBEAM: A Bayesian approach to parameter inference for a wide class of binary evidence accumulation models.
 #'   Behavior Research Methods.
 #'
+#' Hübner, R., Steinhauser, M., & Lehle, C. (2010). A dual-stage two-phase model of
+#'   selective attention. \emph{Psychological review, 117}(3), 759.
 #'
 #' @examples
 #' # here come some examples
 #' @author Raphael Hartmann & Matthew Murrow
 #' @useDynLib "ream", .registration=TRUE
 #' @export
-dWTM_grid <- function(rt_max = 10.0,
-                      phi = c(0.3, 0.5, 1.0, 1.0, 1.5, 0.2, 0.5, -1.0, 0.0, 0.0, 1.0),
-                      x_res = "default",
-                      t_res = "default") {
+dWDSTP_grid <- function(rt_max = 10.0,
+                        phi = c(0.3, 0.5, 1.0, 1.0, -1.0, -0.5, 8.0, 1.0, 1.0, 1.0, 2.0, 1.3, 0.0, 0.0, 1.0),
+                        x_res = "default",
+                        t_res = "default") {
 
 
   # constants
-  modelname <- "WTM"
-  Nphi <- 11
+  modelname <- "WDSTP"
+  Nphi <- 15
 
 
   # checking input
