@@ -32,16 +32,28 @@ rUGM(n, phi = c(0.3, 0.5, 1, 0.5, 0.5, 1, 1.5, 0, 0, 1), dt = 1e-05)
 
 \item{phi}{parameter vector in the following order:
 \itemize{
-\item non-decision time
-\item relative starting point
-\item ?
-\item ?
-\item ?
-\item diffusion rate
-\item upper threshold (equals negative lower threshold)
-\item contamination strength
-\item contamination probability for the lower response
-\item contamination probability for the upper response
+\item Non-decision time (\eqn{t_{nd}}). Time for non-decision processes such as stimulus
+encoding and response execution. Total decision time t is the sum of the decision
+and non-decision times.
+\item Relative start (\eqn{w}). Sets the start point of accumulation as a ratio of
+the two decision thresholds. Related to the absolute start z point via equation
+\eqn{z = b_l + w*(b_u - b_l)}.
+\item Stimulus strength (\eqn{E_0}). Strength of the stimulus.
+\item Leakage (\eqn{L}). Rate of leaky integration.
+\item Urgency (\eqn{k}). Decision urgency. If \eqn{k} is small, the choice is dominated by
+leakage and approximates a LM. If \eqn{k} is large, it is an urgency dominated decision.
+\item Noise scale (\eqn{\sigma}). Model scaling parameter.
+\item Decision thresholds (\eqn{b}). Sets the location of each decision threshold. The
+upper threshold \eqn{b_u} is above 0 and the lower threshold \eqn{b_l} is below 0 such that
+\eqn{b_u = -b_l = b}. The threshold separation \eqn{a = 2b}.
+\item Contamination (\eqn{g}). Sets the strength of the contamination process. Contamination
+process is a uniform distribution \eqn{f_c(t)} where \eqn{f_c(t) = 1/(g_u-g_l)}
+if \eqn{g_l <= t <= g_u} and \eqn{f_c(t) = 0} if \eqn{t < g_l} or \eqn{t > g_u}. It is
+combined with PDF \eqn{f_i(t)} to give the final combined distribution
+\eqn{f_{i,c}(t) = g*f_c(t) + (1-g)*f_i(t)}, which is then output by the program.
+If \eqn{g = 0}, it just outputs \eqn{f_i(t)}.
+\item Lower bound of contamination distribution (\eqn{g_l}). See parameter \eqn{g}.
+\item Upper bound of contamination distribution (\eqn{g_u}). See parameter \eqn{g}.
 }}
 
 \item{x_res}{spatial/evidence resolution}
@@ -59,8 +71,12 @@ and the sum of the log-CDFs, and for the random sampler a list of response
 times (rt) and response thresholds (resp).
 }
 \description{
-Density (PDF), distribution function (CDF), and random sampler for the urgency gating
-model (UGM) by Cisek, Puskas, and El-Murr (2009).
+The Urgency Gating Model (UGM) is a decision-making model which proposes that stimulus
+information is first low pass filtered, then used to update the decision state through
+a time varying gain function (Cisek et al., 2009). Though not initially formulated as
+an EAM, following the procedure of (Trueblood et al., 2021) it can be written as one.
+Doing so modifies the drift rate to
+\deqn{v(x,t) = E_0*(1 + k*t) + (k/(1+k*t) - L)*x.}
 }
 \examples{
 # Probability density function
@@ -75,12 +91,11 @@ pUGM(rt = c(1.2, 0.6, 0.4), resp = c("upper", "lower", "lower"),
 rUGM(n = 100, phi = c(0.3, 0.5, 1.0, 0.5, 0.5, 1.0, 1.5, 0.0, 0.0, 1.0))
 }
 \references{
-Murrow, M., & Holmes, W. R. (2023). PyBEAM: A Bayesian approach to parameter
-inference for a wide class of binary evidence accumulation models.
-\emph{Behavior Research Methods}, 1-21.
-
 Cisek, P., Puskas, G. A., & El-Murr, S. (2009). Decisions in changing conditions:
 the urgency-gating model. \emph{Journal of Neuroscience, 29}(37), 11560-11571.
+
+Trueblood, J. S., Heathcote, A., Evans, N. J., & Holmes, W. R. (2021). Urgency, leakage,
+and the relative nature of information processing in decision-making.
 }
 \author{
 Raphael Hartmann & Matthew Murrow

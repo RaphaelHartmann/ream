@@ -1,10 +1,12 @@
 
 
 
-#' Linear Threshold Model
+#' Sequential Dual Process Model
 #'
-#' SDDM with thresholds that change with time. Thresholds are symmetric linear functions
-#'   of the form \eqn{b_u(t) = -b_l(t) = b_0 - m*t}.
+#' The Sequential Dual Process Model (SDPMM) is similar in principle to the DSTP, but instead
+#'   of simultaneous accumulators, it contains sequential accumulator s. Its drift rate is given by
+#'   \eqn{v(x,t) = w(t)*\mu} where \eqn{w(t)} is 0 if the second process hasn't crossed a
+#'   threshold yet and 1 if it has. The noise scale has a similar structure \eqn{D(x,t) = w(t)*\sigma}.
 #'
 #' @param rt vector of response times
 #' @param resp vector of responses ("upper" and "lower")
@@ -17,12 +19,22 @@
 #'     \item Relative start (\eqn{w}). Sets the start point of accumulation as a ratio of
 #'       the two decision thresholds. Related to the absolute start z point via equation
 #'       \eqn{z = b_l + w*(b_u - b_l)}.
-#'     \item Stimulus strength (\eqn{\mu}). Strength of the stimulus and used to set the drift
-#'       rate. For changing threshold models \eqn{v(x,t) = \mu}.
-#'     \item Noise scale (\eqn{\sigma}). Model noise scale parameter.
-#'     \item Initial decision threshold location (\eqn{b_0}). Sets the location of each decision
-#'       threshold at time \eqn{t = 0}.
-#'     \item Decision threshold slope (\eqn{m}).
+#'     \item Relative start of the target selection process (\eqn{w_{ts}}). Sets the start point
+#'       of accumulation for the target selection process as a ratio of the two decision
+#'       thresholds. Related to the absolute start \eqn{z_{ts}} point via equation
+#'       \eqn{z_{ts} = b_{lts} + w_ts*(b_{uts} – b_{lts})}.
+#'     \item Stimulus strength (\eqn{\mu}).
+#'     \item Stimulus strength of process 2 (\eqn{\mu_2}).
+#'     \item Noise scale (\eqn{\sigma}). Model scaling parameter.
+#'     \item Effective noise scale of continuous approximation (\eqn{\sigma_{eff}}). See ream
+#'       publication for full description.
+#'     \item Decision thresholds (\eqn{b}). Sets the location of each decision threshold. The
+#'       upper threshold \eqn{b_u} is above 0 and the lower threshold \eqn{b_l} is below 0 such that
+#'       \eqn{b_u = -b_l = b}. The threshold separation \eqn{a = 2b}.
+#'     \item Target selection decision thresholds (\eqn{b_{ts}}). Sets the location of each decision
+#'       threshold for the target selection process. The upper threshold \eqn{b_{uts}} is above 0
+#'       and the lower threshold \eqn{b_{lts}} is below 0 such that \eqn{b_{uts} = -b_{lts} = b_{ts}}. The
+#'       threshold separation \eqn{a_{ts} = 2b_{ts}}.
 #'     \item Contamination (\eqn{g}). Sets the strength of the contamination process. Contamination
 #'       process is a uniform distribution \eqn{f_c(t)} where \eqn{f_c(t) = 1/(g_u-g_l)}
 #'       if \eqn{g_l <= t <= g_u} and \eqn{f_c(t) = 0} if \eqn{t < g_l} or \eqn{t > g_u}. It is
@@ -40,22 +52,21 @@
 #'   and the sum of the log-CDFs, and for the random sampler a list of response
 #'   times (rt) and response thresholds (resp).
 #' @references
-#' Murrow, M., & Holmes, W. R. (2023). PyBEAM: A Bayesian approach to parameter inference
-#'   for a wide class of binary evidence accumulation models. \emph{Behavior Research
-#'   Methods, 56}(3), 2636-2656.
+#' Hübner, R., Steinhauser, M., & Lehle, C. (2010). A dual-stage two-phase model of
+#'   selective attention. \emph{Psychological Review, 117}(3), 759-784.
 #' @examples
 #' # Probability density function
-#' dLTM(rt = c(1.2, 0.6, 0.4), resp = c("upper", "lower", "lower"),
-#'      phi = c(0.3, 0.5, 1.0, 1.0, 1.5, 1.0, 0.0, 0.0, 1.0))
+#' dSDPM(rt = c(1.2, 0.6, 0.4), resp = c("upper", "lower", "lower"),
+#'       phi = c(0.3, 1.0, 0.5, 1.0, 1.0, 1.0, 1.0, 0.75, 0.75, 0.0, 0.0, 1.0))
 #'
 #' # Cumulative distribution function
-#' pLTM(rt = c(1.2, 0.6, 0.4), resp = c("upper", "lower", "lower"),
-#'      phi = c(0.3, 0.5, 1.0, 1.0, 1.5, 1.0, 0.0, 0.0, 1.0))
+#' pSDPM(rt = c(1.2, 0.6, 0.4), resp = c("upper", "lower", "lower"),
+#'       phi = c(0.3, 1.0, 0.5, 1.0, 1.0, 1.0, 1.0, 0.75, 0.75, 0.0, 0.0, 1.0))
 #'
 #' # Random sampling
-#' rLTM(n = 100, phi = c(0.3, 0.5, 1.0, 1.0, 1.5, 1.0, 0.0, 0.0, 1.0))
+#' rSDPM(n = 100, phi = c(0.3, 1.0, 0.5, 1.0, 1.0, 1.0, 1.0, 0.75, 0.75, 0.0, 0.0, 1.0))
 #' @author Raphael Hartmann & Matthew Murrow
-#' @name LTM
+#' @name SDPM
 NULL
 
 
@@ -65,19 +76,19 @@ NULL
 
 
 
-#' @rdname LTM
+#' @rdname SDPM
 #' @useDynLib "ream", .registration=TRUE
 #' @export
-dLTM <- function(rt,
+dSDPM <- function(rt,
                  resp,
-                 phi = c(0.3, 0.5, 1.0, 1.0, 1.5, 1.0, 0.0, 0.0, 1.0),
+                 phi = c(0.3, 1.0, 0.5, 1.0, 1.0, 1.0, 1.0, 0.75, 0.75, 0.0, 0.0, 1.0),
                  x_res = "default",
                  t_res = "default") {
 
 
   # constants
-  modelname <- "LTM"
-  Nphi <- 9
+  modelname <- "SDPM"
+  Nphi <- 12
 
 
   # check
@@ -140,19 +151,19 @@ dLTM <- function(rt,
 
 
 
-#' @rdname LTM
+#' @rdname SDPM
 #' @useDynLib "ream", .registration=TRUE
 #' @export
-pLTM <- function(rt,
+pSDPM <- function(rt,
                  resp,
-                 phi = c(0.3, 0.5, 1.0, 1.0, 1.5, 1.0, 0.0, 0.0, 1.0),
+                 phi = c(0.3, 1.0, 0.5, 1.0, 1.0, 1.0, 1.0, 0.75, 0.75, 0.0, 0.0, 1.0),
                  x_res = "default",
                  t_res = "default") {
 
 
   # constants
-  modelname <- "LTM"
-  Nphi <- 9
+  modelname <- "SDPM"
+  Nphi <- 12
 
 
   # check
@@ -215,16 +226,16 @@ pLTM <- function(rt,
 
 
 
-#' @rdname LTM
+#' @rdname SDPM
 #' @useDynLib "ream", .registration=TRUE
 #' @export
-rLTM <- function(n,
-                 phi = c(0.3, 0.5, 1.0, 1.0, 1.5, 1.0, 0.0, 0.0, 1.0),
+rSDPM <- function(n,
+                 phi = c(0.3, 1.0, 0.5, 1.0, 1.0, 1.0, 1.0, 0.75, 0.75, 0.0, 0.0, 1.0),
                  dt = 0.00001) {
 
   # constants
-  modelname <- "LTM"
-  Nphi <- 9
+  modelname <- "SDPM"
+  Nphi <- 12
 
 
   # check arguments
@@ -263,10 +274,10 @@ rLTM <- function(n,
 
 
 
-#' Generate Grid for PDF of the Linear Threshold Model
+#' Generate Grid for PDF of the Sequential Dual Process Model
 #'
 #' Generate a grid of response-time values and the corresponding PDF values.
-#'   For more details on the model see, for example, \code{\link{dLTM}}.
+#'   For more details on the model see, for example, \code{\link{dSDPM}}.
 #'
 #' @param rt_max maximal response time <- max(rt)
 #' @param phi parameter vector in the following order:
@@ -277,12 +288,22 @@ rLTM <- function(n,
 #'     \item Relative start (\eqn{w}). Sets the start point of accumulation as a ratio of
 #'       the two decision thresholds. Related to the absolute start z point via equation
 #'       \eqn{z = b_l + w*(b_u - b_l)}.
-#'     \item Stimulus strength (\eqn{\mu}). Strength of the stimulus and used to set the drift
-#'       rate. For changing threshold models \eqn{v(x,t) = \mu}.
-#'     \item Noise scale (\eqn{\sigma}). Model noise scale parameter.
-#'     \item Initial decision threshold location (\eqn{b_0}). Sets the location of each decision
-#'       threshold at time \eqn{t = 0}.
-#'     \item Decision threshold slope (\eqn{m}).
+#'     \item Relative start of the target selection process (\eqn{w_{ts}}). Sets the start point
+#'       of accumulation for the target selection process as a ratio of the two decision
+#'       thresholds. Related to the absolute start \eqn{z_{ts}} point via equation
+#'       \eqn{z_{ts} = b_{lts} + w_ts*(b_{uts} – b_{lts})}.
+#'     \item Stimulus strength ({\mu}).
+#'     \item Stimulus strength of process 2 (\eqn{\mu_2}).
+#'     \item Noise scale (\eqn{\sigma}). Model scaling parameter.
+#'     \item Effective noise scale of continuous approximation (\eqn{\sigma_{eff}}). See ream
+#'       publication for full description.
+#'     \item Decision thresholds (\eqn{b}). Sets the location of each decision threshold. The
+#'       upper threshold \eqn{b_u} is above 0 and the lower threshold \eqn{b_l} is below 0 such that
+#'       \eqn{b_u = -b_l = b}. The threshold separation \eqn{a = 2b}.
+#'     \item Target selection decision thresholds (\eqn{b_{ts}}). Sets the location of each decision
+#'       threshold for the target selection process. The upper threshold \eqn{b_{uts}} is above 0
+#'       and the lower threshold \eqn{b_{lts}} is below 0 such that \eqn{b_{uts} = -b_{lts} = b_{ts}}. The
+#'       threshold separation \eqn{a_{ts} = 2b_{ts}}.
 #'     \item Contamination (\eqn{g}). Sets the strength of the contamination process. Contamination
 #'       process is a uniform distribution \eqn{f_c(t)} where \eqn{f_c(t) = 1/(g_u-g_l)}
 #'       if \eqn{g_l <= t <= g_u} and \eqn{f_c(t) = 0} if \eqn{t < g_l} or \eqn{t > g_u}. It is
@@ -296,21 +317,20 @@ rLTM <- function(n,
 #' @param t_res time resolution
 #' @return list of RTs and corresponding defective PDFs at lower and upper threshold
 #' @references
-#' Murrow, M., & Holmes, W. R. (2023). PyBEAM: A Bayesian approach to parameter inference
-#'   for a wide class of binary evidence accumulation models. \emph{Behavior Research
-#'   Methods, 56}(3), 2636-2656.
+#' Hübner, R., Steinhauser, M., & Lehle, C. (2010). A dual-stage two-phase model of
+#'   selective attention. \emph{Psychological Review, 117}(3), 759-784.
 #' @author Raphael Hartmann & Matthew Murrow
 #' @useDynLib "ream", .registration=TRUE
 #' @export
-dLTM_grid <- function(rt_max = 10.0,
-                      phi = c(0.3, 0.5, 1.0, 1.0, 1.5, 1.0, 0.0, 0.0, 1.0),
+dSDPM_grid <- function(rt_max = 10.0,
+                      phi = c(0.3, 1.0, 0.5, 1.0, 1.0, 1.0, 1.0, 0.75, 0.75, 0.0, 0.0, 1.0),
                       x_res = "default",
                       t_res = "default") {
 
 
   # constants
-  modelname <- "LTM"
-  Nphi <- 9
+  modelname <- "SDPM"
+  Nphi <- 12
 
 
   # checking input

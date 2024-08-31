@@ -1,10 +1,14 @@
 
 
 
-#' Linear Threshold Model
+#' Piecewise Attention Model
 #'
-#' SDDM with thresholds that change with time. Thresholds are symmetric linear functions
-#'   of the form \eqn{b_u(t) = -b_l(t) = b_0 - m*t}.
+#' The PAM (aka dual-process model) is an evidence accumulation model developed to study cognition
+#'   in conflict tasks like the Eriksen flanker task. It is similar to the SSP, but instead of a
+#'   gradual narrowing of attention, target selection is discrete. Its total drift rate is
+#'   \deqn{v(x,t) = 2*a_{outer}*p_{outer} + 2*a_{inner}*p_{inner} + a_{target}*p_{target},}
+#'   where \eqn{a_{inner}} and \eqn{a_{outter}} are 0 if \eqn{t >= t_s} and 1 otherwise. The PAM
+#'   otherwise maintains the parameters of the SDDM.
 #'
 #' @param rt vector of response times
 #' @param resp vector of responses ("upper" and "lower")
@@ -17,12 +21,14 @@
 #'     \item Relative start (\eqn{w}). Sets the start point of accumulation as a ratio of
 #'       the two decision thresholds. Related to the absolute start z point via equation
 #'       \eqn{z = b_l + w*(b_u - b_l)}.
-#'     \item Stimulus strength (\eqn{\mu}). Strength of the stimulus and used to set the drift
-#'       rate. For changing threshold models \eqn{v(x,t) = \mu}.
+#'     \item Perceptual input strength of outer units (\eqn{p_{outer}}).
+#'     \item Perceptual input strength of inner units (\eqn{p_{inner}}).
+#'     \item Perceptual input strength of target (\eqn{p_{target}}).
+#'     \item Target selection time (\eqn{t_s}).
 #'     \item Noise scale (\eqn{\sigma}). Model noise scale parameter.
-#'     \item Initial decision threshold location (\eqn{b_0}). Sets the location of each decision
-#'       threshold at time \eqn{t = 0}.
-#'     \item Decision threshold slope (\eqn{m}).
+#'     \item Decision thresholds (\eqn{b}). Sets the location of each decision threshold. The
+#'       upper threshold \eqn{b_u} is above 0 and the lower threshold \eqn{b_l} is below 0 such that
+#'       \eqn{b_u = -b_l = b}. The threshold separation \eqn{a = 2b}.
 #'     \item Contamination (\eqn{g}). Sets the strength of the contamination process. Contamination
 #'       process is a uniform distribution \eqn{f_c(t)} where \eqn{f_c(t) = 1/(g_u-g_l)}
 #'       if \eqn{g_l <= t <= g_u} and \eqn{f_c(t) = 0} if \eqn{t < g_l} or \eqn{t > g_u}. It is
@@ -40,22 +46,21 @@
 #'   and the sum of the log-CDFs, and for the random sampler a list of response
 #'   times (rt) and response thresholds (resp).
 #' @references
-#' Murrow, M., & Holmes, W. R. (2023). PyBEAM: A Bayesian approach to parameter inference
-#'   for a wide class of binary evidence accumulation models. \emph{Behavior Research
-#'   Methods, 56}(3), 2636-2656.
+#' White, C. N., Ratcliff, R., & Starns, J. J. (2011). Diffusion models of the flanker task:
+#'   Discrete versus gradual attentional selection. \emph{Cognitive Psychology, 63}(4), 210-238.
 #' @examples
 #' # Probability density function
-#' dLTM(rt = c(1.2, 0.6, 0.4), resp = c("upper", "lower", "lower"),
-#'      phi = c(0.3, 0.5, 1.0, 1.0, 1.5, 1.0, 0.0, 0.0, 1.0))
+#' dPAM(rt = c(1.2, 0.6, 0.4), resp = c("upper", "lower", "lower"),
+#'      phi = c(0.25, 0.5, -0.3, -0.3, 0.3, 0.25, 1.0, 0.5, 0.0, 0.0, 1.0))
 #'
 #' # Cumulative distribution function
-#' pLTM(rt = c(1.2, 0.6, 0.4), resp = c("upper", "lower", "lower"),
-#'      phi = c(0.3, 0.5, 1.0, 1.0, 1.5, 1.0, 0.0, 0.0, 1.0))
+#' pPAM(rt = c(1.2, 0.6, 0.4), resp = c("upper", "lower", "lower"),
+#'      phi = c(0.25, 0.5, -0.3, -0.3, 0.3, 0.25, 1.0, 0.5, 0.0, 0.0, 1.0))
 #'
 #' # Random sampling
-#' rLTM(n = 100, phi = c(0.3, 0.5, 1.0, 1.0, 1.5, 1.0, 0.0, 0.0, 1.0))
+#' rPAM(n = 100, phi = c(0.25, 0.5, -0.3, -0.3, 0.3, 0.25, 1.0, 0.5, 0.0, 0.0, 1.0))
 #' @author Raphael Hartmann & Matthew Murrow
-#' @name LTM
+#' @name PAM
 NULL
 
 
@@ -65,19 +70,18 @@ NULL
 
 
 
-#' @rdname LTM
+#' @rdname PAM
 #' @useDynLib "ream", .registration=TRUE
 #' @export
-dLTM <- function(rt,
+dPAM <- function(rt,
                  resp,
-                 phi = c(0.3, 0.5, 1.0, 1.0, 1.5, 1.0, 0.0, 0.0, 1.0),
+                 phi = c(0.25, 0.5, -0.3, -0.3, 0.3, 0.25, 1.0, 0.5, 0.0, 0.0, 1.0),
                  x_res = "default",
                  t_res = "default") {
 
-
   # constants
-  modelname <- "LTM"
-  Nphi <- 9
+  modelname <- "PAM"
+  Nphi <- 11
 
 
   # check
@@ -140,19 +144,19 @@ dLTM <- function(rt,
 
 
 
-#' @rdname LTM
+#' @rdname PAM
 #' @useDynLib "ream", .registration=TRUE
 #' @export
-pLTM <- function(rt,
+pPAM <- function(rt,
                  resp,
-                 phi = c(0.3, 0.5, 1.0, 1.0, 1.5, 1.0, 0.0, 0.0, 1.0),
+                 phi = c(0.25, 0.5, -0.3, -0.3, 0.3, 0.25, 1.0, 0.5, 0.0, 0.0, 1.0),
                  x_res = "default",
                  t_res = "default") {
 
 
   # constants
-  modelname <- "LTM"
-  Nphi <- 9
+  modelname <- "PAM"
+  Nphi <- 11
 
 
   # check
@@ -215,16 +219,16 @@ pLTM <- function(rt,
 
 
 
-#' @rdname LTM
+#' @rdname PAM
 #' @useDynLib "ream", .registration=TRUE
 #' @export
-rLTM <- function(n,
-                 phi = c(0.3, 0.5, 1.0, 1.0, 1.5, 1.0, 0.0, 0.0, 1.0),
+rPAM <- function(n,
+                 phi = c(0.25, 0.5, -0.3, -0.3, 0.3, 0.25, 1.0, 0.5, 0.0, 0.0, 1.0),
                  dt = 0.00001) {
 
   # constants
-  modelname <- "LTM"
-  Nphi <- 9
+  modelname <- "PAM"
+  Nphi <- 11
 
 
   # check arguments
@@ -263,10 +267,10 @@ rLTM <- function(n,
 
 
 
-#' Generate Grid for PDF of the Linear Threshold Model
+#' Generate Grid for PDF of Piecewise Attention Model
 #'
 #' Generate a grid of response-time values and the corresponding PDF values.
-#'   For more details on the model see, for example, \code{\link{dLTM}}.
+#'   For more details on the model see, for example, \code{\link{dPAM}}.
 #'
 #' @param rt_max maximal response time <- max(rt)
 #' @param phi parameter vector in the following order:
@@ -277,12 +281,14 @@ rLTM <- function(n,
 #'     \item Relative start (\eqn{w}). Sets the start point of accumulation as a ratio of
 #'       the two decision thresholds. Related to the absolute start z point via equation
 #'       \eqn{z = b_l + w*(b_u - b_l)}.
-#'     \item Stimulus strength (\eqn{\mu}). Strength of the stimulus and used to set the drift
-#'       rate. For changing threshold models \eqn{v(x,t) = \mu}.
+#'     \item Perceptual input strength of outer units (\eqn{p_{outer}}).
+#'     \item Perceptual input strength of inner units (\eqn{p_{inner}}).
+#'     \item Perceptual input strength of target (\eqn{p_{target}}).
+#'     \item Target selection time (\eqn{t_s}).
 #'     \item Noise scale (\eqn{\sigma}). Model noise scale parameter.
-#'     \item Initial decision threshold location (\eqn{b_0}). Sets the location of each decision
-#'       threshold at time \eqn{t = 0}.
-#'     \item Decision threshold slope (\eqn{m}).
+#'     \item Decision thresholds (\eqn{b}). Sets the location of each decision threshold. The
+#'       upper threshold \eqn{b_u} is above 0 and the lower threshold \eqn{b_l} is below 0 such that
+#'       \eqn{b_u = -b_l = b}. The threshold separation \eqn{a = 2b}.
 #'     \item Contamination (\eqn{g}). Sets the strength of the contamination process. Contamination
 #'       process is a uniform distribution \eqn{f_c(t)} where \eqn{f_c(t) = 1/(g_u-g_l)}
 #'       if \eqn{g_l <= t <= g_u} and \eqn{f_c(t) = 0} if \eqn{t < g_l} or \eqn{t > g_u}. It is
@@ -296,21 +302,20 @@ rLTM <- function(n,
 #' @param t_res time resolution
 #' @return list of RTs and corresponding defective PDFs at lower and upper threshold
 #' @references
-#' Murrow, M., & Holmes, W. R. (2023). PyBEAM: A Bayesian approach to parameter inference
-#'   for a wide class of binary evidence accumulation models. \emph{Behavior Research
-#'   Methods, 56}(3), 2636-2656.
+#' White, C. N., Ratcliff, R., & Starns, J. J. (2011). Diffusion models of the flanker task:
+#'   Discrete versus gradual attentional selection. \emph{Cognitive Psychology, 63}(4), 210-238.
 #' @author Raphael Hartmann & Matthew Murrow
 #' @useDynLib "ream", .registration=TRUE
 #' @export
-dLTM_grid <- function(rt_max = 10.0,
-                      phi = c(0.3, 0.5, 1.0, 1.0, 1.5, 1.0, 0.0, 0.0, 1.0),
+dPAM_grid <- function(rt_max = 10.0,
+                      phi = c(0.25, 0.5, -0.3, -0.3, 0.3, 0.25, 1.0, 0.5, 0.0, 0.0, 1.0),
                       x_res = "default",
                       t_res = "default") {
 
 
   # constants
-  modelname <- "LTM"
-  Nphi <- 9
+  modelname <- "PAM"
+  Nphi <- 11
 
 
   # checking input

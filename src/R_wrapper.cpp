@@ -7,7 +7,7 @@
 #include <thread>
 #include "Model.h"
 #include "models_t.h"
-#include "models_xt.h"
+#include "models_tx.h"
 #include "models_tw.h"
 #include "tools.h"
 #include <R.h>
@@ -46,32 +46,40 @@ std::unique_ptr<Model> createModel(const std::string& modelName) {
     return std::make_unique<DMC>();
   } else if (modelName == "CDSTP") {
     return std::make_unique<CDSTP>();
-  } else if (modelName == "DPM") {
-    return std::make_unique<DPM>();
   } else if (modelName == "ETM") {
     return std::make_unique<ETM>();
   } else if (modelName == "LTM") {
     return std::make_unique<LTM>();
+  } else if (modelName == "PAM") {
+    return std::make_unique<PAM>();
   } else if (modelName == "RDMC") {
     return std::make_unique<RDMC>();
+  } else if (modelName == "RTM") {
+    return std::make_unique<RTM>();
   } else if (modelName == "SDDM") {
     return std::make_unique<SDDM>();
-  } else if (modelName == "SDP") {
-    return std::make_unique<SDP>();
+  } else if (modelName == "SDPM") {
+    return std::make_unique<SDPM>();
   } else if (modelName == "SSP") {
     return std::make_unique<SSP>();
   } else if (modelName == "UGM") {
     return std::make_unique<UGM>();
   } else if (modelName == "WTM") {
     return std::make_unique<WTM>();
-  } else if (modelName == "LFM") {
-    return std::make_unique<LFM>();
+  } else if (modelName == "LMF") {
+    return std::make_unique<LMF>();
   } else if (modelName == "LM") {
     return std::make_unique<LM>();
-  } else if (modelName == "UGFM") {
-    return std::make_unique<UGFM>();
+  } else if (modelName == "UGMF") {
+    return std::make_unique<UGMF>();
   } else if (modelName == "WDSTP") {
     return std::make_unique<WDSTP>();
+  } else if (modelName == "CSTM_T") {
+    return std::make_unique<CSTM_T>();
+  } else if (modelName == "CSTM_TX") {
+    return std::make_unique<CSTM_T>();
+  } else if (modelName == "CSTM_TW") {
+    return std::make_unique<CSTM_T>();
   } else {
     Rprintf("unknown model name");
     return nullptr;

@@ -108,6 +108,87 @@ start_pars <- c(0.3, 0.5, 0.2, 0.05, 2.5, 2.5)
 optim(par = start_pars, fn = deviation, method = "L-BFGS-B", lower = c(.2, .1, .1, 0, 1, 0), upper = c(.6, .9, .6, .1, 5, 5), data = data)
 ```
 
+
+## 4. Implement your custom EAM
+
+### 4.1 Get the source code
+Download from [GitHub](https://github.com/RaphaelHartmann/ream/) or from [CRAN](https://CRAN.R-project.org/package=ream) the source code and extract it.
+
+### 4.2 Get your system ready
+Every operating has some special requirements for building R packages. You can find them, for example, in the book [R Packages](https://r-pkgs.org/setup.html#setup-tools) by Wickham and Bryan.
+
+### 4.3 What source files to modify
+Depending on your needs, you can choose between three cases:
+
+- Case 1: drift rate function only dependent on time *t*, but not on evidence state *x*, or dependent on neither of them
+- Case 2: drift rate function dependent on time *t* and evidence state *x*
+- Case 3: drift rate and diffusion rate function dependent on time *t* and some weighting *w*, but not on evidence state *x*
+
+The last case is rather a rare case. If you do not want the drift rate to have any dependency on time or evidence state, you pick the first case. If your drift rate does depend on time but not on evidence, choose also the first case. And so on.
+
+Depending on the case at hand, different source files should be modified in the source code under `ream/src/`. Modify the following class methods depending on the case at hand:
+
+- Case 1: In `models_t.h` -> class `CSTM_T`
+- Case 2: In `models_tx.h` -> class `CSTM_TX`
+- Case 3: In `models_tw.h` -> class `CSTM_TW`
+
+These are already prepared classes for custom models and have corresponding R functions (e.g., `dCSTM_T()`). The only thing to do is to change the methods of the classes and to recompile the R package (probably with a different version number).
+
+
+### 4.4 How to modify the necessary class methods
+Do not change the arguments! 
+
+Only change the content of the function. For example, if you want to change the threshold to be dependent on time in an exponential way (like the ETM) change the following method (e.g., inside the `CSTM_T` class) from
+
+```{cpp}
+double upper_threshold(const double phi[100], double t) const override {
+  return phi[4];
+}
+```
+
+to 
+
+```{cpp}
+double upper_threshold(const double phi[100], double t) const override {
+  double b = phi[4];
+  double tau = pow(10.0, phi[5]);
+  double thres = b*exp(-t/tau);
+  return thres;
+}
+```
+
+In this example, one would also change the lower threshold to:
+
+```{cpp}
+double lower_threshold(const double phi[100], double t) const override {
+  return -upper_threshold(phi, t);
+}
+```
+
+Make sure to get the indexing in `phi[i]` correct. In our example, `phi[5]` is already used by the next function `contamination_strength()`, and should therefore be changed. The easiest way is to go from the first method to the last method in the class with increasing index of `phi[i]` (see the other classes).
+
+### 4.5 Recompile the R package
+In the Terminal (of RStudio) navigate to the folder on top of `ream` and execute:
+
+1. `R CMD build rtmpt`
+2. `R CMD check rtmpt_<version_number>.tar.gz --as-cran`
+3. `R CMD INSTALL rtmpt_<version_number>.tar.gz`
+
+where `<version_number>` is the version number from the downloaded package or the one you changed the package to in `DESCRIPTION`.
+
+Or, if you have set up RStudio correctly and made an R-project of the package you can also click the following instead of using the terminal:
+
+1. `Build>Load All` (Ctrl+Shift+L)
+2. `Build>Check Package` (Ctrl+Shift+E)
+3. `Build>Install Package` (Ctrl+Shift+B)
+
+You should now be ready to use the R functions `CSTM_T()`, `CSTM_TX()`, and/or `CSTM_TW()` with your custom model(s) once you have loaded the correct version of the package.
+
+### 4.6 Some notes
+If you have two or more custom models of the same case, we suggest copying the source package multiple times, make each copy a different version, and do the above steps for each copy. Note that the package/project folder should always be called `ream`. Therefore, copy it to different top-level folders (e.g., `.../REAM1/ream/` and `.../REAM2/ream/`).
+
+
 ## References
+* Wickham, H., & Bryan, J. (2023). R packages. " O'Reilly Media, Inc.".
 * Murrow, M., & Holmes, W. R. (2023). PyBEAM: A Bayesian approach to parameter inference for a wide class of binary evidence accumulation models. *Behavior Research Methods*, 56(3), 2636–2656. https://doi.org/10.3758/s13428-023-02162-w
 * R Core Team (2023). R: A language and environment for statistical computing. *R Foundation for Statistical Computing*, Vienna, Austria. https://www.R-project.org/.

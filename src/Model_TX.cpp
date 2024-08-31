@@ -1,17 +1,17 @@
 
-#include "Model_XT.h"
+#include "Model_TX.h"
 
 
-/* Model_XT Constructor */
-Model_XT::Model_XT() {}
+/* Model_TX Constructor */
+Model_TX::Model_TX() {}
 
-/* Model_XT Destructor */
-Model_XT::~Model_XT() {}
+/* Model_TX Destructor */
+Model_TX::~Model_TX() {}
 
 
 
 /* method which sets time step for likelihood generating function */
-double Model_XT::approx_dt(double* phi, double dt_scale) const {
+double Model_TX::approx_dt(double* phi, double dt_scale) const {
 
   /* initialize variables */
   // int seed = 90210; /* set random number generator seed */
@@ -84,7 +84,7 @@ double Model_XT::approx_dt(double* phi, double dt_scale) const {
 
 
 /* method for PDF */
-int Model_XT::pdf(double *RsumlogPDF, double *RPDFlow, double *RPDFupp, double *RlogPDFlow, double *RlogPDFupp, std::vector<double> rtl, std::vector<double> rtu, double *phi) const {
+int Model_TX::pdf(double *RsumlogPDF, double *RPDFlow, double *RPDFupp, double *RlogPDFlow, double *RlogPDFupp, std::vector<double> rtl, std::vector<double> rtu, double *phi) const {
 
   /* initialize loop indicies */
   int ii = 0, jj = 0, kk = 0;
@@ -465,7 +465,7 @@ int Model_XT::pdf(double *RsumlogPDF, double *RPDFlow, double *RPDFupp, double *
 
 
 /* method used to calculate model CDF function */
-int Model_XT::cdf(double *RsumlogCDF, double *RCDFlow, double *RCDFupp, double *RlogCDFlow, double *RlogCDFupp, std::vector<double> rtl, std::vector<double> rtu, double *phi) const {
+int Model_TX::cdf(double *RsumlogCDF, double *RCDFlow, double *RCDFupp, double *RlogCDFlow, double *RlogCDFupp, std::vector<double> rtl, std::vector<double> rtu, double *phi) const {
 
   /* initialize loop indicies */
   int ii = 0, jj = 0, kk = 0;
@@ -866,7 +866,7 @@ int Model_XT::cdf(double *RsumlogCDF, double *RCDFlow, double *RCDFupp, double *
 
 
 /* method used to draw random samples */
-int Model_XT::rand(double *Rrt, double *phi) const {
+int Model_TX::rand(double *Rrt, double *phi) const {
 
   /* initialize loop indicies */
   int ii = 0, jj = 0, kk = 0;
@@ -951,7 +951,7 @@ int Model_XT::rand(double *Rrt, double *phi) const {
 
 
 /* method used to construct grid for PDF */
-int Model_XT::grid_pdf(double *Rrt, double *Rpdf_u, double *Rpdf_l, double *phi) const {
+int Model_TX::grid_pdf(double *Rrt, double *Rpdf_u, double *Rpdf_l, double *phi) const {
 
   /* initialize loop indicies */
   int ii = 0, jj = 0, kk = 0;

@@ -1,10 +1,10 @@
 
 
 
-#' Linear Threshold Model
+#' Rational Threshold Model
 #'
-#' SDDM with thresholds that change with time. Thresholds are symmetric linear functions
-#'   of the form \eqn{b_u(t) = -b_l(t) = b_0 - m*t}.
+#' SDDM with thresholds that change with time. Thresholds are rational functions of the
+#'   form \deqn{b_u(t) = -b_l(t) =  0.5*b_0*(1 - \kappa*t/(t + t_{0.5})).}
 #'
 #' @param rt vector of response times
 #' @param resp vector of responses ("upper" and "lower")
@@ -22,7 +22,9 @@
 #'     \item Noise scale (\eqn{\sigma}). Model noise scale parameter.
 #'     \item Initial decision threshold location (\eqn{b_0}). Sets the location of each decision
 #'       threshold at time \eqn{t = 0}.
-#'     \item Decision threshold slope (\eqn{m}).
+#'     \item Amount of decision threshold collapse (\eqn{\kappa}).
+#'     \item Semi-saturation constant (\eqn{t_{0.5}}). The semi-saturation constant is the value of
+#'       time at which the boundaries have collapsed by half \eqn{\kappa}.
 #'     \item Contamination (\eqn{g}). Sets the strength of the contamination process. Contamination
 #'       process is a uniform distribution \eqn{f_c(t)} where \eqn{f_c(t) = 1/(g_u-g_l)}
 #'       if \eqn{g_l <= t <= g_u} and \eqn{f_c(t) = 0} if \eqn{t < g_l} or \eqn{t > g_u}. It is
@@ -40,22 +42,28 @@
 #'   and the sum of the log-CDFs, and for the random sampler a list of response
 #'   times (rt) and response thresholds (resp).
 #' @references
-#' Murrow, M., & Holmes, W. R. (2023). PyBEAM: A Bayesian approach to parameter inference
-#'   for a wide class of binary evidence accumulation models. \emph{Behavior Research
-#'   Methods, 56}(3), 2636-2656.
+#' Churchland, A. K., Kiani, R., & Shadlen, M. N. (2008). Decision-making with multiple
+#'   alternatives. \emph{Nature Neuroscience, 11}(6), 693-702.
+#'
+#' Hanks, T. D., Mazurek, M. E., Kiani, R., Hopp, E., & Shadlen, M. N. (2011). Elapsed
+#'   Decision Time Affects the Weighting of Prior Probability in a Perceptual Decision
+#'   Task. \emph{The Journal of Neuroscience, 31}(17), 6339-6352.
+#'
+#' Voskuilen, C., Ratcliff, R., & Smith, P. L. (2016). Comparing fixed and collapsing boundary
+#'   versions of the diffusion model. \emph{Journal of Mathematical Psychology, 73}, 59-79.
 #' @examples
 #' # Probability density function
-#' dLTM(rt = c(1.2, 0.6, 0.4), resp = c("upper", "lower", "lower"),
-#'      phi = c(0.3, 0.5, 1.0, 1.0, 1.5, 1.0, 0.0, 0.0, 1.0))
+#' dRTM(rt = c(1.2, 0.6, 0.4), resp = c("upper", "lower", "lower"),
+#'      phi = c(0.3, 0.5, 1.0, 1.0, 1.5, 0.5, 0.0, 0.0, 1.0))
 #'
 #' # Cumulative distribution function
-#' pLTM(rt = c(1.2, 0.6, 0.4), resp = c("upper", "lower", "lower"),
-#'      phi = c(0.3, 0.5, 1.0, 1.0, 1.5, 1.0, 0.0, 0.0, 1.0))
+#' pRTM(rt = c(1.2, 0.6, 0.4), resp = c("upper", "lower", "lower"),
+#'      phi = c(0.3, 0.5, 1.0, 1.0, 1.5, 0.5, 0.0, 0.0, 1.0))
 #'
 #' # Random sampling
-#' rLTM(n = 100, phi = c(0.3, 0.5, 1.0, 1.0, 1.5, 1.0, 0.0, 0.0, 1.0))
+#' rRTM(n = 100, phi = c(0.3, 0.5, 1.0, 1.0, 1.5, 0.5, 0.0, 0.0, 1.0))
 #' @author Raphael Hartmann & Matthew Murrow
-#' @name LTM
+#' @name RTM
 NULL
 
 
@@ -65,19 +73,19 @@ NULL
 
 
 
-#' @rdname LTM
+#' @rdname RTM
 #' @useDynLib "ream", .registration=TRUE
 #' @export
-dLTM <- function(rt,
+dRTM <- function(rt,
                  resp,
-                 phi = c(0.3, 0.5, 1.0, 1.0, 1.5, 1.0, 0.0, 0.0, 1.0),
+                 phi = c(0.3, 0.5, 1.0, 1.0, 1.5, 0.5, 0.0, 0.0, 1.0),
                  x_res = "default",
                  t_res = "default") {
 
 
   # constants
-  modelname <- "LTM"
-  Nphi <- 9
+  modelname <- "RTM"
+  Nphi <- 10
 
 
   # check
@@ -140,19 +148,19 @@ dLTM <- function(rt,
 
 
 
-#' @rdname LTM
+#' @rdname RTM
 #' @useDynLib "ream", .registration=TRUE
 #' @export
-pLTM <- function(rt,
+pRTM <- function(rt,
                  resp,
-                 phi = c(0.3, 0.5, 1.0, 1.0, 1.5, 1.0, 0.0, 0.0, 1.0),
+                 phi = c(0.3, 0.5, 1.0, 1.0, 1.5, 0.5, 0.0, 0.0, 1.0),
                  x_res = "default",
                  t_res = "default") {
 
 
   # constants
-  modelname <- "LTM"
-  Nphi <- 9
+  modelname <- "RTM"
+  Nphi <- 10
 
 
   # check
@@ -215,16 +223,16 @@ pLTM <- function(rt,
 
 
 
-#' @rdname LTM
+#' @rdname RTM
 #' @useDynLib "ream", .registration=TRUE
 #' @export
-rLTM <- function(n,
-                 phi = c(0.3, 0.5, 1.0, 1.0, 1.5, 1.0, 0.0, 0.0, 1.0),
+rRTM <- function(n,
+                 phi = c(0.3, 0.5, 1.0, 1.0, 1.5, 0.5, 0.0, 0.0, 1.0),
                  dt = 0.00001) {
 
   # constants
-  modelname <- "LTM"
-  Nphi <- 9
+  modelname <- "RTM"
+  Nphi <- 10
 
 
   # check arguments
@@ -263,10 +271,10 @@ rLTM <- function(n,
 
 
 
-#' Generate Grid for PDF of the Linear Threshold Model
+#' Generate Grid for PDF of the Rational Threshold Model
 #'
 #' Generate a grid of response-time values and the corresponding PDF values.
-#'   For more details on the model see, for example, \code{\link{dLTM}}.
+#'   For more details on the model see, for example, \code{\link{dRTM}}.
 #'
 #' @param rt_max maximal response time <- max(rt)
 #' @param phi parameter vector in the following order:
@@ -282,7 +290,9 @@ rLTM <- function(n,
 #'     \item Noise scale (\eqn{\sigma}). Model noise scale parameter.
 #'     \item Initial decision threshold location (\eqn{b_0}). Sets the location of each decision
 #'       threshold at time \eqn{t = 0}.
-#'     \item Decision threshold slope (\eqn{m}).
+#'     \item Amount of decision threshold collapse (\eqn{\kappa}).
+#'     \item Semi-saturation constant (\eqn{t_{0.5}}). The semi-saturation constant is the value of
+#'       time at which the boundaries have collapsed by half \eqn{\kappa}.
 #'     \item Contamination (\eqn{g}). Sets the strength of the contamination process. Contamination
 #'       process is a uniform distribution \eqn{f_c(t)} where \eqn{f_c(t) = 1/(g_u-g_l)}
 #'       if \eqn{g_l <= t <= g_u} and \eqn{f_c(t) = 0} if \eqn{t < g_l} or \eqn{t > g_u}. It is
@@ -296,21 +306,27 @@ rLTM <- function(n,
 #' @param t_res time resolution
 #' @return list of RTs and corresponding defective PDFs at lower and upper threshold
 #' @references
-#' Murrow, M., & Holmes, W. R. (2023). PyBEAM: A Bayesian approach to parameter inference
-#'   for a wide class of binary evidence accumulation models. \emph{Behavior Research
-#'   Methods, 56}(3), 2636-2656.
+#' Churchland, A. K., Kiani, R., & Shadlen, M. N. (2008). Decision-making with multiple
+#'   alternatives. \emph{Nature Neuroscience, 11}(6), 693-702.
+#'
+#' Hanks, T. D., Mazurek, M. E., Kiani, R., Hopp, E., & Shadlen, M. N. (2011). Elapsed
+#'   Decision Time Affects the Weighting of Prior Probability in a Perceptual Decision
+#'   Task. \emph{The Journal of Neuroscience, 31}(17), 6339-6352.
+#'
+#' Voskuilen, C., Ratcliff, R., & Smith, P. L. (2016). Comparing fixed and collapsing boundary
+#'   versions of the diffusion model. \emph{Journal of Mathematical Psychology, 73}, 59-79.
 #' @author Raphael Hartmann & Matthew Murrow
 #' @useDynLib "ream", .registration=TRUE
 #' @export
-dLTM_grid <- function(rt_max = 10.0,
-                      phi = c(0.3, 0.5, 1.0, 1.0, 1.5, 1.0, 0.0, 0.0, 1.0),
+dRTM_grid <- function(rt_max = 10.0,
+                      phi = c(0.3, 0.5, 1.0, 1.0, 1.5, 0.5, 0.0, 0.0, 1.0),
                       x_res = "default",
                       t_res = "default") {
 
 
   # constants
-  modelname <- "LTM"
-  Nphi <- 9
+  modelname <- "RTM"
+  Nphi <- 10
 
 
   # checking input

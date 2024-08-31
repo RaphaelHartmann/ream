@@ -1,27 +1,14 @@
 
 
 
-#' Leakage Flip Model
+#' Custom Time- and Weight-Dependent Drift Diffusion Model
 #'
-#' Density (PDF), distribution function (CDF), and random sampler for the leakage
-#'   flip model (LFM).
+#' Density (PDF), distribution function (CDF), and random sampler for a custom time- and weight-dependent (CSTM_TW) drift diffusion model.
 #'
 #' @param rt vector of response times
 #' @param resp vector of responses ("upper" and "lower")
 #' @param n number of samples
-#' @param phi parameter vector in the following order:
-#'   \itemize{
-#'     \item non-decision time
-#'     \item relative starting point
-#'     \item ?
-#'     \item ?
-#'     \item ?
-#'     \item diffusion rate
-#'     \item upper threshold (equals negative lower threshold)
-#'     \item contamination strength
-#'     \item contamination probability for the lower response
-#'     \item contamination probability for the upper response
-#'   }
+#' @param phi parameter vector in your specified order
 #' @param x_res spatial/evidence resolution
 #' @param t_res time resolution
 #' @param dt step size of time. We recommend 0.00001 (1e-5)
@@ -33,19 +20,8 @@
 #' Murrow, M., & Holmes, W. R. (2023). PyBEAM: A Bayesian approach to parameter
 #'   inference for a wide class of binary evidence accumulation models.
 #'   \emph{Behavior Research Methods}, 1-21.
-#' @examples
-#' # Probability density function
-#' dLFM(rt = c(1.2, 0.6, 0.4), resp = c("upper", "lower", "lower"),
-#'      phi = c(0.3, 0.5, 1.0, 0.5, 0.5, 1.0, 0.5, 0.0, 0.0, 1.0))
-#'
-#' # Cumulative distribution function
-#' pLFM(rt = c(1.2, 0.6, 0.4), resp = c("upper", "lower", "lower"),
-#'      phi = c(0.3, 0.5, 1.0, 0.5, 0.5, 1.0, 0.5, 0.0, 0.0, 1.0))
-#'
-#' # Random sampling
-#' rLFM(n = 100, phi = c(0.3, 0.5, 1.0, 0.5, 0.5, 1.0, 0.5, 0.0, 0.0, 1.0))
 #' @author Raphael Hartmann & Matthew Murrow
-#' @name LFM
+#' @name CSTM_TW
 NULL
 
 
@@ -55,19 +31,21 @@ NULL
 
 
 
-#' @rdname LFM
+#' @rdname CSTM_TW
 #' @useDynLib "ream", .registration=TRUE
 #' @export
-dLFM <- function(rt,
-                 resp,
-                 phi = c(0.3, 0.5, 1.0, 0.5, 0.5, 1.0, 0.5, 0.0, 0.0, 1.0),
-                 x_res = "default",
-                 t_res = "default") {
+dCSTM_TW <- function(rt,
+                     resp,
+                     phi = rep(0, 100),
+                     x_res = "default",
+                     t_res = "default") {
 
 
   # constants
-  modelname <- "LFM"
-  Nphi <- 10
+  modelname <- "CSTM_TW"
+  phi_len <- length(phi)
+  phi <- c(phi, rep(0, 100-phi_len))
+  Nphi <- 100
 
 
   # check
@@ -130,20 +108,21 @@ dLFM <- function(rt,
 
 
 
-#' @rdname LFM
+#' @rdname CSTM_TW
 #' @useDynLib "ream", .registration=TRUE
 #' @export
-pLFM <- function(rt,
-                 resp,
-                 phi = c(0.3, 0.5, 1.0, 0.5, 0.5, 1.0, 0.5, 0.0, 0.0, 1.0),
-                 x_res = "default",
-                 t_res = "default") {
+pCSTM_TW <- function(rt,
+                     resp,
+                     phi = rep(0, 100),
+                     x_res = "default",
+                     t_res = "default") {
 
 
   # constants
-  modelname <- "LFM"
-  Nphi <- 10
-
+  modelname <- "CSTM_TW"
+  phi_len <- length(phi)
+  phi <- c(phi, rep(0, 100-phi_len))
+  Nphi <- 100
 
   # check
   dist_checks(rt, resp, phi, Nphi, x_res, t_res, modelname)
@@ -173,6 +152,7 @@ pLFM <- function(rt,
   REAL_RTU <- as.double(RTU[order_u])
   INTEGER <- c(N_deps = opt[[2]], N_rtl = length(REAL_RTL), N_rtu = length(REAL_RTU), Nphi = length(phi))
   CHAR <- modelname
+
 
   # call C++ function
   out <- .Call("CDF",
@@ -204,17 +184,18 @@ pLFM <- function(rt,
 
 
 
-#' @rdname LFM
+#' @rdname CSTM_TW
 #' @useDynLib "ream", .registration=TRUE
 #' @export
-rLFM <- function(n,
-                 phi = c(0.3, 0.5, 1.0, 0.5, 0.5, 1.0, 0.5, 0.0, 0.0, 1.0),
-                 dt = 0.00001) {
+rCSTM_TW <- function(n,
+                     phi = rep(0, 100),
+                     dt = 0.00001) {
 
   # constants
-  modelname <- "LFM"
-  Nphi <- 10
-
+  modelname <- "CSTM_TW"
+  phi_len <- length(phi)
+  phi <- c(phi, rep(0, 100-phi_len))
+  Nphi <- 100
 
   # check arguments
   sim_checks(n, phi, Nphi, dt, modelname)
@@ -252,46 +233,32 @@ rLFM <- function(n,
 
 
 
-#' Generate Grid for PDF of the Leakage Flip Model
+#' Generate Grid for PDF of Custom Time- and Weight-Dependent Drift Diffusion Model
 #'
 #' Beschreibung.
 #'
 #' @param rt_max maximal response time <- max(rt)
-#' @param phi parameter vector in the following order:
-#'   \itemize{
-#'     \item non-decision time
-#'     \item relative starting point
-#'     \item ?
-#'     \item ?
-#'     \item ?
-#'     \item diffusion rate
-#'     \item upper threshold (equals negative lower threshold)
-#'     \item contamination strength
-#'     \item contamination probability for the lower response
-#'     \item contamination probability for the upper response
-#'   }
+#' @param phi parameter vector in your order
 #' @param x_res spatial/evidence resolution
 #' @param t_res time resolution
 #' @return such and such
 #' @references
 #' Murrow, M., & Holmes, W. R. (2023). PyBEAM: A Bayesian approach to parameter inference for a wide class of binary evidence accumulation models.
 #'   Behavior Research Methods.
-#'
-#'
-#' @examples
-#' # here come some examples
 #' @author Raphael Hartmann & Matthew Murrow
 #' @useDynLib "ream", .registration=TRUE
 #' @export
-dLFM_grid <- function(rt_max = 10.0,
-                     phi = c(0.3, 0.5, 1.0, 0.5, 0.5, 1.0, 0.5, 0.0, 0.0, 1.0),
-                     x_res = "default",
-                     t_res = "default") {
+dCSTM_TW_grid <- function(rt_max = 10.0,
+                          phi = c(0.3, 0.5, 1.0, 1.0, 0.75, 0.0, 0.0, 1.0),
+                          x_res = "default",
+                          t_res = "default") {
 
 
   # constants
-  modelname <- "LFM"
-  Nphi <- 10
+  modelname <- "CSTM_TW"
+  phi_len <- length(phi)
+  phi <- c(phi, rep(0, 100-phi_len))
+  Nphi <- 100
 
 
   # checking input

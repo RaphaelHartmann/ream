@@ -1,27 +1,43 @@
 
 
 
-#' Urgency Gating Flip Model
+#' Urgency Gating Model With Flip
 #'
-#' Density (PDF), distribution function (CDF), and random sampler for the urgency
-#'   gating flip model (UGFM).
+#' UGM with time varying drift rate. Specifically, the stimulus strength changes from
+#'   \eqn{E_{01}} to \eqn{E_{02}} at time \eqn{t_0}. Identified by (Trueblood et al., 2021) as
+#'   a way to improve recovery of the leakage rate and urgency. Drift rate becomes
+#'   \deqn{v(x,t) = E_01*(1 + k*t) + (k/(1+k*t) - L)*x if t < t_0}
+#'   and
+#'   \deqn{v(x,t) = E_02*(1 + k*t) + (k/(1+k*t) - L)*x if t >= t_0.}
 #'
 #' @param rt vector of response times
 #' @param resp vector of responses ("upper" and "lower")
 #' @param n number of samples
 #' @param phi parameter vector in the following order:
 #'   \itemize{
-#'     \item non-decision time
-#'     \item relative starting point
-#'     \item ?
-#'     \item ?
-#'     \item ?
-#'     \item ?
-#'     \item diffusion rate
-#'     \item upper threshold (equals negative lower threshold)
-#'     \item contamination strength
-#'     \item contamination probability for the lower response
-#'     \item contamination probability for the upper response
+#'     \item Non-decision time (\eqn{t_{nd}}). Time for non-decision processes such as stimulus
+#'       encoding and response execution. Total decision time t is the sum of the decision
+#'       and non-decision times.
+#'     \item Relative start (\eqn{w}). Sets the start point of accumulation as a ratio of
+#'       the two decision thresholds. Related to the absolute start z point via equation
+#'       \eqn{z = b_l + w*(b_u - b_l)}.
+#'     \item Stimulus strength (\eqn{E_0}). Strength of the stimulus.
+#'     \item Leakage (\eqn{L}). Rate of leaky integration.
+#'     \item Urgency (\eqn{k}). Decision urgency. If \eqn{k} is small, the choice is dominated by
+#'       leakage and approximates a LM. If \eqn{k} is large, it is an urgency dominated decision.
+#'     \item ????????? \eqn{t_0}
+#'     \item Noise scale (\eqn{\sigma}). Model scaling parameter.
+#'     \item Decision thresholds (\eqn{b}). Sets the location of each decision threshold. The
+#'       upper threshold \eqn{b_u} is above 0 and the lower threshold \eqn{b_l} is below 0 such that
+#'       \eqn{b_u = -b_l = b}. The threshold separation \eqn{a = 2b}.
+#'     \item Contamination (\eqn{g}). Sets the strength of the contamination process. Contamination
+#'       process is a uniform distribution \eqn{f_c(t)} where \eqn{f_c(t) = 1/(g_u-g_l)}
+#'       if \eqn{g_l <= t <= g_u} and \eqn{f_c(t) = 0} if \eqn{t < g_l} or \eqn{t > g_u}. It is
+#'       combined with PDF \eqn{f_i(t)} to give the final combined distribution
+#'       \eqn{f_{i,c}(t) = g*f_c(t) + (1-g)*f_i(t)}, which is then output by the program.
+#'       If \eqn{g = 0}, it just outputs \eqn{f_i(t)}.
+#'     \item Lower bound of contamination distribution (\eqn{g_l}). See parameter \eqn{g}.
+#'     \item Upper bound of contamination distribution (\eqn{g_u}). See parameter \eqn{g}.
 #'   }
 #' @param x_res spatial/evidence resolution
 #' @param t_res time resolution
@@ -31,22 +47,24 @@
 #'   and the sum of the log-CDFs, and for the random sampler a list of response
 #'   times (rt) and response thresholds (resp).
 #' @references
-#' Murrow, M., & Holmes, W. R. (2023). PyBEAM: A Bayesian approach to parameter
-#'   inference for a wide class of binary evidence accumulation models.
-#'   \emph{Behavior Research Methods}, 1-21.
+#' Cisek, P., Puskas, G. A., & El-Murr, S. (2009). Decisions in changing conditions:
+#'   the urgency-gating model. \emph{Journal of Neuroscience, 29}(37), 11560-11571.
+#'
+#' Trueblood, J. S., Heathcote, A., Evans, N. J., & Holmes, W. R. (2021). Urgency, leakage,
+#'   and the relative nature of information processing in decision-making.
 #' @examples
 #' # Probability density function
-#' dUGFM(rt = c(1.2, 0.6, 0.4), resp = c("upper", "lower", "lower"),
+#' dUGMF(rt = c(1.2, 0.6, 0.4), resp = c("upper", "lower", "lower"),
 #'       phi = c(0.3, 0.5, 1.0, 0.5, 0.5, 0.5, 1.0, 1.5, 0.0, 0.0, 1.0))
 #'
 #' # Cumulative distribution function
-#' pUGFM(rt = c(1.2, 0.6, 0.4), resp = c("upper", "lower", "lower"),
+#' pUGMF(rt = c(1.2, 0.6, 0.4), resp = c("upper", "lower", "lower"),
 #'       phi = c(0.3, 0.5, 1.0, 0.5, 0.5, 0.5, 1.0, 1.5, 0.0, 0.0, 1.0))
 #'
 #' # Random sampling
-#' rUGFM(n = 100, phi = c(0.3, 0.5, 1.0, 0.5, 0.5, 0.5, 1.0, 1.5, 0.0, 0.0, 1.0))
+#' rUGMF(n = 100, phi = c(0.3, 0.5, 1.0, 0.5, 0.5, 0.5, 1.0, 1.5, 0.0, 0.0, 1.0))
 #' @author Raphael Hartmann & Matthew Murrow
-#' @name UGFM
+#' @name UGMF
 NULL
 
 
@@ -56,10 +74,10 @@ NULL
 
 
 
-#' @rdname UGFM
+#' @rdname UGMF
 #' @useDynLib "ream", .registration=TRUE
 #' @export
-dUGFM <- function(rt,
+dUGMF <- function(rt,
                  resp,
                  phi = c(0.3, 0.5, 1.0, 0.5, 0.5, 0.5, 1.0, 1.5, 0.0, 0.0, 1.0),
                  x_res = "default",
@@ -67,7 +85,7 @@ dUGFM <- function(rt,
 
 
   # constants
-  modelname <- "UGFM"
+  modelname <- "UGMF"
   Nphi <- 11
 
 
@@ -131,10 +149,10 @@ dUGFM <- function(rt,
 
 
 
-#' @rdname UGFM
+#' @rdname UGMF
 #' @useDynLib "ream", .registration=TRUE
 #' @export
-pUGFM <- function(rt,
+pUGMF <- function(rt,
                  resp,
                  phi = c(0.3, 0.5, 1.0, 0.5, 0.5, 0.5, 1.0, 1.5, 0.0, 0.0, 1.0),
                  x_res = "default",
@@ -142,7 +160,7 @@ pUGFM <- function(rt,
 
 
   # constants
-  modelname <- "UGFM"
+  modelname <- "UGMF"
   Nphi <- 11
 
 
@@ -206,15 +224,15 @@ pUGFM <- function(rt,
 
 
 
-#' @rdname UGFM
+#' @rdname UGMF
 #' @useDynLib "ream", .registration=TRUE
 #' @export
-rUGFM <- function(n,
+rUGMF <- function(n,
                  phi = c(0.3, 0.5, 1.0, 0.5, 0.5, 0.5, 1.0, 1.5, 0.0, 0.0, 1.0),
                  dt = 0.00001) {
 
   # constants
-  modelname <- "UGFM"
+  modelname <- "UGMF"
   Nphi <- 11
 
 
@@ -254,45 +272,58 @@ rUGFM <- function(n,
 
 
 
-#' Generate Grid for PDF of the Urgency Gating Flip Model
+#' Generate Grid for PDF of the Urgency Gating Model With Flip
 #'
-#' Beschreibung.
+#' Generate a grid of response-time values and the corresponding PDF values.
+#'   For more details on the model see, for example, \code{\link{dUGMF}}.
 #'
 #' @param rt_max maximal response time <- max(rt)
 #' @param phi parameter vector in the following order:
 #'   \itemize{
-#'     \item non-decision time
-#'     \item relative starting point
-#'     \item ?
-#'     \item ?
-#'     \item ?
-#'     \item ?
-#'     \item diffusion rate
-#'     \item upper threshold (equals negative lower threshold)
-#'     \item contamination strength
-#'     \item contamination probability for the lower response
-#'     \item contamination probability for the upper response
+#'     \item Non-decision time (\eqn{t_{nd}}). Time for non-decision processes such as stimulus
+#'       encoding and response execution. Total decision time t is the sum of the decision
+#'       and non-decision times.
+#'     \item Relative start (\eqn{w}). Sets the start point of accumulation as a ratio of
+#'       the two decision thresholds. Related to the absolute start z point via equation
+#'       \eqn{z = b_l + w*(b_u - b_l)}.
+#'     \item Stimulus strength (\eqn{E_0}). Strength of the stimulus.
+#'     \item Leakage (\eqn{L}). Rate of leaky integration.
+#'     \item Urgency (\eqn{k}). Decision urgency. If \eqn{k} is small, the choice is dominated by
+#'       leakage and approximates a LM. If \eqn{k} is large, it is an urgency dominated decision.
+#'     \item ????????? \eqn{t0}
+#'     \item Noise scale (\eqn{\sigma}). Model scaling parameter.
+#'     \item Decision thresholds (\eqn{b}). Sets the location of each decision threshold. The
+#'       upper threshold \eqn{b_u} is above 0 and the lower threshold \eqn{b_l} is below 0 such that
+#'       \eqn{b_u = -b_l = b}. The threshold separation \eqn{a = 2b}.
+#'     \item Contamination (\eqn{g}). Sets the strength of the contamination process. Contamination
+#'       process is a uniform distribution \eqn{f_c(t)} where \eqn{f_c(t) = 1/(g_u-g_l)}
+#'       if \eqn{g_l <= t <= g_u} and \eqn{f_c(t) = 0} if \eqn{t < g_l} or \eqn{t > g_u}. It is
+#'       combined with PDF \eqn{f_i(t)} to give the final combined distribution
+#'       \eqn{f_{i,c}(t) = g*f_c(t) + (1-g)*f_i(t)}, which is then output by the program.
+#'       If \eqn{g = 0}, it just outputs \eqn{f_i(t)}.
+#'     \item Lower bound of contamination distribution (\eqn{g_l}). See parameter \eqn{g}.
+#'     \item Upper bound of contamination distribution (\eqn{g_u}). See parameter \eqn{g}.
 #'   }
 #' @param x_res spatial/evidence resolution
 #' @param t_res time resolution
-#' @return such and such
+#' @return list of RTs and corresponding defective PDFs at lower and upper threshold
 #' @references
-#' Murrow, M., & Holmes, W. R. (2023). PyBEAM: A Bayesian approach to parameter inference for a wide class of binary evidence accumulation models.
-#'   Behavior Research Methods.
+#' Cisek, P., Puskas, G. A., & El-Murr, S. (2009). Decisions in changing conditions:
+#'   the urgency-gating model. \emph{Journal of Neuroscience, 29}(37), 11560-11571.
 #'
-#' @examples
-#' # here come some examples
+#' Trueblood, J. S., Heathcote, A., Evans, N. J., & Holmes, W. R. (2021). Urgency, leakage,
+#'   and the relative nature of information processing in decision-making.
 #' @author Raphael Hartmann & Matthew Murrow
 #' @useDynLib "ream", .registration=TRUE
 #' @export
-dUGFM_grid <- function(rt_max = 10.0,
+dUGMF_grid <- function(rt_max = 10.0,
                       phi = c(0.3, 0.5, 1.0, 0.5, 0.5, 0.5, 1.0, 1.5, 0.0, 0.0, 1.0),
                       x_res = "default",
                       t_res = "default") {
 
 
   # constants
-  modelname <- "UGFM"
+  modelname <- "UGMF"
   Nphi <- 11
 
 

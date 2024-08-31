@@ -32,17 +32,31 @@ rWTM(n, phi = c(0.3, 0.5, 1, 1, 1.5, 0.2, 0.5, -1, 0, 0, 1), dt = 1e-05)
 
 \item{phi}{parameter vector in the following order:
 \itemize{
-\item non-decision time
-\item relative starting point
-\item drift rate
-\item diffusion rate
-\item ?
-\item ?
-\item ?
-\item ?
-\item contamination strength
-\item contamination probability for the lower response
-\item contamination probability for the upper response
+\item Non-decision time (\eqn{t_{nd}}). Time for non-decision processes such as stimulus
+encoding and response execution. Total decision time t is the sum of the decision
+and non-decision times.
+\item Relative start (\eqn{w}). Sets the start point of accumulation as a ratio of
+the two decision thresholds. Related to the absolute start z point via equation
+\eqn{z = b_l + w*(b_u - b_l)}.
+\item Stimulus strength (\eqn{\mu}). Strength of the stimulus and used to set the drift
+rate. For changing threshold models \eqn{v(x,t) = \mu}.
+\item Noise scale (\eqn{\sigma}). Model noise scale parameter.
+\item Initial decision threshold location (\eqn{b_0}). Sets the location of each decision
+threshold at time \eqn{t = 0}.
+\item Decision threshold scale (\eqn{lamb}). Sets the approximate time for threshold
+collapse or rise.
+\item Decision threshold scale (\eqn{\kappa}). Sets the threshold shape. \eqn{\kappa > 1} produces
+logistic-like thresholds, \eqn{\kappa < 1} produces exponential-like thresholds.
+\item Collapse parameter (\eqn{c}). Sets the amount of collapse. \eqn{c = -1} gives collapse to
+zero, \eqn{c = 1} gives no collapse, and \eqn{c > 1} gives rise.
+\item Contamination (\eqn{g}). Sets the strength of the contamination process. Contamination
+process is a uniform distribution \eqn{f_c(t)} where \eqn{f_c(t) = 1/(g_u-g_l)}
+if \eqn{g_l <= t <= g_u} and \eqn{f_c(t) = 0} if \eqn{t < g_l} or \eqn{t > g_u}. It is
+combined with PDF \eqn{f_i(t)} to give the final combined distribution
+\eqn{f_{i,c}(t) = g*f_c(t) + (1-g)*f_i(t)}, which is then output by the program.
+If \eqn{g = 0}, it just outputs \eqn{f_i(t)}.
+\item Lower bound of contamination distribution (\eqn{g_l}). See parameter \eqn{g}.
+\item Upper bound of contamination distribution (\eqn{g_u}). See parameter \eqn{g}.
 }}
 
 \item{x_res}{spatial/evidence resolution}
@@ -60,8 +74,8 @@ and the sum of the log-CDFs, and for the random sampler a list of response
 times (rt) and response thresholds (resp).
 }
 \description{
-Density (PDF), distribution function (CDF), and random sampler for the Weibull
-threshold model (WTM).
+SDDM with thresholds that change with time. Thresholds are Weibull functions of the
+form \eqn{b_u(t) = -b_l(t) = b_0 - b_0*(1 – c)*[1 - exp(-(t/lamb)^{\kappa})].}
 }
 \examples{
 # Probability density function
@@ -76,9 +90,13 @@ pWTM(rt = c(1.2, 0.6, 0.4), resp = c("upper", "lower", "lower"),
 rWTM(n = 100, phi = c(0.3, 0.5, 1.0, 1.0, 1.5, 0.2, 0.5, -1.0, 0.0, 0.0, 1.0))
 }
 \references{
-Murrow, M., & Holmes, W. R. (2023). PyBEAM: A Bayesian approach to parameter
-inference for a wide class of binary evidence accumulation models.
-\emph{Behavior Research Methods}, 1-21.
+Hawkins, G. E., Forstmann, B. U., Wagenmakers, E.-J., Ratcliff, R., & Brown, S. D. (2015).
+Revisiting the Evidence for Collapsing Boundaries and Urgency Signals in Perceptual
+Decision-Making. \emph{The Journal of Neuroscience, 35}(6), 2476-2484.
+
+Palestro, J. J., Weichart, E., Sederberg, P. B., & Turner, B. M. (2018). Some task demands
+induce collapsing bounds: Evidence from a behavioral analysis. \emph{Psychonomic
+Bulletin & Review, 25}(4), 1225-1248.
 }
 \author{
 Raphael Hartmann & Matthew Murrow

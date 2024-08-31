@@ -16,16 +16,28 @@ dUGM_grid(
 
 \item{phi}{parameter vector in the following order:
 \itemize{
-\item non-decision time
-\item relative starting point
-\item ?
-\item ?
-\item ?
-\item diffusion rate
-\item upper threshold (equals negative lower threshold)
-\item contamination strength
-\item contamination probability for the lower response
-\item contamination probability for the upper response
+\item Non-decision time (\eqn{t_{nd}}). Time for non-decision processes such as stimulus
+encoding and response execution. Total decision time t is the sum of the decision
+and non-decision times.
+\item Relative start (\eqn{w}). Sets the start point of accumulation as a ratio of
+the two decision thresholds. Related to the absolute start z point via equation
+\eqn{z = b_l + w*(b_u - b_l)}.
+\item Stimulus strength (\eqn{E_0}). Strength of the stimulus.
+\item Leakage (\eqn{L}). Rate of leaky integration.
+\item Urgency (\eqn{k}). Decision urgency. If \eqn{k} is small, the choice is dominated by
+leakage and approximates a LM. If \eqn{k} is large, it is an urgency dominated decision.
+\item Noise scale (\eqn{\sigma}). Model scaling parameter.
+\item Decision thresholds (\eqn{b}). Sets the location of each decision threshold. The
+upper threshold \eqn{b_u} is above 0 and the lower threshold \eqn{b_l} is below 0 such that
+\eqn{b_u = -b_l = b}. The threshold separation \eqn{a = 2b}.
+\item Contamination (\eqn{g}). Sets the strength of the contamination process. Contamination
+process is a uniform distribution \eqn{f_c(t)} where \eqn{f_c(t) = 1/(g_u-g_l)}
+if \eqn{g_l <= t <= g_u} and \eqn{f_c(t) = 0} if \eqn{t < g_l} or \eqn{t > g_u}. It is
+combined with PDF \eqn{f_i(t)} to give the final combined distribution
+\eqn{f_{i,c}(t) = g*f_c(t) + (1-g)*f_i(t)}, which is then output by the program.
+If \eqn{g = 0}, it just outputs \eqn{f_i(t)}.
+\item Lower bound of contamination distribution (\eqn{g_l}). See parameter \eqn{g}.
+\item Upper bound of contamination distribution (\eqn{g_u}). See parameter \eqn{g}.
 }}
 
 \item{x_res}{spatial/evidence resolution}
@@ -33,20 +45,19 @@ dUGM_grid(
 \item{t_res}{time resolution}
 }
 \value{
-such and such
+list of RTs and corresponding defective PDFs at lower and upper threshold
 }
 \description{
-Beschreibung.
-}
-\examples{
-# here come some examples
+Generate a grid of response-time values and the corresponding PDF values.
+For more details on the model see, for example, \code{\link{dUGM}}.
 }
 \references{
-Murrow, M., & Holmes, W. R. (2023). PyBEAM: A Bayesian approach to parameter inference for a wide class of binary evidence accumulation models.
-Behavior Research Methods.
-
 Cisek, P., Puskas, G. A., & El-Murr, S. (2009). Decisions in changing conditions:
 the urgency-gating model. \emph{Journal of Neuroscience, 29}(37), 11560-11571.
+
+Trueblood, J. S., Heathcote, A., Evans, N. J., & Holmes, W. R. (2021). Urgency, leakage,
+and the relative nature of information processing in decision-making.
+\emph{Psychological Review, 128}(1), 160-186.
 }
 \author{
 Raphael Hartmann & Matthew Murrow

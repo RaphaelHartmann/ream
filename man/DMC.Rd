@@ -32,18 +32,32 @@ rDMC(n, phi = c(0.3, 0.5, -1, 0.2, 0.05, 2.5, 3, 1, 0.5, 0, 0, 1), dt = 1e-05)
 
 \item{phi}{parameter vector in the following order:
 \itemize{
-\item non-decision time
-\item relative starting point (spBias)
-\item congruency (1.0: congruent; -1.0: incongruent)
-\item peak amplitude of automatic activation (automatic drift rate; amp)
-\item time to peak automatic activation (automatic drift rate; tau)
-\item shape of automatic process drift rate (automatic drift rate; aaShape)
-\item drift rate for controlled process (drc)
-\item diffusion rate (typically 1.0; sigm)
-\item upper threshold (equals negative lower threshold; bnds)
-\item contamination strength
-\item contamination probability for the lower response
-\item contamination probability for the upper response
+\item Non-decision time (\eqn{t_{nd}}). Time for non-decision processes such as stimulus
+encoding and response execution. Total decision time t is the sum of the decision
+and non-decision times.
+\item Relative start (\eqn{w}). Sets the start point of accumulation as a ratio of
+the two decision thresholds. Related to the absolute start z point via equation
+\eqn{z = b_l + w*(b_u - b_l)}.
+\item Coherence parameter (\eqn{s}). Sets stimulus coherence. If \eqn{s = 1}, coherent condition;
+if \eqn{s = 0}, neutral condition; if \eqn{s = -1}, incoherent condition.
+\item Automatic process amplitude (\eqn{A}). Max value of automatic process.
+\item Scale parameter (\eqn{\tau}). Contributes to time automatic process. Time to max
+\eqn{t_max = (a – 1)*\tau}.
+    \item Shape parameter (\eqn{a}). Indicates the shape of the automatic process. Must
+have value more than 1 (\eqn{a > 1}).
+\item Drift rate of the controlled process (\eqn{\mu_c}).
+\item Noise scale (\eqn{\sigma}). Model noise scale parameter.
+\item Decision thresholds (\eqn{b}). Sets the location of each decision threshold. The
+upper threshold \eqn{b_u} is above 0 and the lower threshold \eqn{b_l} is below 0 such that
+\eqn{b_u = -b_l = b}. The threshold separation \eqn{a = 2b}.
+\item Contamination (\eqn{g}). Sets the strength of the contamination process. Contamination
+process is a uniform distribution \eqn{f_c(t)} where \eqn{f_c(t) = 1/(g_u-g_l)}
+if \eqn{g_l <= t <= g_u} and \eqn{f_c(t) = 0} if \eqn{t < g_l} or \eqn{t > g_u}. It is
+combined with PDF \eqn{f_i(t)} to give the final combined distribution
+\eqn{f_{i,c}(t) = g*f_c(t) + (1-g)*f_i(t)}, which is then output by the program.
+If \eqn{g = 0}, it just outputs \eqn{f_i(t)}.
+\item Lower bound of contamination distribution (\eqn{g_l}). See parameter \eqn{g}.
+\item Upper bound of contamination distribution (\eqn{g_u}). See parameter \eqn{g}.
 }}
 
 \item{x_res}{spatial/evidence resolution}
@@ -61,8 +75,11 @@ and the sum of the log-CDFs, and for the random sampler a list of response
 times (rt) and response thresholds (resp).
 }
 \description{
-Density (PDF), distribution function (CDF), and random sampler for the diffusion
-model for conflict tasks (DMC) by Ulrich, Schröter, Leuthold, and Birngruber (2015).
+The DMC is a two-process evidence accumulation model for the study of conflict tasks.
+It sums together a controlled and an automatic process to generate a single accumulator
+for generating the likelihood function. This accumulator has the same parameters as
+the SDDM with the exception of the drift rate, given by
+\deqn{v(x,t) = s*A*exp(-t/\tau)*[e*t/(\tau*(a-1))]^{a-1}*[(a-1)/t - 1/\tau] + \mu_c.}
 }
 \examples{
 # Probability density function
@@ -77,10 +94,6 @@ pDMC(rt = c(1.2, 0.6, 0.4), resp = c("upper", "lower", "lower"),
 rDMC(n = 100, phi = c(0.3, 0.5, -1.0, 0.2, 0.05, 2.5, 3.0, 1.0, 0.5, 0.0, 0.0, 1.0))
 }
 \references{
-Murrow, M., & Holmes, W. R. (2023). PyBEAM: A Bayesian approach to parameter
-inference for a wide class of binary evidence accumulation models.
-\emph{Behavior Research Methods}, 1-21.
-
 Ulrich, R., Schröter, H., Leuthold, H., & Birngruber, T. (2015). Automatic
 and controlled stimulus processing in conflict tasks: Superimposed diffusion
 processes and delta functions. \emph{Cognitive psychology, 78}, 148-174.

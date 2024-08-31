@@ -1,27 +1,41 @@
 
 
 
-#' Revised Diffusion Model for Conflict Tasks
+#' Revised Diffusion Model of Conflict Tasks
 #'
-#' Density (PDF), distribution function (CDF), and random sampler for the revised
-#'   diffusion model for conflict tasks (DMC) by Lee and Sewell (2023).
+#' A DMC-like model which modifies the shape of the controlled and automatic processes
+#'   to ensure consistent stimulus representation across the task. It maintains all SDDM
+#'   parameters outside the drift rate which is \eqn{v(x,t) = w_a(t)*d_a + w_c(t)*d_c}, where
+#'   \eqn{w_a(t) = A_0*exp(-k*t)} and \eqn{w_c(t) = 1 - w_a(t)}.
 #'
 #' @param rt vector of response times
 #' @param resp vector of responses ("upper" and "lower")
 #' @param n number of samples
 #' @param phi parameter vector in the following order:
 #'   \itemize{
-#'     \item non-decision time
-#'     \item relative starting point (spBias)
-#'     \item ? peak amplitude of automatic activation (automatic drift rate; amp)
-#'     \item ? time to peak automatic activation (automatic drift rate; tau)
-#'     \item ? shape of automatic process drift rate (automatic drift rate; aaShape)
-#'     \item ? drift rate for controlled process (drc)
-#'     \item diffusion rate (typically 1.0; sigm)
-#'     \item upper threshold (equals negative lower threshold; bnds)
-#'     \item contamination strength
-#'     \item contamination probability for the lower response
-#'     \item contamination probability for the upper response
+#'     \item Non-decision time (\eqn{t_{nd}}). Time for non-decision processes such as stimulus
+#'       encoding and response execution. Total decision time t is the sum of the decision
+#'       and non-decision times.
+#'     \item Relative start (\eqn{w}). Sets the start point of accumulation as a ratio of
+#'       the two decision thresholds. Related to the absolute start z point via equation
+#'       \eqn{z = b_l + w*(b_u - b_l)}.
+#'     \item Automatic process amplitude (\eqn{A_0}). Max value of automatic process.
+#'     \item Attention shift parameter (\eqn{k}). Encodes congruency and thus differs between
+#'       congruent and incongruent trials.
+#'     \item Base drift rate of the automatic channel (\eqn{d_a}).
+#'     \item Base drift rate of the controlled channel (\eqn{d_c}).
+#'     \item Noise scale (\eqn{\sigma}). Model noise scale parameter.
+#'     \item Decision thresholds (\eqn{b}). Sets the location of each decision threshold. The
+#'       upper threshold \eqn{b_u} is above 0 and the lower threshold \eqn{b_l} is below 0 such that
+#'       \eqn{b_u = -b_l = b}. The threshold separation \eqn{a = 2b}.
+#'     \item Contamination (\eqn{g}). Sets the strength of the contamination process. Contamination
+#'       process is a uniform distribution \eqn{f_c(t)} where \eqn{f_c(t) = 1/(g_u-g_l)}
+#'       if \eqn{g_l <= t <= g_u} and \eqn{f_c(t) = 0} if \eqn{t < g_l} or \eqn{t > g_u}. It is
+#'       combined with PDF \eqn{f_i(t)} to give the final combined distribution
+#'       \eqn{f_{i,c}(t) = g*f_c(t) + (1-g)*f_i(t)}, which is then output by the program.
+#'       If \eqn{g = 0}, it just outputs \eqn{f_i(t)}.
+#'     \item Lower bound of contamination distribution (\eqn{g_l}). See parameter \eqn{g}.
+#'     \item Upper bound of contamination distribution (\eqn{g_u}). See parameter \eqn{g}.
 #'   }
 #' @param x_res spatial/evidence resolution
 #' @param t_res time resolution
@@ -31,12 +45,8 @@
 #'   and the sum of the log-CDFs, and for the random sampler a list of response
 #'   times (rt) and response thresholds (resp).
 #' @references
-#' Murrow, M., & Holmes, W. R. (2023). PyBEAM: A Bayesian approach to parameter
-#'   inference for a wide class of binary evidence accumulation models.
-#'   \emph{Behavior Research Methods}, 1-21.
-#'
-#' Lee, P. S., & Sewell, D. K. (2023). A revised diffusion model for conflict tasks.
-#'   \emph{Psychonomic Bulletin & Review}, 1-31.
+#' Lee, P.-S., & Sewell, D. K. (2023). A revised diffusion model for conflict tasks.
+#'   \emph{Psychonomic Bulletin &amp; Review, 31}(1), 1–31.
 #' @examples
 #' # Probability density function
 #' dRDMC(rt = c(1.2, 0.6, 0.4), resp = c("upper", "lower", "lower"),
@@ -256,38 +266,44 @@ rRDMC <- function(n,
 
 
 
-#' Generate Grid for PDF of the Revised Diffusion Model for Conflict Tasks
+#' Generate Grid for PDF of the Revised Diffusion Model of Conflict Tasks
 #'
-#' Beschreibung.
+#' Generate a grid of response-time values and the corresponding PDF values.
+#'   For more details on the model see, for example, \code{\link{dRDMC}}.
 #'
 #' @param rt_max maximal response time <- max(rt)
 #' @param phi parameter vector in the following order:
 #'   \itemize{
-#'     \item non-decision time
-#'     \item relative starting point (spBias)
-#'     \item ? congruency (1.0: congruent; -1.0: incongruent)
-#'     \item ? peak amplitude of automatic activation (automatic drift rate; amp)
-#'     \item ? time to peak automatic activation (automatic drift rate; tau)
-#'     \item ? shape of automatic process drift rate (automatic drift rate; aaShape)
-#'     \item drift rate for controlled process (drc)
-#'     \item diffusion rate (typically 1.0; sigm)
-#'     \item upper threshold (equals negative lower threshold; bnds)
-#'     \item contamination strength
-#'     \item contamination probability for the lower response
-#'     \item contamination probability for the upper response
+#'     \item Non-decision time (\eqn{t_{nd}}). Time for non-decision processes such as stimulus
+#'       encoding and response execution. Total decision time t is the sum of the decision
+#'       and non-decision times.
+#'     \item Relative start (\eqn{w}). Sets the start point of accumulation as a ratio of
+#'       the two decision thresholds. Related to the absolute start z point via equation
+#'       \eqn{z = b_l + w*(b_u - b_l)}.
+#'     \item Automatic process amplitude (\eqn{A_0}). Max value of automatic process.
+#'     \item Attention shift parameter (\eqn{k}). Encodes congruency and thus differs between
+#'       congruent and incongruent trials.
+#'     \item Base drift rate of the automatic channel (\eqn{d_a}).
+#'     \item Base drift rate of the controlled channel (\eqn{d_c}).
+#'     \item Noise scale (\eqn{\sigma}). Model noise scale parameter.
+#'     \item Decision thresholds (\eqn{b}). Sets the location of each decision threshold. The
+#'       upper threshold \eqn{b_u} is above 0 and the lower threshold \eqn{b_l} is below 0 such that
+#'       \eqn{b_u = -b_l = b}. The threshold separation \eqn{a = 2b}.
+#'     \item Contamination (\eqn{g}). Sets the strength of the contamination process. Contamination
+#'       process is a uniform distribution \eqn{f_c(t)} where \eqn{f_c(t) = 1/(g_u-g_l)}
+#'       if \eqn{g_l <= t <= g_u} and \eqn{f_c(t) = 0} if \eqn{t < g_l} or \eqn{t > g_u}. It is
+#'       combined with PDF \eqn{f_i(t)} to give the final combined distribution
+#'       \eqn{f_{i,c}(t) = g*f_c(t) + (1-g)*f_i(t)}, which is then output by the program.
+#'       If \eqn{g = 0}, it just outputs \eqn{f_i(t)}.
+#'     \item Lower bound of contamination distribution (\eqn{g_l}). See parameter \eqn{g}.
+#'     \item Upper bound of contamination distribution (\eqn{g_u}). See parameter \eqn{g}.
 #'   }
 #' @param x_res spatial/evidence resolution
 #' @param t_res time resolution
-#' @return such and such
+#' @return list of RTs and corresponding defective PDFs at lower and upper threshold
 #' @references
-#' Murrow, M., & Holmes, W. R. (2023). PyBEAM: A Bayesian approach to parameter inference for a wide class of binary evidence accumulation models.
-#'   Behavior Research Methods.
-#'
-#' Lee, P. S., & Sewell, D. K. (2023). A revised diffusion model for conflict tasks.
-#'   \emph{Psychonomic Bulletin & Review}, 1-31.
-#'
-#' @examples
-#' # here come some examples
+#' Lee, P.-S., & Sewell, D. K. (2023). A revised diffusion model for conflict tasks.
+#'   \emph{Psychonomic Bulletin &amp; Review, 31}(1), 1–31.
 #' @author Raphael Hartmann & Matthew Murrow
 #' @useDynLib "ream", .registration=TRUE
 #' @export

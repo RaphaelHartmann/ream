@@ -1,15 +1,15 @@
-#ifndef MODEL_XT_H
-#define MODEL_XT_H
+#ifndef MODEL_TX_H
+#define MODEL_TX_H
 
 #include "Model.h"
 
 
-class Model_XT : public Model {
+class Model_TX : public Model {
 public:
   /* Constructor */
-  Model_XT();
+  Model_TX();
   /* Virtual destructor */
-  ~Model_XT();
+  ~Model_TX();
 
   /* method used to calculate model PDF function */
   int pdf(double *RsumlogPDF, double *RPDFlow, double *RPDFupp, double *RlogPDFlow, double *RlogPDFupp, std::vector<double> rtl, std::vector<double> rtu, double *phi) const override;

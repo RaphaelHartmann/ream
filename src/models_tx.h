@@ -1,12 +1,12 @@
 
-#ifndef MODELS_XT_H
-#define MODELS_XT_H
+#ifndef MODELS_TX_H
+#define MODELS_TX_H
 
-#include "Model_XT.h"
+#include "Model_TX.h"
 
 
 
-class LFM : public Model_XT {
+class LMF : public Model_TX {
 protected:
 
   /* method for the non-decision time */
@@ -83,7 +83,7 @@ protected:
 
 
 
-class LM : public Model_XT {
+class LM : public Model_TX {
 protected:
 
   /* method for the non-decision time */
@@ -144,7 +144,7 @@ protected:
 
 
 
-class UGM : public Model_XT {
+class UGM : public Model_TX {
 protected:
 
   /* method for the non-decision time */
@@ -209,7 +209,7 @@ protected:
 
 
 
-class UGFM : public Model_XT {
+class UGMF : public Model_TX {
 protected:
 
   /* method for the non-decision time */
@@ -288,6 +288,63 @@ protected:
 
 };
 
+
+
+class CSTM_TX : public Model_TX {
+protected:
+
+  /* method for the non-decision time of process 1 */
+  double non_decision(const double phi[100]) const override {
+    return phi[0];
+  }
+
+  /* method for the start point of process 1 */
+  double relative_start(const double phi[100]) const override {
+    return phi[1];
+  }
+
+  /* method for the drift rate of process 1 */
+  double drift(const double phi[100], double x, double t) const override {
+    return phi[2];
+  }
+
+  /* method for the diffusion rate of process 1 */
+  double diffusion(const double phi[100], double x, double t) const override {
+    return phi[3];
+  }
+
+  /* method for the upper threshold of process 1 */
+  double upper_threshold(const double phi[100], double t) const override {
+    return phi[4];
+  }
+
+  /* method for the lower threshold of process 1 */
+  double lower_threshold(const double phi[100], double t) const override {
+    return -phi[4];
+  }
+
+  /* method for the contamination strength of process 1 */
+  double contamination_strength(const double phi[100]) const override {
+    return phi[5];
+  }
+
+  /* method for the contamination probability distribution of process 1 */
+  double contamination_probability(const double phi[100], double t) const override {
+    double gl = phi[6];
+    double gu = phi[7];
+    double pg = 0.0;
+    if ((t >= gl) && (t <= gu)) {
+      pg = 1.0/(gu - gl);
+    }
+    return pg;
+  }
+
+  /* method for locally modifying the time step size */
+  double modify_dt(const double phi[100], double t) const override {
+    return 1.0;
+  }
+
+};
 
 
 #endif

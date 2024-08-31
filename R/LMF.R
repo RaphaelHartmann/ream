@@ -1,10 +1,12 @@
 
 
 
-#' Linear Threshold Model
+#' Leaky Integration Model With Flip
 #'
-#' SDDM with thresholds that change with time. Thresholds are symmetric linear functions
-#'   of the form \eqn{b_u(t) = -b_l(t) = b_0 - m*t}.
+#' LM with time varying drift rate. Specifically, the stimulus strength changes from
+#'   \eqn{\mu_1} to \eqn{\mu_2} at time \eqn{t_0}. Identified by (Evans et al., 2020; Trueblood et al., 2021)
+#'   as a way to improve recovery of the leakage rate. Drift rate becomes
+#'   \deqn{v(x,t) = \mu_1 - L*x if t < t_0 and v(x,t) = \mu_2 - L*x if t >= t_0.}
 #'
 #' @param rt vector of response times
 #' @param resp vector of responses ("upper" and "lower")
@@ -17,12 +19,13 @@
 #'     \item Relative start (\eqn{w}). Sets the start point of accumulation as a ratio of
 #'       the two decision thresholds. Related to the absolute start z point via equation
 #'       \eqn{z = b_l + w*(b_u - b_l)}.
-#'     \item Stimulus strength (\eqn{\mu}). Strength of the stimulus and used to set the drift
-#'       rate. For changing threshold models \eqn{v(x,t) = \mu}.
-#'     \item Noise scale (\eqn{\sigma}). Model noise scale parameter.
-#'     \item Initial decision threshold location (\eqn{b_0}). Sets the location of each decision
-#'       threshold at time \eqn{t = 0}.
-#'     \item Decision threshold slope (\eqn{m}).
+#'     \item Stimulus strength 1 (\eqn{\mu_1}). Strength of the stimulus prior to \eqn{t_0}.
+#'     \item Stimulus strength 2 (\eqn{\mu_2}). Strength of the stimulus after \eqn{t_0}.
+#'     \item Leakage (\eqn{L}). Rate of leaky integration.
+#'     \item Noise scale (\eqn{\sigma}). Model scaling parameter.
+#'     \item Decision thresholds (\eqn{b}). Sets the location of each decision threshold. The
+#'       upper threshold \eqn{b_u} is above 0 and the lower threshold \eqn{b_l} is below 0 such that
+#'       \eqn{b_u = -b_l = b}. The threshold separation \eqn{a = 2b}.
 #'     \item Contamination (\eqn{g}). Sets the strength of the contamination process. Contamination
 #'       process is a uniform distribution \eqn{f_c(t)} where \eqn{f_c(t) = 1/(g_u-g_l)}
 #'       if \eqn{g_l <= t <= g_u} and \eqn{f_c(t) = 0} if \eqn{t < g_l} or \eqn{t > g_u}. It is
@@ -40,22 +43,25 @@
 #'   and the sum of the log-CDFs, and for the random sampler a list of response
 #'   times (rt) and response thresholds (resp).
 #' @references
-#' Murrow, M., & Holmes, W. R. (2023). PyBEAM: A Bayesian approach to parameter inference
-#'   for a wide class of binary evidence accumulation models. \emph{Behavior Research
-#'   Methods, 56}(3), 2636-2656.
+#' Evans, N. J., Trueblood, J. S., & Holmes, W. R. (2019). A parameter recovery assessment of
+#'   time-variant models of decision-making. \emph{Behavior Research Methods, 52}(1), 193-206.
+#'
+#' Trueblood, J. S., Heathcote, A., Evans, N. J., & Holmes, W. R. (2021). Urgency, leakage,
+#'   and the relative nature of information processing in decision-making.
+#'   \emph{Psychological Review, 128}(1), 160-186.
 #' @examples
 #' # Probability density function
-#' dLTM(rt = c(1.2, 0.6, 0.4), resp = c("upper", "lower", "lower"),
-#'      phi = c(0.3, 0.5, 1.0, 1.0, 1.5, 1.0, 0.0, 0.0, 1.0))
+#' dLMF(rt = c(1.2, 0.6, 0.4), resp = c("upper", "lower", "lower"),
+#'      phi = c(0.3, 0.5, 1.0, 0.5, 0.5, 1.0, 0.5, 0.0, 0.0, 1.0))
 #'
 #' # Cumulative distribution function
-#' pLTM(rt = c(1.2, 0.6, 0.4), resp = c("upper", "lower", "lower"),
-#'      phi = c(0.3, 0.5, 1.0, 1.0, 1.5, 1.0, 0.0, 0.0, 1.0))
+#' pLMF(rt = c(1.2, 0.6, 0.4), resp = c("upper", "lower", "lower"),
+#'      phi = c(0.3, 0.5, 1.0, 0.5, 0.5, 1.0, 0.5, 0.0, 0.0, 1.0))
 #'
 #' # Random sampling
-#' rLTM(n = 100, phi = c(0.3, 0.5, 1.0, 1.0, 1.5, 1.0, 0.0, 0.0, 1.0))
+#' rLMF(n = 100, phi = c(0.3, 0.5, 1.0, 0.5, 0.5, 1.0, 0.5, 0.0, 0.0, 1.0))
 #' @author Raphael Hartmann & Matthew Murrow
-#' @name LTM
+#' @name LMF
 NULL
 
 
@@ -65,19 +71,19 @@ NULL
 
 
 
-#' @rdname LTM
+#' @rdname LMF
 #' @useDynLib "ream", .registration=TRUE
 #' @export
-dLTM <- function(rt,
+dLMF <- function(rt,
                  resp,
-                 phi = c(0.3, 0.5, 1.0, 1.0, 1.5, 1.0, 0.0, 0.0, 1.0),
+                 phi = c(0.3, 0.5, 1.0, 0.5, 0.5, 1.0, 0.5, 0.0, 0.0, 1.0),
                  x_res = "default",
                  t_res = "default") {
 
 
   # constants
-  modelname <- "LTM"
-  Nphi <- 9
+  modelname <- "LMF"
+  Nphi <- 10
 
 
   # check
@@ -140,19 +146,19 @@ dLTM <- function(rt,
 
 
 
-#' @rdname LTM
+#' @rdname LMF
 #' @useDynLib "ream", .registration=TRUE
 #' @export
-pLTM <- function(rt,
+pLMF <- function(rt,
                  resp,
-                 phi = c(0.3, 0.5, 1.0, 1.0, 1.5, 1.0, 0.0, 0.0, 1.0),
+                 phi = c(0.3, 0.5, 1.0, 0.5, 0.5, 1.0, 0.5, 0.0, 0.0, 1.0),
                  x_res = "default",
                  t_res = "default") {
 
 
   # constants
-  modelname <- "LTM"
-  Nphi <- 9
+  modelname <- "LMF"
+  Nphi <- 10
 
 
   # check
@@ -184,7 +190,6 @@ pLTM <- function(rt,
   INTEGER <- c(N_deps = opt[[2]], N_rtl = length(REAL_RTL), N_rtu = length(REAL_RTU), Nphi = length(phi))
   CHAR <- modelname
 
-
   # call C++ function
   out <- .Call("CDF",
                as.double(REAL),
@@ -215,16 +220,16 @@ pLTM <- function(rt,
 
 
 
-#' @rdname LTM
+#' @rdname LMF
 #' @useDynLib "ream", .registration=TRUE
 #' @export
-rLTM <- function(n,
-                 phi = c(0.3, 0.5, 1.0, 1.0, 1.5, 1.0, 0.0, 0.0, 1.0),
+rLMF <- function(n,
+                 phi = c(0.3, 0.5, 1.0, 0.5, 0.5, 1.0, 0.5, 0.0, 0.0, 1.0),
                  dt = 0.00001) {
 
   # constants
-  modelname <- "LTM"
-  Nphi <- 9
+  modelname <- "LMF"
+  Nphi <- 10
 
 
   # check arguments
@@ -263,10 +268,10 @@ rLTM <- function(n,
 
 
 
-#' Generate Grid for PDF of the Linear Threshold Model
+#' Generate Grid for PDF of the Leaky Integration Model With Flip
 #'
 #' Generate a grid of response-time values and the corresponding PDF values.
-#'   For more details on the model see, for example, \code{\link{dLTM}}.
+#'   For more details on the model see, for example, \code{\link{dLMF}}.
 #'
 #' @param rt_max maximal response time <- max(rt)
 #' @param phi parameter vector in the following order:
@@ -277,12 +282,13 @@ rLTM <- function(n,
 #'     \item Relative start (\eqn{w}). Sets the start point of accumulation as a ratio of
 #'       the two decision thresholds. Related to the absolute start z point via equation
 #'       \eqn{z = b_l + w*(b_u - b_l)}.
-#'     \item Stimulus strength (\eqn{\mu}). Strength of the stimulus and used to set the drift
-#'       rate. For changing threshold models \eqn{v(x,t) = \mu}.
-#'     \item Noise scale (\eqn{\sigma}). Model noise scale parameter.
-#'     \item Initial decision threshold location (\eqn{b_0}). Sets the location of each decision
-#'       threshold at time \eqn{t = 0}.
-#'     \item Decision threshold slope (\eqn{m}).
+#'     \item Stimulus strength 1 (\eqn{\mu_1}). Strength of the stimulus prior to \eqn{t_0}.
+#'     \item Stimulus strength 2 (\eqn{\mu_2}). Strength of the stimulus after \eqn{t_0}.
+#'     \item Leakage (\eqn{L}). Rate of leaky integration.
+#'     \item Noise scale (\eqn{\sigma}). Model scaling parameter.
+#'     \item Decision thresholds (\eqn{b}). Sets the location of each decision threshold. The
+#'       upper threshold \eqn{b_u} is above 0 and the lower threshold \eqn{b_l} is below 0 such that
+#'       \eqn{b_u = -b_l = b}. The threshold separation \eqn{a = 2b}.
 #'     \item Contamination (\eqn{g}). Sets the strength of the contamination process. Contamination
 #'       process is a uniform distribution \eqn{f_c(t)} where \eqn{f_c(t) = 1/(g_u-g_l)}
 #'       if \eqn{g_l <= t <= g_u} and \eqn{f_c(t) = 0} if \eqn{t < g_l} or \eqn{t > g_u}. It is
@@ -296,21 +302,24 @@ rLTM <- function(n,
 #' @param t_res time resolution
 #' @return list of RTs and corresponding defective PDFs at lower and upper threshold
 #' @references
-#' Murrow, M., & Holmes, W. R. (2023). PyBEAM: A Bayesian approach to parameter inference
-#'   for a wide class of binary evidence accumulation models. \emph{Behavior Research
-#'   Methods, 56}(3), 2636-2656.
+#' Evans, N. J., Trueblood, J. S., & Holmes, W. R. (2019). A parameter recovery assessment of
+#'   time-variant models of decision-making. \emph{Behavior Research Methods, 52}(1), 193-206.
+#'
+#' Trueblood, J. S., Heathcote, A., Evans, N. J., & Holmes, W. R. (2021). Urgency, leakage,
+#'   and the relative nature of information processing in decision-making.
+#'   \emph{Psychological Review, 128}(1), 160-186.
 #' @author Raphael Hartmann & Matthew Murrow
 #' @useDynLib "ream", .registration=TRUE
 #' @export
-dLTM_grid <- function(rt_max = 10.0,
-                      phi = c(0.3, 0.5, 1.0, 1.0, 1.5, 1.0, 0.0, 0.0, 1.0),
-                      x_res = "default",
-                      t_res = "default") {
+dLMF_grid <- function(rt_max = 10.0,
+                     phi = c(0.3, 0.5, 1.0, 0.5, 0.5, 1.0, 0.5, 0.0, 0.0, 1.0),
+                     x_res = "default",
+                     t_res = "default") {
 
 
   # constants
-  modelname <- "LTM"
-  Nphi <- 9
+  modelname <- "LMF"
+  Nphi <- 10
 
 
   # checking input

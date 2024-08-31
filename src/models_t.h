@@ -72,7 +72,7 @@ protected:
 
 
 
-class DPM : public Model_T {
+class PAM : public Model_T {
 protected:
 
   /* method for the non-decision time of process 1 */
@@ -430,6 +430,68 @@ protected:
 
 
 
+class RTM : public Model_T {
+protected:
+
+  /* method for the non-decision time of process 1 */
+  double non_decision(const double phi[10]) const override {
+    return phi[0];
+  }
+
+  /* method for the start point of process 1 */
+  double relative_start(const double phi[10]) const override {
+    return phi[1];
+  }
+
+  /* method for the drift rate of process 1 */
+  double drift(const double phi[10], double t) const override {
+    return phi[2];
+  }
+
+  /* method for the diffusion rate of process 1 */
+  double diffusion(const double phi[10], double x, double t) const override {
+    return phi[3];
+  }
+
+  /* method for the upper threshold of process 1 */
+  double upper_threshold(const double phi[10], double t) const override {
+    double b0 = phi[4];
+    double kappa = phi[5];
+    double t0 = phi[6];
+    double thres = 0.5*b0*(1 - kappa*t/(t+t0));
+    return thres;
+  }
+
+  /* method for the lower threshold of process 1 */
+  double lower_threshold(const double phi[10], double t) const override {
+    return -upper_threshold(phi, t);
+  }
+
+  /* method for the contamination strength of process 1 */
+  double contamination_strength(const double phi[10]) const override {
+    return phi[7];
+  }
+
+  /* method for the contamination probability distribution of process 1 */
+  double contamination_probability(const double phi[10], double t) const override {
+    double gl = phi[8];
+    double gu = phi[9];
+    double pg = 0.0;
+    if ((t >= gl) && (t <= gu)) {
+      pg = 1.0/(gu - gl);
+    }
+    return pg;
+  }
+
+  /* method for locally modifying the time step size */
+  double modify_dt(const double phi[10], double t) const override {
+    return 1.0;
+  }
+
+};
+
+
+
 class SDDM : public Model_T {
 protected:
 
@@ -626,6 +688,63 @@ protected:
 
 };
 
+
+
+class CSTM_T : public Model_T {
+protected:
+
+  /* method for the non-decision time of process 1 */
+  double non_decision(const double phi[100]) const override {
+    return phi[0];
+  }
+
+  /* method for the start point of process 1 */
+  double relative_start(const double phi[100]) const override {
+    return phi[1];
+  }
+
+  /* method for the drift rate of process 1 */
+  double drift(const double phi[100], double t) const override {
+    return phi[2];
+  }
+
+  /* method for the diffusion rate of process 1 */
+  double diffusion(const double phi[100], double x, double t) const override {
+    return phi[3];
+  }
+
+  /* method for the upper threshold of process 1 */
+  double upper_threshold(const double phi[100], double t) const override {
+    return phi[4];
+  }
+
+  /* method for the lower threshold of process 1 */
+  double lower_threshold(const double phi[100], double t) const override {
+    return -phi[4];
+  }
+
+  /* method for the contamination strength of process 1 */
+  double contamination_strength(const double phi[100]) const override {
+    return phi[5];
+  }
+
+  /* method for the contamination probability distribution of process 1 */
+  double contamination_probability(const double phi[100], double t) const override {
+    double gl = phi[6];
+    double gu = phi[7];
+    double pg = 0.0;
+    if ((t >= gl) && (t <= gu)) {
+      pg = 1.0/(gu - gl);
+    }
+    return pg;
+  }
+
+  /* method for locally modifying the time step size */
+  double modify_dt(const double phi[100], double t) const override {
+    return 1.0;
+  }
+
+};
 
 
 
