@@ -7,7 +7,7 @@
 #'   Dual-Stage Two-Phase model assumes that choice in conflict tasks involves two processes:
 #'   a decision process and a target selection process. The target selection process is an
 #'   SDDM, while the decision process is an SDDM but with drift rate
-#'   \deqn{v(x,t) = (1 - w(t))*(\mu_t + c*\mu_nt)  + w(t)*\mu_2,}
+#'   \deqn{v(x,t) = (1 - w(t))*(\mu_t + c*\mu_{nt})  + w(t)*\mu_2,}
 #'   where \eqn{w(t) = 0} before target selection and \eqn{w(t) = 1} after target selection.
 #'   A full derivation of this model is in the ream publication.
 #'
@@ -15,7 +15,7 @@
 #' @param resp vector of responses ("upper" and "lower")
 #' @param n number of samples
 #' @param phi parameter vector in the following order:
-#'   \itemize{
+#'   \enumerate{
 #'     \item Non-decision time (\eqn{t_{nd}}). Time for non-decision processes such as stimulus
 #'       encoding and response execution. Total decision time t is the sum of the decision
 #'       and non-decision times.
@@ -72,7 +72,7 @@
 #'
 #' # Random sampling
 #' rCDSTP(n = 100, phi = c(0.3, 0.5, 0.5, -0.5, -1.0, -0.5, 8.0, 4.0, 1.0, 2.0, 1.3, 1.3,
-#'                         0.0, 0.0, 1.0))
+#'                         0.0, 0.0, 1.0), dt = 0.001)
 #' @author Raphael Hartmann & Matthew Murrow
 #' @name CDSTP
 NULL
@@ -89,7 +89,7 @@ NULL
 #' @export
 dCDSTP <- function(rt,
                   resp,
-                  phi = c(0.3, 0.5, 0.5, -0.5, -1.0, -0.5, 8.0, 4.0, 1.0, 2.0, 1.3, 1.3, 0.0, 0.0, 1.0),
+                  phi,
                   x_res = "default",
                   t_res = "default") {
 
@@ -164,7 +164,7 @@ dCDSTP <- function(rt,
 #' @export
 pCDSTP <- function(rt,
                   resp,
-                  phi = c(0.3, 0.5, 0.5, -0.5, -1.0, -0.5, 8.0, 4.0, 1.0, 2.0, 1.3, 1.3, 0.0, 0.0, 1.0),
+                  phi,
                   x_res = "default",
                   t_res = "default") {
 
@@ -238,7 +238,7 @@ pCDSTP <- function(rt,
 #' @useDynLib "ream", .registration=TRUE
 #' @export
 rCDSTP <- function(n,
-                   phi = c(0.3, 0.5, 0.5, -0.5, -1.0, -0.5, 8.0, 4.0, 1.0, 2.0, 1.3, 1.3, 0.0, 0.0, 1.0),
+                   phi,
                    dt = 0.00001) {
 
   # constants
@@ -289,7 +289,7 @@ rCDSTP <- function(n,
 #'
 #' @param rt_max maximal response time <- max(rt)
 #' @param phi parameter vector in the following order:
-#'   \itemize{
+#'   \enumerate{
 #'     \item Non-decision time (\eqn{t_{nd}}). Time for non-decision processes such as stimulus
 #'       encoding and response execution. Total decision time t is the sum of the decision
 #'       and non-decision times.
@@ -335,7 +335,7 @@ rCDSTP <- function(n,
 #' @useDynLib "ream", .registration=TRUE
 #' @export
 dCDSTP_grid <- function(rt_max = 10.0,
-                        phi = c(0.3, 0.5, 0.5, -0.5, -1.0, -0.5, 8.0, 4.0, 1.0, 2.0, 1.3, 1.3, 0.0, 0.0, 1.0),
+                        phi,
                         x_res = "default",
                         t_res = "default") {
 

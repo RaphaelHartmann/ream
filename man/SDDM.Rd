@@ -7,23 +7,11 @@
 \alias{rSDDM}
 \title{Simple Drift Diffusion Model}
 \usage{
-dSDDM(
-  rt,
-  resp,
-  phi = c(0.3, 0.5, 1, 1, 0.75, 0, 0, 1),
-  x_res = "default",
-  t_res = "default"
-)
+dSDDM(rt, resp, phi, x_res = "default", t_res = "default")
 
-pSDDM(
-  rt,
-  resp,
-  phi = c(0.3, 0.5, 1, 1, 0.75, 0, 0, 1),
-  x_res = "default",
-  t_res = "default"
-)
+pSDDM(rt, resp, phi, x_res = "default", t_res = "default")
 
-rSDDM(n, phi = c(0.3, 0.5, 1, 1, 0.75, 0, 0, 1), dt = 1e-05)
+rSDDM(n, phi, dt = 1e-05)
 }
 \arguments{
 \item{rt}{vector of response times}
@@ -31,7 +19,7 @@ rSDDM(n, phi = c(0.3, 0.5, 1, 1, 0.75, 0, 0, 1), dt = 1e-05)
 \item{resp}{vector of responses ("upper" and "lower")}
 
 \item{phi}{parameter vector in the following order:
-\itemize{
+\enumerate{
 \item Non-decision time (\eqn{t_{nd}}). Time for non-decision processes such as stimulus
 encoding and response execution. Total decision time t is the sum of the decision
 and non-decision times.

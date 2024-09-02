@@ -7,23 +7,11 @@
 \alias{rUGM}
 \title{Urgency Gating Model}
 \usage{
-dUGM(
-  rt,
-  resp,
-  phi = c(0.3, 0.5, 1, 0.5, 0.5, 1, 1.5, 0, 0, 1),
-  x_res = "default",
-  t_res = "default"
-)
+dUGM(rt, resp, phi, x_res = "default", t_res = "default")
 
-pUGM(
-  rt,
-  resp,
-  phi = c(0.3, 0.5, 1, 0.5, 0.5, 1, 1.5, 0, 0, 1),
-  x_res = "default",
-  t_res = "default"
-)
+pUGM(rt, resp, phi, x_res = "default", t_res = "default")
 
-rUGM(n, phi = c(0.3, 0.5, 1, 0.5, 0.5, 1, 1.5, 0, 0, 1), dt = 1e-05)
+rUGM(n, phi, dt = 1e-05)
 }
 \arguments{
 \item{rt}{vector of response times}
@@ -31,7 +19,7 @@ rUGM(n, phi = c(0.3, 0.5, 1, 0.5, 0.5, 1, 1.5, 0, 0, 1), dt = 1e-05)
 \item{resp}{vector of responses ("upper" and "lower")}
 
 \item{phi}{parameter vector in the following order:
-\itemize{
+\enumerate{
 \item Non-decision time (\eqn{t_{nd}}). Time for non-decision processes such as stimulus
 encoding and response execution. Total decision time t is the sum of the decision
 and non-decision times.
@@ -39,8 +27,8 @@ and non-decision times.
 the two decision thresholds. Related to the absolute start z point via equation
 \eqn{z = b_l + w*(b_u - b_l)}.
 \item Stimulus strength (\eqn{E_0}). Strength of the stimulus.
-\item Leakage (\eqn{L}). Rate of leaky integration.
-\item Urgency (\eqn{k}). Decision urgency. If \eqn{k} is small, the choice is dominated by
+\item Log10-leakage (\eqn{log_{10}(L)}). Rate of leaky integration.
+\item Log10-urgency (\eqn{log_{10}(k)}). Decision urgency. If \eqn{k} is small, the choice is dominated by
 leakage and approximates a LM. If \eqn{k} is large, it is an urgency dominated decision.
 \item Noise scale (\eqn{\sigma}). Model scaling parameter.
 \item Decision thresholds (\eqn{b}). Sets the location of each decision threshold. The

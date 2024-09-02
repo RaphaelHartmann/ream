@@ -7,11 +7,11 @@
 \alias{rCSTM_T}
 \title{Custom Time-Dependent Drift Diffusion Model}
 \usage{
-dCSTM_T(rt, resp, phi = rep(0, 100), x_res = "default", t_res = "default")
+dCSTM_T(rt, resp, phi, x_res = "default", t_res = "default")
 
-pCSTM_T(rt, resp, phi = rep(0, 100), x_res = "default", t_res = "default")
+pCSTM_T(rt, resp, phi, x_res = "default", t_res = "default")
 
-rCSTM_T(n, phi = rep(0, 100), dt = 1e-05)
+rCSTM_T(n, phi, dt = 1e-05)
 }
 \arguments{
 \item{rt}{vector of response times}

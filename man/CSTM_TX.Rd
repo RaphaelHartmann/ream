@@ -7,11 +7,11 @@
 \alias{rCSTM_TX}
 \title{Custom Time- and Evidence-Dependent Drift Diffusion Model}
 \usage{
-dCSTM_TX(rt, resp, phi = rep(0, 100), x_res = "default", t_res = "default")
+dCSTM_TX(rt, resp, phi, x_res = "default", t_res = "default")
 
-pCSTM_TX(rt, resp, phi = rep(0, 100), x_res = "default", t_res = "default")
+pCSTM_TX(rt, resp, phi, x_res = "default", t_res = "default")
 
-rCSTM_TX(n, phi = rep(0, 100), dt = 1e-05)
+rCSTM_TX(n, phi, dt = 1e-05)
 }
 \arguments{
 \item{rt}{vector of response times}

@@ -4,18 +4,13 @@
 \alias{dWDSTP_grid}
 \title{Generate Grid for PDF of the Weibull Dual-Stage Two-Phase Model of Selective Attention}
 \usage{
-dWDSTP_grid(
-  rt_max = 10,
-  phi = c(0.3, 0.5, 1, 1, -1, -0.5, 8, 1, 1, 1, 2, 1.3, 0, 0, 1),
-  x_res = "default",
-  t_res = "default"
-)
+dWDSTP_grid(rt_max = 10, phi, x_res = "default", t_res = "default")
 }
 \arguments{
 \item{rt_max}{maximal response time <- max(rt)}
 
 \item{phi}{parameter vector in the following order:
-\itemize{
+\enumerate{
 \item Non-decision time (\eqn{t_{nd}}). Time for non-decision processes such as stimulus
 encoding and response execution. Total decision time t is the sum of the decision
 and non-decision times.

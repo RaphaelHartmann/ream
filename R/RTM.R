@@ -10,7 +10,7 @@
 #' @param resp vector of responses ("upper" and "lower")
 #' @param n number of samples
 #' @param phi parameter vector in the following order:
-#'   \itemize{
+#'   \enumerate{
 #'     \item Non-decision time (\eqn{t_{nd}}). Time for non-decision processes such as stimulus
 #'       encoding and response execution. Total decision time t is the sum of the decision
 #'       and non-decision times.
@@ -54,14 +54,14 @@
 #' @examples
 #' # Probability density function
 #' dRTM(rt = c(1.2, 0.6, 0.4), resp = c("upper", "lower", "lower"),
-#'      phi = c(0.3, 0.5, 1.0, 1.0, 1.5, 0.5, 0.0, 0.0, 1.0))
+#'      phi = c(0.3, 0.5, 1.0, 1.0, 1.5, 0.5, 0.5, 0.0, 0.0, 1.0))
 #'
 #' # Cumulative distribution function
 #' pRTM(rt = c(1.2, 0.6, 0.4), resp = c("upper", "lower", "lower"),
-#'      phi = c(0.3, 0.5, 1.0, 1.0, 1.5, 0.5, 0.0, 0.0, 1.0))
+#'      phi = c(0.3, 0.5, 1.0, 1.0, 1.5, 0.5, 0.5, 0.0, 0.0, 1.0))
 #'
 #' # Random sampling
-#' rRTM(n = 100, phi = c(0.3, 0.5, 1.0, 1.0, 1.5, 0.5, 0.0, 0.0, 1.0))
+#' rRTM(n = 100, phi = c(0.3, 0.5, 1.0, 1.0, 1.5, 0.5, 0.5, 0.0, 0.0, 1.0))
 #' @author Raphael Hartmann & Matthew Murrow
 #' @name RTM
 NULL
@@ -78,7 +78,7 @@ NULL
 #' @export
 dRTM <- function(rt,
                  resp,
-                 phi = c(0.3, 0.5, 1.0, 1.0, 1.5, 0.5, 0.0, 0.0, 1.0),
+                 phi,
                  x_res = "default",
                  t_res = "default") {
 
@@ -153,7 +153,7 @@ dRTM <- function(rt,
 #' @export
 pRTM <- function(rt,
                  resp,
-                 phi = c(0.3, 0.5, 1.0, 1.0, 1.5, 0.5, 0.0, 0.0, 1.0),
+                 phi,
                  x_res = "default",
                  t_res = "default") {
 
@@ -227,7 +227,7 @@ pRTM <- function(rt,
 #' @useDynLib "ream", .registration=TRUE
 #' @export
 rRTM <- function(n,
-                 phi = c(0.3, 0.5, 1.0, 1.0, 1.5, 0.5, 0.0, 0.0, 1.0),
+                 phi,
                  dt = 0.00001) {
 
   # constants
@@ -278,7 +278,7 @@ rRTM <- function(n,
 #'
 #' @param rt_max maximal response time <- max(rt)
 #' @param phi parameter vector in the following order:
-#'   \itemize{
+#'   \enumerate{
 #'     \item Non-decision time (\eqn{t_{nd}}). Time for non-decision processes such as stimulus
 #'       encoding and response execution. Total decision time t is the sum of the decision
 #'       and non-decision times.
@@ -319,7 +319,7 @@ rRTM <- function(n,
 #' @useDynLib "ream", .registration=TRUE
 #' @export
 dRTM_grid <- function(rt_max = 10.0,
-                      phi = c(0.3, 0.5, 1.0, 1.0, 1.5, 0.5, 0.0, 0.0, 1.0),
+                      phi,
                       x_res = "default",
                       t_res = "default") {
 

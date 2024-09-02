@@ -12,7 +12,7 @@
 #' @param resp vector of responses ("upper" and "lower")
 #' @param n number of samples
 #' @param phi parameter vector in the following order:
-#'   \itemize{
+#'   \enumerate{
 #'     \item Non-decision time (\eqn{t_{nd}}). Time for non-decision processes such as stimulus
 #'       encoding and response execution. Total decision time t is the sum of the decision
 #'       and non-decision times.
@@ -74,7 +74,7 @@ NULL
 #' @export
 dRDMC <- function(rt,
                   resp,
-                  phi = c(0.35, 0.5, 7.5, 40.0, 5.0, 5.0, 1.0, 0.5, 0.0, 0.0, 1.0),
+                  phi,
                   x_res = "default",
                   t_res = "default") {
 
@@ -149,7 +149,7 @@ dRDMC <- function(rt,
 #' @export
 pRDMC <- function(rt,
                  resp,
-                 phi = c(0.35, 0.5, 7.5, 40.0, 5.0, 5.0, 1.0, 0.5, 0.0, 0.0, 1.0),
+                 phi,
                  x_res = "default",
                  t_res = "default") {
 
@@ -222,7 +222,7 @@ pRDMC <- function(rt,
 #' @useDynLib "ream", .registration=TRUE
 #' @export
 rRDMC <- function(n,
-                  phi = c(0.35, 0.5, 7.5, 40.0, 5.0, 5.0, 1.0, 0.5, 0.0, 0.0, 1.0),
+                  phi,
                   dt = 0.00001) {
 
   # constants
@@ -273,7 +273,7 @@ rRDMC <- function(n,
 #'
 #' @param rt_max maximal response time <- max(rt)
 #' @param phi parameter vector in the following order:
-#'   \itemize{
+#'   \enumerate{
 #'     \item Non-decision time (\eqn{t_{nd}}). Time for non-decision processes such as stimulus
 #'       encoding and response execution. Total decision time t is the sum of the decision
 #'       and non-decision times.
@@ -308,7 +308,7 @@ rRDMC <- function(n,
 #' @useDynLib "ream", .registration=TRUE
 #' @export
 dRDMC_grid <- function(rt_max = 10.0,
-                       phi = c(0.35, 0.5, 7.5, 40.0, 5.0, 5.0, 1.0, 0.5, 0.0, 0.0, 1.0),
+                       phi,
                        x_res = "default",
                        t_res = "default") {
 

@@ -7,23 +7,11 @@
 \alias{rETM}
 \title{Exponential Threshold Model}
 \usage{
-dETM(
-  rt,
-  resp,
-  phi = c(0.3, 0.5, 1, 1, 1.5, 0.5, 0, 0, 1),
-  x_res = "default",
-  t_res = "default"
-)
+dETM(rt, resp, phi, x_res = "default", t_res = "default")
 
-pETM(
-  rt,
-  resp,
-  phi = c(0.3, 0.5, 1, 1, 1.5, 0.5, 0, 0, 1),
-  x_res = "default",
-  t_res = "default"
-)
+pETM(rt, resp, phi, x_res = "default", t_res = "default")
 
-rETM(n, phi = c(0.3, 0.5, 1, 1, 1.5, 0.5, 0, 0, 1), dt = 1e-05)
+rETM(n, phi, dt = 1e-05)
 }
 \arguments{
 \item{rt}{vector of response times}
@@ -31,7 +19,7 @@ rETM(n, phi = c(0.3, 0.5, 1, 1, 1.5, 0.5, 0, 0, 1), dt = 1e-05)
 \item{resp}{vector of responses ("upper" and "lower")}
 
 \item{phi}{parameter vector in the following order:
-\itemize{
+\enumerate{
 \item Non-decision time (\eqn{t_{nd}}). Time for non-decision processes such as stimulus
 encoding and response execution. Total decision time t is the sum of the decision
 and non-decision times.
@@ -43,7 +31,7 @@ rate. For changing threshold models \eqn{v(x,t) = \mu}.
 \item Noise scale (\eqn{\sigma}). Model noise scale parameter.
 \item Initial decision threshold location (\eqn{b_0}). Sets the location of each decision
 threshold at time \eqn{t = 0}.
-\item Rate of threshold change (\eqn{\tau}).
+\item Log10-rate of threshold change (\eqn{log_{10}(\tau)}).
 \item Contamination (\eqn{g}). Sets the strength of the contamination process. Contamination
 process is a uniform distribution \eqn{f_c(t)} where \eqn{f_c(t) = 1/(g_u-g_l)}
 if \eqn{g_l <= t <= g_u} and \eqn{f_c(t) = 0} if \eqn{t < g_l} or \eqn{t > g_u}. It is

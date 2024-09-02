@@ -7,27 +7,11 @@
 \alias{rCDSTP}
 \title{Continuous Dual-Stage Two-Phase Model of Selective Attention}
 \usage{
-dCDSTP(
-  rt,
-  resp,
-  phi = c(0.3, 0.5, 0.5, -0.5, -1, -0.5, 8, 4, 1, 2, 1.3, 1.3, 0, 0, 1),
-  x_res = "default",
-  t_res = "default"
-)
+dCDSTP(rt, resp, phi, x_res = "default", t_res = "default")
 
-pCDSTP(
-  rt,
-  resp,
-  phi = c(0.3, 0.5, 0.5, -0.5, -1, -0.5, 8, 4, 1, 2, 1.3, 1.3, 0, 0, 1),
-  x_res = "default",
-  t_res = "default"
-)
+pCDSTP(rt, resp, phi, x_res = "default", t_res = "default")
 
-rCDSTP(
-  n,
-  phi = c(0.3, 0.5, 0.5, -0.5, -1, -0.5, 8, 4, 1, 2, 1.3, 1.3, 0, 0, 1),
-  dt = 1e-05
-)
+rCDSTP(n, phi, dt = 1e-05)
 }
 \arguments{
 \item{rt}{vector of response times}
@@ -35,7 +19,7 @@ rCDSTP(
 \item{resp}{vector of responses ("upper" and "lower")}
 
 \item{phi}{parameter vector in the following order:
-\itemize{
+\enumerate{
 \item Non-decision time (\eqn{t_{nd}}). Time for non-decision processes such as stimulus
 encoding and response execution. Total decision time t is the sum of the decision
 and non-decision times.
@@ -91,7 +75,7 @@ A continuous approximation of the Dual-Stage Two-Phase model of conflict tasks. 
 Dual-Stage Two-Phase model assumes that choice in conflict tasks involves two processes:
 a decision process and a target selection process. The target selection process is an
 SDDM, while the decision process is an SDDM but with drift rate
-\deqn{v(x,t) = (1 - w(t))*(\mu_t + c*\mu_nt)  + w(t)*\mu_2,}
+\deqn{v(x,t) = (1 - w(t))*(\mu_t + c*\mu_{nt})  + w(t)*\mu_2,}
 where \eqn{w(t) = 0} before target selection and \eqn{w(t) = 1} after target selection.
 A full derivation of this model is in the ream publication.
 }
@@ -106,7 +90,7 @@ pCDSTP(rt = c(1.2, 0.6, 0.4), resp = c("upper", "lower", "lower"),
 
 # Random sampling
 rCDSTP(n = 100, phi = c(0.3, 0.5, 0.5, -0.5, -1.0, -0.5, 8.0, 4.0, 1.0, 2.0, 1.3, 1.3,
-                        0.0, 0.0, 1.0))
+                        0.0, 0.0, 1.0), dt = 0.001)
 }
 \references{
 Hübner, R., Steinhauser, M., & Lehle, C. (2010). A dual-stage two-phase model of

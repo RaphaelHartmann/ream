@@ -7,13 +7,13 @@
 #'   It sums together a controlled and an automatic process to generate a single accumulator
 #'   for generating the likelihood function. This accumulator has the same parameters as
 #'   the SDDM with the exception of the drift rate, given by
-#'   \deqn{v(x,t) = s*A*exp(-t/\tau)*[e*t/(\tau*(a-1))]^{a-1}*[(a-1)/t - 1/\tau] + \mu_c.}
+#'   \deqn{v(x,t) = s*A*exp(-t/\tau)*[e*t/(\tau*(\alpha-1))]^{\alpha-1}*[(\alpha-1)/t - 1/\tau] + \mu_c.}
 #'
 #' @param rt vector of response times
 #' @param resp vector of responses ("upper" and "lower")
 #' @param n number of samples
 #' @param phi parameter vector in the following order:
-#'   \itemize{
+#'   \enumerate{
 #'     \item Non-decision time (\eqn{t_{nd}}). Time for non-decision processes such as stimulus
 #'       encoding and response execution. Total decision time t is the sum of the decision
 #'       and non-decision times.
@@ -24,9 +24,9 @@
 #'       if \eqn{s = 0}, neutral condition; if \eqn{s = -1}, incoherent condition.
 #'     \item Automatic process amplitude (\eqn{A}). Max value of automatic process.
 #'     \item Scale parameter (\eqn{\tau}). Contributes to time automatic process. Time to max
-#'       \eqn{t_max = (a – 1)*\tau}.
-#'     \item Shape parameter (\eqn{a}). Indicates the shape of the automatic process. Must
-#'       have value more than 1 (\eqn{a > 1}).
+#'       \eqn{t_{max} = (\alpha – 1)*\tau}.
+#'     \item Shape parameter (\eqn{\alpha}). Indicates the shape of the automatic process. Must
+#'       have value more than 1 (\eqn{\alpha > 1}).
 #'     \item Drift rate of the controlled process (\eqn{\mu_c}).
 #'     \item Noise scale (\eqn{\sigma}). Model noise scale parameter.
 #'     \item Decision thresholds (\eqn{b}). Sets the location of each decision threshold. The
@@ -79,7 +79,7 @@ NULL
 #' @export
 dDMC <- function(rt,
                  resp,
-                 phi = c(0.1, 0.5, 0.2, 0.2, 0.05, 2.5, 3.0, 1.0, 0.5, 0.0, 0.0, 1.0),
+                 phi,
                  x_res = "default",
                  t_res = "default") {
 
@@ -153,7 +153,7 @@ dDMC <- function(rt,
 #' @export
 pDMC <- function(rt,
                  resp,
-                 phi = c(0.1, 0.5, 0.0, 0.2, 0.05, 2.5, 3.0, 1.0, 0.5, 0.0, 0.0, 1.0),
+                 phi,
                  x_res = "default",
                  t_res = "default") {
 
@@ -227,7 +227,7 @@ pDMC <- function(rt,
 #' @useDynLib "ream", .registration=TRUE
 #' @export
 rDMC <- function(n,
-                 phi = c(0.3, 0.5, -1.0, 0.2, 0.05, 2.5, 3.0, 1.0, 0.5, 0.0, 0.0, 1.0),
+                 phi,
                  dt = 0.00001) {
 
   # constants
@@ -278,7 +278,7 @@ rDMC <- function(n,
 #'
 #' @param rt_max maximal response time <- max(rt)
 #' @param phi parameter vector in the following order:
-#'   \itemize{
+#'   \enumerate{
 #'     \item Non-decision time (\eqn{t_{nd}}). Time for non-decision processes such as stimulus
 #'       encoding and response execution. Total decision time t is the sum of the decision
 #'       and non-decision times.
@@ -289,9 +289,9 @@ rDMC <- function(n,
 #'       if \eqn{s = 0}, neutral condition; if \eqn{s = -1}, incoherent condition.
 #'     \item Automatic process amplitude (\eqn{A}). Max value of automatic process.
 #'     \item Scale parameter (\eqn{\tau}). Contributes to time automatic process. Time to max
-#'       \eqn{t_max = (a – 1)*\tau}.
-#'     \item Shape parameter (\eqn{a}). Indicates the shape of the automatic process. Must
-#'       have value more than 1 (\eqn{a > 1}).
+#'       \eqn{t_{max} = (\alpha – 1)*\tau}.
+#'     \item Shape parameter (\eqn{\alpha}). Indicates the shape of the automatic process. Must
+#'       have value more than 1 (\eqn{\alpha > 1}).
 #'     \item Drift rate of the controlled process (\eqn{\mu_c}).
 #'     \item Noise scale (\eqn{\sigma}). Model noise scale parameter.
 #'     \item Decision thresholds (\eqn{b}). Sets the location of each decision threshold. The
@@ -317,7 +317,7 @@ rDMC <- function(n,
 #' @useDynLib "ream", .registration=TRUE
 #' @export
 dDMC_grid <- function(rt_max = 10.0,
-                      phi = c(0.3, 0.5, -1.0, 0.2, 0.05, 2.5, 3.0, 1.0, 0.5, 0.0, 0.0, 1.0),
+                      phi,
                       x_res = "default",
                       t_res = "default") {
 

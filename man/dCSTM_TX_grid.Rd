@@ -4,12 +4,7 @@
 \alias{dCSTM_TX_grid}
 \title{Generate Grid for PDF of Custom Time- and Evidence-Dependent Drift Diffusion Model}
 \usage{
-dCSTM_TX_grid(
-  rt_max = 10,
-  phi = c(0.3, 0.5, 1, 1, 0.75, 0, 0, 1),
-  x_res = "default",
-  t_res = "default"
-)
+dCSTM_TX_grid(rt_max = 10, phi, x_res = "default", t_res = "default")
 }
 \arguments{
 \item{rt_max}{maximal response time <- max(rt)}

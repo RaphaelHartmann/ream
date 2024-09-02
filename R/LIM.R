@@ -1,31 +1,36 @@
 
 
 
-#' Leaky Integration Model With Flip
+#' Leaky Integration Model
 #'
-#' LM with time varying drift rate. Specifically, the stimulus strength changes from
-#'   \eqn{\mu_1} to \eqn{\mu_2} at time \eqn{t_0}. Identified by (Evans et al., 2020; Trueblood et al., 2021)
-#'   as a way to improve recovery of the leakage rate. Drift rate becomes
-#'   \deqn{v(x,t) = \mu_1 - L*x if t < t_0 and v(x,t) = \mu_2 - L*x if t >= t_0.}
+#' SDDM modified to encode leaky integration in the drift rate. Also known as an
+#'   Ornstein-Uhlenbeck model, its drift rate is \eqn{v(x,t) = \mu - L*x} where \eqn{L} is the
+#'   leakage rate. All other parameters are unchanged from the SDDM. Leakage describes
+#'   the rate at which old information is lost from the accumulator, occurring on a
+#'   time scale of approximately \eqn{1/L}. The LIM is used to model decay of excitatory
+#'   currents in decision neurons (Usher & McClelland, 2001; Wong & Wang, 2006) and
+#'   has been proposed as a mechanism for preference reversals under time pressure
+#'   (Busemeyer & Townsend, 1993). Due to its neural plausibility and simple functional
+#'   form, recent work has proposed it as an alternative psychometric tool to the SDDM
+#'   (Wang & Donkin, 2024).
 #'
 #' @param rt vector of response times
 #' @param resp vector of responses ("upper" and "lower")
 #' @param n number of samples
 #' @param phi parameter vector in the following order:
-#'   \itemize{
+#'   \enumerate{
 #'     \item Non-decision time (\eqn{t_{nd}}). Time for non-decision processes such as stimulus
 #'       encoding and response execution. Total decision time t is the sum of the decision
 #'       and non-decision times.
 #'     \item Relative start (\eqn{w}). Sets the start point of accumulation as a ratio of
 #'       the two decision thresholds. Related to the absolute start z point via equation
 #'       \eqn{z = b_l + w*(b_u - b_l)}.
-#'     \item Stimulus strength 1 (\eqn{\mu_1}). Strength of the stimulus prior to \eqn{t_0}.
-#'     \item Stimulus strength 2 (\eqn{\mu_2}). Strength of the stimulus after \eqn{t_0}.
-#'     \item Leakage (\eqn{L}). Rate of leaky integration.
+#'     \item Stimulus strength (\eqn{\mu}). Strength of the stimulus.
+#'     \item Log10-leakage (\eqn{log_{10}(L)}). Rate of leaky integration.
 #'     \item Noise scale (\eqn{\sigma}). Model scaling parameter.
 #'     \item Decision thresholds (\eqn{b}). Sets the location of each decision threshold. The
-#'       upper threshold \eqn{b_u} is above 0 and the lower threshold \eqn{b_l} is below 0 such that
-#'       \eqn{b_u = -b_l = b}. The threshold separation \eqn{a = 2b}.
+#'     upper threshold \eqn{b_u} is above 0 and the lower threshold \eqn{b_l} is below 0 such that
+#'     \eqn{b_u = -b_l = b}. The threshold separation \eqn{a = 2b}.
 #'     \item Contamination (\eqn{g}). Sets the strength of the contamination process. Contamination
 #'       process is a uniform distribution \eqn{f_c(t)} where \eqn{f_c(t) = 1/(g_u-g_l)}
 #'       if \eqn{g_l <= t <= g_u} and \eqn{f_c(t) = 0} if \eqn{t < g_l} or \eqn{t > g_u}. It is
@@ -43,25 +48,31 @@
 #'   and the sum of the log-CDFs, and for the random sampler a list of response
 #'   times (rt) and response thresholds (resp).
 #' @references
-#' Evans, N. J., Trueblood, J. S., & Holmes, W. R. (2019). A parameter recovery assessment of
-#'   time-variant models of decision-making. \emph{Behavior Research Methods, 52}(1), 193-206.
+#' Busemeyer, J. R., & Townsend, J. T. (1993). Decision field theory: A dynamic-cognitive
+#'   approach to decision making in an uncertain environment. \emph{Psychological Review, 100}(3), 432-459.
 #'
-#' Trueblood, J. S., Heathcote, A., Evans, N. J., & Holmes, W. R. (2021). Urgency, leakage,
-#'   and the relative nature of information processing in decision-making.
-#'   \emph{Psychological Review, 128}(1), 160-186.
+#' Usher, M., & McClelland, J. L. (2001). The time course of perceptual choice: The leaky,
+#'   competing accumulator model. \emph{Psychological Review, 108}(3), 550-592.
+#'
+#' Wang, J.-S., & Donkin, C. (2024). The neural implausibility of the diffusion decision
+#'   model doesn’t matter for cognitive psychometrics, but the Ornstein-Uhlenbeck model
+#'   is better. \emph{Psychonomic Bulletin &amp; Review}.
+#'
+#' Wong, K.-F., & Wang, X.-J. (2006). A Recurrent Network Mechanism of Time Integration
+#'   in Perceptual Decisions. \emph{The Journal of Neuroscience, 26}(4), 1314-1328.
 #' @examples
 #' # Probability density function
-#' dLMF(rt = c(1.2, 0.6, 0.4), resp = c("upper", "lower", "lower"),
-#'      phi = c(0.3, 0.5, 1.0, 0.5, 0.5, 1.0, 0.5, 0.0, 0.0, 1.0))
+#' dLIM(rt = c(1.2, 0.6, 0.4), resp = c("upper", "lower", "lower"),
+#'      phi = c(0.3, 0.5, 1.0, 0.5, 1.0, 0.5, 0.0, 0.0, 1.0))
 #'
 #' # Cumulative distribution function
-#' pLMF(rt = c(1.2, 0.6, 0.4), resp = c("upper", "lower", "lower"),
-#'      phi = c(0.3, 0.5, 1.0, 0.5, 0.5, 1.0, 0.5, 0.0, 0.0, 1.0))
+#' pLIM(rt = c(1.2, 0.6, 0.4), resp = c("upper", "lower", "lower"),
+#'      phi = c(0.3, 0.5, 1.0, 0.5, 1.0, 0.5, 0.0, 0.0, 1.0))
 #'
 #' # Random sampling
-#' rLMF(n = 100, phi = c(0.3, 0.5, 1.0, 0.5, 0.5, 1.0, 0.5, 0.0, 0.0, 1.0))
+#' rLIM(n = 100, phi = c(0.3, 0.5, 1.0, 0.5, 1.0, 0.5, 0.0, 0.0, 1.0))
 #' @author Raphael Hartmann & Matthew Murrow
-#' @name LMF
+#' @name LIM
 NULL
 
 
@@ -71,19 +82,19 @@ NULL
 
 
 
-#' @rdname LMF
+#' @rdname LIM
 #' @useDynLib "ream", .registration=TRUE
 #' @export
-dLMF <- function(rt,
+dLIM <- function(rt,
                  resp,
-                 phi = c(0.3, 0.5, 1.0, 0.5, 0.5, 1.0, 0.5, 0.0, 0.0, 1.0),
+                 phi,
                  x_res = "default",
                  t_res = "default") {
 
 
   # constants
-  modelname <- "LMF"
-  Nphi <- 10
+  modelname <- "LIM"
+  Nphi <- 9
 
 
   # check
@@ -146,19 +157,19 @@ dLMF <- function(rt,
 
 
 
-#' @rdname LMF
+#' @rdname LIM
 #' @useDynLib "ream", .registration=TRUE
 #' @export
-pLMF <- function(rt,
+pLIM <- function(rt,
                  resp,
-                 phi = c(0.3, 0.5, 1.0, 0.5, 0.5, 1.0, 0.5, 0.0, 0.0, 1.0),
+                 phi,
                  x_res = "default",
                  t_res = "default") {
 
 
   # constants
-  modelname <- "LMF"
-  Nphi <- 10
+  modelname <- "LIM"
+  Nphi <- 9
 
 
   # check
@@ -220,16 +231,16 @@ pLMF <- function(rt,
 
 
 
-#' @rdname LMF
+#' @rdname LIM
 #' @useDynLib "ream", .registration=TRUE
 #' @export
-rLMF <- function(n,
-                 phi = c(0.3, 0.5, 1.0, 0.5, 0.5, 1.0, 0.5, 0.0, 0.0, 1.0),
+rLIM <- function(n,
+                 phi,
                  dt = 0.00001) {
 
   # constants
-  modelname <- "LMF"
-  Nphi <- 10
+  modelname <- "LIM"
+  Nphi <- 9
 
 
   # check arguments
@@ -268,27 +279,26 @@ rLMF <- function(n,
 
 
 
-#' Generate Grid for PDF of the Leaky Integration Model With Flip
+#' Generate Grid for PDF of the Leaky Integration Model
 #'
 #' Generate a grid of response-time values and the corresponding PDF values.
-#'   For more details on the model see, for example, \code{\link{dLMF}}.
+#'   For more details on the model see, for example, \code{\link{dLIM}}.
 #'
 #' @param rt_max maximal response time <- max(rt)
 #' @param phi parameter vector in the following order:
-#'   \itemize{
+#'   \enumerate{
 #'     \item Non-decision time (\eqn{t_{nd}}). Time for non-decision processes such as stimulus
 #'       encoding and response execution. Total decision time t is the sum of the decision
 #'       and non-decision times.
 #'     \item Relative start (\eqn{w}). Sets the start point of accumulation as a ratio of
 #'       the two decision thresholds. Related to the absolute start z point via equation
 #'       \eqn{z = b_l + w*(b_u - b_l)}.
-#'     \item Stimulus strength 1 (\eqn{\mu_1}). Strength of the stimulus prior to \eqn{t_0}.
-#'     \item Stimulus strength 2 (\eqn{\mu_2}). Strength of the stimulus after \eqn{t_0}.
-#'     \item Leakage (\eqn{L}). Rate of leaky integration.
+#'     \item Stimulus strength (\eqn{\mu}). Strength of the stimulus.
+#'     \item Log10-leakage (\eqn{log_{10}(L)}). Rate of leaky integration.
 #'     \item Noise scale (\eqn{\sigma}). Model scaling parameter.
 #'     \item Decision thresholds (\eqn{b}). Sets the location of each decision threshold. The
-#'       upper threshold \eqn{b_u} is above 0 and the lower threshold \eqn{b_l} is below 0 such that
-#'       \eqn{b_u = -b_l = b}. The threshold separation \eqn{a = 2b}.
+#'     upper threshold \eqn{b_u} is above 0 and the lower threshold \eqn{b_l} is below 0 such that
+#'     \eqn{b_u = -b_l = b}. The threshold separation \eqn{a = 2b}.
 #'     \item Contamination (\eqn{g}). Sets the strength of the contamination process. Contamination
 #'       process is a uniform distribution \eqn{f_c(t)} where \eqn{f_c(t) = 1/(g_u-g_l)}
 #'       if \eqn{g_l <= t <= g_u} and \eqn{f_c(t) = 0} if \eqn{t < g_l} or \eqn{t > g_u}. It is
@@ -302,24 +312,30 @@ rLMF <- function(n,
 #' @param t_res time resolution
 #' @return list of RTs and corresponding defective PDFs at lower and upper threshold
 #' @references
-#' Evans, N. J., Trueblood, J. S., & Holmes, W. R. (2019). A parameter recovery assessment of
-#'   time-variant models of decision-making. \emph{Behavior Research Methods, 52}(1), 193-206.
+#' Busemeyer, J. R., & Townsend, J. T. (1993). Decision field theory: A dynamic-cognitive
+#'   approach to decision making in an uncertain environment. \emph{Psychological Review, 100}(3), 432-459.
 #'
-#' Trueblood, J. S., Heathcote, A., Evans, N. J., & Holmes, W. R. (2021). Urgency, leakage,
-#'   and the relative nature of information processing in decision-making.
-#'   \emph{Psychological Review, 128}(1), 160-186.
+#' Usher, M., & McClelland, J. L. (2001). The time course of perceptual choice: The leaky,
+#'   competing accumulator model. \emph{Psychological Review, 108}(3), 550-592.
+#'
+#' Wang, J.-S., & Donkin, C. (2024). The neural implausibility of the diffusion decision
+#'   model doesn’t matter for cognitive psychometrics, but the Ornstein-Uhlenbeck model
+#'   is better. \emph{Psychonomic Bulletin &amp; Review}.
+#'
+#' Wong, K.-F., & Wang, X.-J. (2006). A Recurrent Network Mechanism of Time Integration
+#'   in Perceptual Decisions. \emph{The Journal of Neuroscience, 26}(4), 1314-1328.
 #' @author Raphael Hartmann & Matthew Murrow
 #' @useDynLib "ream", .registration=TRUE
 #' @export
-dLMF_grid <- function(rt_max = 10.0,
-                     phi = c(0.3, 0.5, 1.0, 0.5, 0.5, 1.0, 0.5, 0.0, 0.0, 1.0),
-                     x_res = "default",
-                     t_res = "default") {
+dLIM_grid <- function(rt_max = 10.0,
+                      phi,
+                      x_res = "default",
+                      t_res = "default") {
 
 
   # constants
-  modelname <- "LMF"
-  Nphi <- 10
+  modelname <- "LIM"
+  Nphi <- 9
 
 
   # checking input
@@ -338,9 +354,9 @@ dLMF_grid <- function(rt_max = 10.0,
 
   CHAR <- modelname
 
-  REAL <- c(dt_scale = dt_scale, rt_max = rt_max, phi = phi)
+  REAL <- c(dt_scale = opt[[2]], rt_max = rt_max, phi = phi)
 
-  INTEGER <- c(N_deps = N_deps, N_phi = length(phi))
+  INTEGER <- c(N_deps = opt[[1]], N_phi = length(phi))
 
 
   # call C++ function

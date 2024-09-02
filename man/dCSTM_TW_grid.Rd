@@ -4,12 +4,7 @@
 \alias{dCSTM_TW_grid}
 \title{Generate Grid for PDF of Custom Time- and Weight-Dependent Drift Diffusion Model}
 \usage{
-dCSTM_TW_grid(
-  rt_max = 10,
-  phi = c(0.3, 0.5, 1, 1, 0.75, 0, 0, 1),
-  x_res = "default",
-  t_res = "default"
-)
+dCSTM_TW_grid(rt_max = 10, phi, x_res = "default", t_res = "default")
 }
 \arguments{
 \item{rt_max}{maximal response time <- max(rt)}

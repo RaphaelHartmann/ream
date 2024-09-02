@@ -7,23 +7,11 @@
 \alias{rSDPM}
 \title{Sequential Dual Process Model}
 \usage{
-dSDPM(
-  rt,
-  resp,
-  phi = c(0.3, 1, 0.5, 1, 1, 1, 1, 0.75, 0.75, 0, 0, 1),
-  x_res = "default",
-  t_res = "default"
-)
+dSDPM(rt, resp, phi, x_res = "default", t_res = "default")
 
-pSDPM(
-  rt,
-  resp,
-  phi = c(0.3, 1, 0.5, 1, 1, 1, 1, 0.75, 0.75, 0, 0, 1),
-  x_res = "default",
-  t_res = "default"
-)
+pSDPM(rt, resp, phi, x_res = "default", t_res = "default")
 
-rSDPM(n, phi = c(0.3, 1, 0.5, 1, 1, 1, 1, 0.75, 0.75, 0, 0, 1), dt = 1e-05)
+rSDPM(n, phi, dt = 1e-05)
 }
 \arguments{
 \item{rt}{vector of response times}
@@ -31,7 +19,7 @@ rSDPM(n, phi = c(0.3, 1, 0.5, 1, 1, 1, 1, 0.75, 0.75, 0, 0, 1), dt = 1e-05)
 \item{resp}{vector of responses ("upper" and "lower")}
 
 \item{phi}{parameter vector in the following order:
-\itemize{
+\enumerate{
 \item Non-decision time (\eqn{t_{nd}}). Time for non-decision processes such as stimulus
 encoding and response execution. Total decision time t is the sum of the decision
 and non-decision times.
@@ -79,7 +67,7 @@ and the sum of the log-CDFs, and for the random sampler a list of response
 times (rt) and response thresholds (resp).
 }
 \description{
-The Sequential Dual Process Model (SDPMM) is similar in principle to the DSTP, but instead
+The Sequential Dual Process Model (SDPM) is similar in principle to the DSTP, but instead
 of simultaneous accumulators, it contains sequential accumulator s. Its drift rate is given by
 \eqn{v(x,t) = w(t)*\mu} where \eqn{w(t)} is 0 if the second process hasn't crossed a
 threshold yet and 1 if it has. The noise scale has a similar structure \eqn{D(x,t) = w(t)*\sigma}.
@@ -94,7 +82,8 @@ pSDPM(rt = c(1.2, 0.6, 0.4), resp = c("upper", "lower", "lower"),
       phi = c(0.3, 1.0, 0.5, 1.0, 1.0, 1.0, 1.0, 0.75, 0.75, 0.0, 0.0, 1.0))
 
 # Random sampling
-rSDPM(n = 100, phi = c(0.3, 1.0, 0.5, 1.0, 1.0, 1.0, 1.0, 0.75, 0.75, 0.0, 0.0, 1.0))
+rSDPM(n = 100, phi = c(0.3, 1.0, 0.5, 1.0, 1.0, 1.0, 1.0, 0.75, 0.75, 0.0, 0.0, 1.0),
+      dt = 0.001)
 }
 \references{
 Hübner, R., Steinhauser, M., & Lehle, C. (2010). A dual-stage two-phase model of

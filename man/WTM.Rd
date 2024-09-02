@@ -7,23 +7,11 @@
 \alias{rWTM}
 \title{Weibull Threshold Model}
 \usage{
-dWTM(
-  rt,
-  resp,
-  phi = c(0.3, 0.5, 1, 1, 1.5, 0.2, 0.5, -1, 0, 0, 1),
-  x_res = "default",
-  t_res = "default"
-)
+dWTM(rt, resp, phi, x_res = "default", t_res = "default")
 
-pWTM(
-  rt,
-  resp,
-  phi = c(0.3, 0.5, 1, 1, 1.5, 0.2, 0.5, -1, 0, 0, 1),
-  x_res = "default",
-  t_res = "default"
-)
+pWTM(rt, resp, phi, x_res = "default", t_res = "default")
 
-rWTM(n, phi = c(0.3, 0.5, 1, 1, 1.5, 0.2, 0.5, -1, 0, 0, 1), dt = 1e-05)
+rWTM(n, phi, dt = 1e-05)
 }
 \arguments{
 \item{rt}{vector of response times}
@@ -31,7 +19,7 @@ rWTM(n, phi = c(0.3, 0.5, 1, 1, 1.5, 0.2, 0.5, -1, 0, 0, 1), dt = 1e-05)
 \item{resp}{vector of responses ("upper" and "lower")}
 
 \item{phi}{parameter vector in the following order:
-\itemize{
+\enumerate{
 \item Non-decision time (\eqn{t_{nd}}). Time for non-decision processes such as stimulus
 encoding and response execution. Total decision time t is the sum of the decision
 and non-decision times.
@@ -43,9 +31,9 @@ rate. For changing threshold models \eqn{v(x,t) = \mu}.
 \item Noise scale (\eqn{\sigma}). Model noise scale parameter.
 \item Initial decision threshold location (\eqn{b_0}). Sets the location of each decision
 threshold at time \eqn{t = 0}.
-\item Decision threshold scale (\eqn{lamb}). Sets the approximate time for threshold
+\item Log10-decision threshold scale (\eqn{log_{10}(\lambda)}). Sets the approximate time for threshold
 collapse or rise.
-\item Decision threshold scale (\eqn{\kappa}). Sets the threshold shape. \eqn{\kappa > 1} produces
+\item Log10-decision threshold shape (\eqn{log_{10}(\kappa)}). Sets the threshold shape. \eqn{\kappa > 1} produces
 logistic-like thresholds, \eqn{\kappa < 1} produces exponential-like thresholds.
 \item Collapse parameter (\eqn{c}). Sets the amount of collapse. \eqn{c = -1} gives collapse to
 zero, \eqn{c = 1} gives no collapse, and \eqn{c > 1} gives rise.
@@ -75,7 +63,7 @@ times (rt) and response thresholds (resp).
 }
 \description{
 SDDM with thresholds that change with time. Thresholds are Weibull functions of the
-form \eqn{b_u(t) = -b_l(t) = b_0 - b_0*(1 – c)*[1 - exp(-(t/lamb)^{\kappa})].}
+form \eqn{b_u(t) = -b_l(t) = b_0 - b_0*(1 – c)*[1 - exp(-(t/\lambda)^{\kappa})].}
 }
 \examples{
 # Probability density function
@@ -87,7 +75,8 @@ pWTM(rt = c(1.2, 0.6, 0.4), resp = c("upper", "lower", "lower"),
      phi = c(0.3, 0.5, 1.0, 1.0, 1.5, 0.2, 0.5, -1.0, 0.0, 0.0, 1.0))
 
 # Random sampling
-rWTM(n = 100, phi = c(0.3, 0.5, 1.0, 1.0, 1.5, 0.2, 0.5, -1.0, 0.0, 0.0, 1.0))
+rWTM(n = 100, phi = c(0.3, 0.5, 1.0, 1.0, 1.5, 0.2, 0.5, -1.0, 0.0, 0.0, 1.0),
+     dt = 0.0001)
 }
 \references{
 Hawkins, G. E., Forstmann, B. U., Wagenmakers, E.-J., Ratcliff, R., & Brown, S. D. (2015).

@@ -4,18 +4,13 @@
 \alias{dDMC_grid}
 \title{Generate Grid for PDF of Diffusion Model of Conflict Tasks}
 \usage{
-dDMC_grid(
-  rt_max = 10,
-  phi = c(0.3, 0.5, -1, 0.2, 0.05, 2.5, 3, 1, 0.5, 0, 0, 1),
-  x_res = "default",
-  t_res = "default"
-)
+dDMC_grid(rt_max = 10, phi, x_res = "default", t_res = "default")
 }
 \arguments{
 \item{rt_max}{maximal response time <- max(rt)}
 
 \item{phi}{parameter vector in the following order:
-\itemize{
+\enumerate{
 \item Non-decision time (\eqn{t_{nd}}). Time for non-decision processes such as stimulus
 encoding and response execution. Total decision time t is the sum of the decision
 and non-decision times.
@@ -26,9 +21,9 @@ the two decision thresholds. Related to the absolute start z point via equation
 if \eqn{s = 0}, neutral condition; if \eqn{s = -1}, incoherent condition.
 \item Automatic process amplitude (\eqn{A}). Max value of automatic process.
 \item Scale parameter (\eqn{\tau}). Contributes to time automatic process. Time to max
-\eqn{t_max = (a – 1)*\tau}.
-    \item Shape parameter (\eqn{a}). Indicates the shape of the automatic process. Must
-have value more than 1 (\eqn{a > 1}).
+\eqn{t_{max} = (\alpha – 1)*\tau}.
+    \item Shape parameter (\eqn{\alpha}). Indicates the shape of the automatic process. Must
+have value more than 1 (\eqn{\alpha > 1}).
 \item Drift rate of the controlled process (\eqn{\mu_c}).
 \item Noise scale (\eqn{\sigma}). Model noise scale parameter.
 \item Decision thresholds (\eqn{b}). Sets the location of each decision threshold. The

@@ -40,7 +40,7 @@ NULL
 #' @export
 dCSTM_T <- function(rt,
                   resp,
-                  phi = rep(0, 100),
+                  phi,
                   x_res = "default",
                   t_res = "default") {
 
@@ -117,7 +117,7 @@ dCSTM_T <- function(rt,
 #' @export
 pCSTM_T <- function(rt,
                   resp,
-                  phi = rep(0, 100),
+                  phi,
                   x_res = "default",
                   t_res = "default") {
 
@@ -192,8 +192,8 @@ pCSTM_T <- function(rt,
 #' @useDynLib "ream", .registration=TRUE
 #' @export
 rCSTM_T <- function(n,
-                  phi = rep(0, 100),
-                  dt = 0.00001) {
+                    phi,
+                    dt = 0.00001) {
 
   # constants
   modelname <- "CSTM_T"
@@ -253,9 +253,9 @@ rCSTM_T <- function(n,
 #' @useDynLib "ream", .registration=TRUE
 #' @export
 dCSTM_T_grid <- function(rt_max = 10.0,
-                       phi = c(0.3, 0.5, 1.0, 1.0, 0.75, 0.0, 0.0, 1.0),
-                       x_res = "default",
-                       t_res = "default") {
+                         phi,
+                         x_res = "default",
+                         t_res = "default") {
 
 
   # constants

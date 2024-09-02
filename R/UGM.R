@@ -14,7 +14,7 @@
 #' @param resp vector of responses ("upper" and "lower")
 #' @param n number of samples
 #' @param phi parameter vector in the following order:
-#'   \itemize{
+#'   \enumerate{
 #'     \item Non-decision time (\eqn{t_{nd}}). Time for non-decision processes such as stimulus
 #'       encoding and response execution. Total decision time t is the sum of the decision
 #'       and non-decision times.
@@ -22,8 +22,8 @@
 #'       the two decision thresholds. Related to the absolute start z point via equation
 #'       \eqn{z = b_l + w*(b_u - b_l)}.
 #'     \item Stimulus strength (\eqn{E_0}). Strength of the stimulus.
-#'     \item Leakage (\eqn{L}). Rate of leaky integration.
-#'     \item Urgency (\eqn{k}). Decision urgency. If \eqn{k} is small, the choice is dominated by
+#'     \item Log10-leakage (\eqn{log_{10}(L)}). Rate of leaky integration.
+#'     \item Log10-urgency (\eqn{log_{10}(k)}). Decision urgency. If \eqn{k} is small, the choice is dominated by
 #'       leakage and approximates a LM. If \eqn{k} is large, it is an urgency dominated decision.
 #'     \item Noise scale (\eqn{\sigma}). Model scaling parameter.
 #'     \item Decision thresholds (\eqn{b}). Sets the location of each decision threshold. The
@@ -78,7 +78,7 @@ NULL
 #' @export
 dUGM <- function(rt,
                  resp,
-                 phi = c(0.3, 0.5, 1.0, 0.5, 0.5, 1.0, 1.5, 0.0, 0.0, 1.0),
+                 phi,
                  x_res = "default",
                  t_res = "default") {
 
@@ -153,7 +153,7 @@ dUGM <- function(rt,
 #' @export
 pUGM <- function(rt,
                  resp,
-                 phi = c(0.3, 0.5, 1.0, 0.5, 0.5, 1.0, 1.5, 0.0, 0.0, 1.0),
+                 phi,
                  x_res = "default",
                  t_res = "default") {
 
@@ -227,7 +227,7 @@ pUGM <- function(rt,
 #' @useDynLib "ream", .registration=TRUE
 #' @export
 rUGM <- function(n,
-                 phi = c(0.3, 0.5, 1.0, 0.5, 0.5, 1.0, 1.5, 0.0, 0.0, 1.0),
+                 phi,
                  dt = 0.00001) {
 
   # constants
@@ -278,7 +278,7 @@ rUGM <- function(n,
 #'
 #' @param rt_max maximal response time <- max(rt)
 #' @param phi parameter vector in the following order:
-#'   \itemize{
+#'   \enumerate{
 #'     \item Non-decision time (\eqn{t_{nd}}). Time for non-decision processes such as stimulus
 #'       encoding and response execution. Total decision time t is the sum of the decision
 #'       and non-decision times.
@@ -286,8 +286,8 @@ rUGM <- function(n,
 #'       the two decision thresholds. Related to the absolute start z point via equation
 #'       \eqn{z = b_l + w*(b_u - b_l)}.
 #'     \item Stimulus strength (\eqn{E_0}). Strength of the stimulus.
-#'     \item Leakage (\eqn{L}). Rate of leaky integration.
-#'     \item Urgency (\eqn{k}). Decision urgency. If \eqn{k} is small, the choice is dominated by
+#'     \item Log10-leakage (\eqn{log_{10}(L)}). Rate of leaky integration.
+#'     \item Log10-urgency (\eqn{log_{10}(k)}). Decision urgency. If \eqn{k} is small, the choice is dominated by
 #'       leakage and approximates a LM. If \eqn{k} is large, it is an urgency dominated decision.
 #'     \item Noise scale (\eqn{\sigma}). Model scaling parameter.
 #'     \item Decision thresholds (\eqn{b}). Sets the location of each decision threshold. The
@@ -316,7 +316,7 @@ rUGM <- function(n,
 #' @useDynLib "ream", .registration=TRUE
 #' @export
 dUGM_grid <- function(rt_max = 10.0,
-                      phi = c(0.3, 0.5, 1.0, 0.5, 0.5, 1.0, 1.5, 0.0, 0.0, 1.0),
+                      phi,
                       x_res = "default",
                       t_res = "default") {
 

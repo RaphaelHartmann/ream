@@ -7,23 +7,11 @@
 \alias{rRTM}
 \title{Rational Threshold Model}
 \usage{
-dRTM(
-  rt,
-  resp,
-  phi = c(0.3, 0.5, 1, 1, 1.5, 0.5, 0, 0, 1),
-  x_res = "default",
-  t_res = "default"
-)
+dRTM(rt, resp, phi, x_res = "default", t_res = "default")
 
-pRTM(
-  rt,
-  resp,
-  phi = c(0.3, 0.5, 1, 1, 1.5, 0.5, 0, 0, 1),
-  x_res = "default",
-  t_res = "default"
-)
+pRTM(rt, resp, phi, x_res = "default", t_res = "default")
 
-rRTM(n, phi = c(0.3, 0.5, 1, 1, 1.5, 0.5, 0, 0, 1), dt = 1e-05)
+rRTM(n, phi, dt = 1e-05)
 }
 \arguments{
 \item{rt}{vector of response times}
@@ -31,7 +19,7 @@ rRTM(n, phi = c(0.3, 0.5, 1, 1, 1.5, 0.5, 0, 0, 1), dt = 1e-05)
 \item{resp}{vector of responses ("upper" and "lower")}
 
 \item{phi}{parameter vector in the following order:
-\itemize{
+\enumerate{
 \item Non-decision time (\eqn{t_{nd}}). Time for non-decision processes such as stimulus
 encoding and response execution. Total decision time t is the sum of the decision
 and non-decision times.
@@ -77,14 +65,14 @@ form \deqn{b_u(t) = -b_l(t) =  0.5*b_0*(1 - \kappa*t/(t + t_{0.5})).}
 \examples{
 # Probability density function
 dRTM(rt = c(1.2, 0.6, 0.4), resp = c("upper", "lower", "lower"),
-     phi = c(0.3, 0.5, 1.0, 1.0, 1.5, 0.5, 0.0, 0.0, 1.0))
+     phi = c(0.3, 0.5, 1.0, 1.0, 1.5, 0.5, 0.5, 0.0, 0.0, 1.0))
 
 # Cumulative distribution function
 pRTM(rt = c(1.2, 0.6, 0.4), resp = c("upper", "lower", "lower"),
-     phi = c(0.3, 0.5, 1.0, 1.0, 1.5, 0.5, 0.0, 0.0, 1.0))
+     phi = c(0.3, 0.5, 1.0, 1.0, 1.5, 0.5, 0.5, 0.0, 0.0, 1.0))
 
 # Random sampling
-rRTM(n = 100, phi = c(0.3, 0.5, 1.0, 1.0, 1.5, 0.5, 0.0, 0.0, 1.0))
+rRTM(n = 100, phi = c(0.3, 0.5, 1.0, 1.0, 1.5, 0.5, 0.5, 0.0, 0.0, 1.0))
 }
 \references{
 Churchland, A. K., Kiani, R., & Shadlen, M. N. (2008). Decision-making with multiple

@@ -1,7 +1,11 @@
-/* file: Model.cpp
+/* file: model_functions.cpp
  Functions for defining model.
- Author: Matthew Murrow
- Date: Dec 22, 2023 */
+ Author: Raphael Hartmann
+ Date: Sep 02, 2024 */
+
+/* -------------------------------------------------- */
+/* -------------------------------------------------- */
+/* -------------------------------------------------- */
 
 #ifndef MODEL_H
 #define MODEL_H

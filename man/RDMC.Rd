@@ -7,23 +7,11 @@
 \alias{rRDMC}
 \title{Revised Diffusion Model of Conflict Tasks}
 \usage{
-dRDMC(
-  rt,
-  resp,
-  phi = c(0.35, 0.5, 7.5, 40, 5, 5, 1, 0.5, 0, 0, 1),
-  x_res = "default",
-  t_res = "default"
-)
+dRDMC(rt, resp, phi, x_res = "default", t_res = "default")
 
-pRDMC(
-  rt,
-  resp,
-  phi = c(0.35, 0.5, 7.5, 40, 5, 5, 1, 0.5, 0, 0, 1),
-  x_res = "default",
-  t_res = "default"
-)
+pRDMC(rt, resp, phi, x_res = "default", t_res = "default")
 
-rRDMC(n, phi = c(0.35, 0.5, 7.5, 40, 5, 5, 1, 0.5, 0, 0, 1), dt = 1e-05)
+rRDMC(n, phi, dt = 1e-05)
 }
 \arguments{
 \item{rt}{vector of response times}
@@ -31,7 +19,7 @@ rRDMC(n, phi = c(0.35, 0.5, 7.5, 40, 5, 5, 1, 0.5, 0, 0, 1), dt = 1e-05)
 \item{resp}{vector of responses ("upper" and "lower")}
 
 \item{phi}{parameter vector in the following order:
-\itemize{
+\enumerate{
 \item Non-decision time (\eqn{t_{nd}}). Time for non-decision processes such as stimulus
 encoding and response execution. Total decision time t is the sum of the decision
 and non-decision times.

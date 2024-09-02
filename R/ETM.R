@@ -10,7 +10,7 @@
 #' @param resp vector of responses ("upper" and "lower")
 #' @param n number of samples
 #' @param phi parameter vector in the following order:
-#'   \itemize{
+#'   \enumerate{
 #'     \item Non-decision time (\eqn{t_{nd}}). Time for non-decision processes such as stimulus
 #'       encoding and response execution. Total decision time t is the sum of the decision
 #'       and non-decision times.
@@ -22,7 +22,7 @@
 #'     \item Noise scale (\eqn{\sigma}). Model noise scale parameter.
 #'     \item Initial decision threshold location (\eqn{b_0}). Sets the location of each decision
 #'       threshold at time \eqn{t = 0}.
-#'     \item Rate of threshold change (\eqn{\tau}).
+#'     \item Log10-rate of threshold change (\eqn{log_{10}(\tau)}).
 #'     \item Contamination (\eqn{g}). Sets the strength of the contamination process. Contamination
 #'       process is a uniform distribution \eqn{f_c(t)} where \eqn{f_c(t) = 1/(g_u-g_l)}
 #'       if \eqn{g_l <= t <= g_u} and \eqn{f_c(t) = 0} if \eqn{t < g_l} or \eqn{t > g_u}. It is
@@ -70,7 +70,7 @@ NULL
 #' @export
 dETM <- function(rt,
                  resp,
-                 phi = c(0.3, 0.5, 1.0, 1.0, 1.5, 0.5, 0.0, 0.0, 1.0),
+                 phi,
                  x_res = "default",
                  t_res = "default") {
 
@@ -145,7 +145,7 @@ dETM <- function(rt,
 #' @export
 pETM <- function(rt,
                  resp,
-                 phi = c(0.3, 0.5, 1.0, 1.0, 1.5, 0.5, 0.0, 0.0, 1.0),
+                 phi,
                  x_res = "default",
                  t_res = "default") {
 
@@ -219,7 +219,7 @@ pETM <- function(rt,
 #' @useDynLib "ream", .registration=TRUE
 #' @export
 rETM <- function(n,
-                 phi = c(0.3, 0.5, 1.0, 1.0, 1.5, 0.5, 0.0, 0.0, 1.0),
+                 phi,
                  dt = 0.00001) {
 
   # constants
@@ -270,7 +270,7 @@ rETM <- function(n,
 #'
 #' @param rt_max maximal response time <- max(rt)
 #' @param phi parameter vector in the following order:
-#'   \itemize{
+#'   \enumerate{
 #'     \item Non-decision time (\eqn{t_{nd}}). Time for non-decision processes such as stimulus
 #'       encoding and response execution. Total decision time t is the sum of the decision
 #'       and non-decision times.
@@ -282,7 +282,7 @@ rETM <- function(n,
 #'     \item Noise scale (\eqn{\sigma}). Model noise scale parameter.
 #'     \item Initial decision threshold location (\eqn{b_0}). Sets the location of each decision
 #'       threshold at time \eqn{t = 0}.
-#'     \item Rate of threshold change (\eqn{\tau}).
+#'     \item Log10-rate of threshold change (\eqn{log_{10}(\tau)}).
 #'     \item Contamination (\eqn{g}). Sets the strength of the contamination process. Contamination
 #'       process is a uniform distribution \eqn{f_c(t)} where \eqn{f_c(t) = 1/(g_u-g_l)}
 #'       if \eqn{g_l <= t <= g_u} and \eqn{f_c(t) = 0} if \eqn{t < g_l} or \eqn{t > g_u}. It is
@@ -303,7 +303,7 @@ rETM <- function(n,
 #' @useDynLib "ream", .registration=TRUE
 #' @export
 dETM_grid <- function(rt_max = 10.0,
-                      phi = c(0.3, 0.5, 1.0, 1.0, 1.5, 0.5, 0.0, 0.0, 1.0),
+                      phi,
                       x_res = "default",
                       t_res = "default") {
 

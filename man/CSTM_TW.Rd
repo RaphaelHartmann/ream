@@ -7,11 +7,11 @@
 \alias{rCSTM_TW}
 \title{Custom Time- and Weight-Dependent Drift Diffusion Model}
 \usage{
-dCSTM_TW(rt, resp, phi = rep(0, 100), x_res = "default", t_res = "default")
+dCSTM_TW(rt, resp, phi, x_res = "default", t_res = "default")
 
-pCSTM_TW(rt, resp, phi = rep(0, 100), x_res = "default", t_res = "default")
+pCSTM_TW(rt, resp, phi, x_res = "default", t_res = "default")
 
-rCSTM_TW(n, phi = rep(0, 100), dt = 1e-05)
+rCSTM_TW(n, phi, dt = 1e-05)
 }
 \arguments{
 \item{rt}{vector of response times}

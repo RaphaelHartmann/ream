@@ -7,23 +7,11 @@
 \alias{rDMC}
 \title{Diffusion Model for Conflict Tasks}
 \usage{
-dDMC(
-  rt,
-  resp,
-  phi = c(0.1, 0.5, 0.2, 0.2, 0.05, 2.5, 3, 1, 0.5, 0, 0, 1),
-  x_res = "default",
-  t_res = "default"
-)
+dDMC(rt, resp, phi, x_res = "default", t_res = "default")
 
-pDMC(
-  rt,
-  resp,
-  phi = c(0.1, 0.5, 0, 0.2, 0.05, 2.5, 3, 1, 0.5, 0, 0, 1),
-  x_res = "default",
-  t_res = "default"
-)
+pDMC(rt, resp, phi, x_res = "default", t_res = "default")
 
-rDMC(n, phi = c(0.3, 0.5, -1, 0.2, 0.05, 2.5, 3, 1, 0.5, 0, 0, 1), dt = 1e-05)
+rDMC(n, phi, dt = 1e-05)
 }
 \arguments{
 \item{rt}{vector of response times}
@@ -31,7 +19,7 @@ rDMC(n, phi = c(0.3, 0.5, -1, 0.2, 0.05, 2.5, 3, 1, 0.5, 0, 0, 1), dt = 1e-05)
 \item{resp}{vector of responses ("upper" and "lower")}
 
 \item{phi}{parameter vector in the following order:
-\itemize{
+\enumerate{
 \item Non-decision time (\eqn{t_{nd}}). Time for non-decision processes such as stimulus
 encoding and response execution. Total decision time t is the sum of the decision
 and non-decision times.
@@ -42,9 +30,9 @@ the two decision thresholds. Related to the absolute start z point via equation
 if \eqn{s = 0}, neutral condition; if \eqn{s = -1}, incoherent condition.
 \item Automatic process amplitude (\eqn{A}). Max value of automatic process.
 \item Scale parameter (\eqn{\tau}). Contributes to time automatic process. Time to max
-\eqn{t_max = (a – 1)*\tau}.
-    \item Shape parameter (\eqn{a}). Indicates the shape of the automatic process. Must
-have value more than 1 (\eqn{a > 1}).
+\eqn{t_{max} = (\alpha – 1)*\tau}.
+    \item Shape parameter (\eqn{\alpha}). Indicates the shape of the automatic process. Must
+have value more than 1 (\eqn{\alpha > 1}).
 \item Drift rate of the controlled process (\eqn{\mu_c}).
 \item Noise scale (\eqn{\sigma}). Model noise scale parameter.
 \item Decision thresholds (\eqn{b}). Sets the location of each decision threshold. The
@@ -79,7 +67,7 @@ The DMC is a two-process evidence accumulation model for the study of conflict t
 It sums together a controlled and an automatic process to generate a single accumulator
 for generating the likelihood function. This accumulator has the same parameters as
 the SDDM with the exception of the drift rate, given by
-\deqn{v(x,t) = s*A*exp(-t/\tau)*[e*t/(\tau*(a-1))]^{a-1}*[(a-1)/t - 1/\tau] + \mu_c.}
+\deqn{v(x,t) = s*A*exp(-t/\tau)*[e*t/(\tau*(\alpha-1))]^{\alpha-1}*[(\alpha-1)/t - 1/\tau] + \mu_c.}
 }
 \examples{
 # Probability density function

@@ -6,26 +6,27 @@
 #' UGM with time varying drift rate. Specifically, the stimulus strength changes from
 #'   \eqn{E_{01}} to \eqn{E_{02}} at time \eqn{t_0}. Identified by (Trueblood et al., 2021) as
 #'   a way to improve recovery of the leakage rate and urgency. Drift rate becomes
-#'   \deqn{v(x,t) = E_01*(1 + k*t) + (k/(1+k*t) - L)*x if t < t_0}
+#'   \deqn{v(x,t) = E_{01}*(1 + k*t) + (k/(1+k*t) - L)*x \ \text{ if } \ t < t_0}
 #'   and
-#'   \deqn{v(x,t) = E_02*(1 + k*t) + (k/(1+k*t) - L)*x if t >= t_0.}
+#'   \deqn{v(x,t) = E_{02}*(1 + k*t) + (k/(1+k*t) - L)*x \ \text{ if } \ t >= t_0.}
 #'
 #' @param rt vector of response times
 #' @param resp vector of responses ("upper" and "lower")
 #' @param n number of samples
 #' @param phi parameter vector in the following order:
-#'   \itemize{
+#'   \enumerate{
 #'     \item Non-decision time (\eqn{t_{nd}}). Time for non-decision processes such as stimulus
 #'       encoding and response execution. Total decision time t is the sum of the decision
 #'       and non-decision times.
 #'     \item Relative start (\eqn{w}). Sets the start point of accumulation as a ratio of
 #'       the two decision thresholds. Related to the absolute start z point via equation
 #'       \eqn{z = b_l + w*(b_u - b_l)}.
-#'     \item Stimulus strength (\eqn{E_0}). Strength of the stimulus.
-#'     \item Leakage (\eqn{L}). Rate of leaky integration.
-#'     \item Urgency (\eqn{k}). Decision urgency. If \eqn{k} is small, the choice is dominated by
-#'       leakage and approximates a LM. If \eqn{k} is large, it is an urgency dominated decision.
-#'     \item ????????? \eqn{t_0}
+#'     \item Stimulus strength before the flip (\eqn{E_{01}}).
+#'     \item Stimulus strength after the flip (\eqn{E_{02}}).
+#'     \item Log10-leakage (\eqn{log_{10}(L)}). Rate of leaky integration.
+#'     \item Log10-urgency (\eqn{log_{10}(k)}). Decision urgency. If \eqn{k} is small, the choice is dominated by
+#'       leakage and approximates a LIM. If \eqn{k} is large, it is an urgency dominated decision.
+#'     \item Flip-time (\eqn{t_0}). Time when stimulus strength changes.
 #'     \item Noise scale (\eqn{\sigma}). Model scaling parameter.
 #'     \item Decision thresholds (\eqn{b}). Sets the location of each decision threshold. The
 #'       upper threshold \eqn{b_u} is above 0 and the lower threshold \eqn{b_l} is below 0 such that
@@ -55,14 +56,14 @@
 #' @examples
 #' # Probability density function
 #' dUGMF(rt = c(1.2, 0.6, 0.4), resp = c("upper", "lower", "lower"),
-#'       phi = c(0.3, 0.5, 1.0, 0.5, 0.5, 0.5, 1.0, 1.5, 0.0, 0.0, 1.0))
+#'       phi = c(0.3, 0.5, 1.0, 0.9, 0.5, 0.5, 0.5, 1.0, 1.5, 0.0, 0.0, 1.0))
 #'
 #' # Cumulative distribution function
 #' pUGMF(rt = c(1.2, 0.6, 0.4), resp = c("upper", "lower", "lower"),
-#'       phi = c(0.3, 0.5, 1.0, 0.5, 0.5, 0.5, 1.0, 1.5, 0.0, 0.0, 1.0))
+#'       phi = c(0.3, 0.5, 1.0, 0.9, 0.5, 0.5, 0.5, 1.0, 1.5, 0.0, 0.0, 1.0))
 #'
 #' # Random sampling
-#' rUGMF(n = 100, phi = c(0.3, 0.5, 1.0, 0.5, 0.5, 0.5, 1.0, 1.5, 0.0, 0.0, 1.0))
+#' rUGMF(n = 100, phi = c(0.3, 0.5, 1.0, 0.9, 0.5, 0.5, 0.5, 1.0, 1.5, 0.0, 0.0, 1.0))
 #' @author Raphael Hartmann & Matthew Murrow
 #' @name UGMF
 NULL
@@ -79,14 +80,14 @@ NULL
 #' @export
 dUGMF <- function(rt,
                  resp,
-                 phi = c(0.3, 0.5, 1.0, 0.5, 0.5, 0.5, 1.0, 1.5, 0.0, 0.0, 1.0),
+                 phi,
                  x_res = "default",
                  t_res = "default") {
 
 
   # constants
   modelname <- "UGMF"
-  Nphi <- 11
+  Nphi <- 12
 
 
   # check
@@ -154,14 +155,14 @@ dUGMF <- function(rt,
 #' @export
 pUGMF <- function(rt,
                  resp,
-                 phi = c(0.3, 0.5, 1.0, 0.5, 0.5, 0.5, 1.0, 1.5, 0.0, 0.0, 1.0),
+                 phi,
                  x_res = "default",
                  t_res = "default") {
 
 
   # constants
   modelname <- "UGMF"
-  Nphi <- 11
+  Nphi <- 12
 
 
   # check
@@ -228,12 +229,12 @@ pUGMF <- function(rt,
 #' @useDynLib "ream", .registration=TRUE
 #' @export
 rUGMF <- function(n,
-                 phi = c(0.3, 0.5, 1.0, 0.5, 0.5, 0.5, 1.0, 1.5, 0.0, 0.0, 1.0),
-                 dt = 0.00001) {
+                  phi,
+                  dt = 0.00001) {
 
   # constants
   modelname <- "UGMF"
-  Nphi <- 11
+  Nphi <- 12
 
 
   # check arguments
@@ -279,18 +280,19 @@ rUGMF <- function(n,
 #'
 #' @param rt_max maximal response time <- max(rt)
 #' @param phi parameter vector in the following order:
-#'   \itemize{
+#'   \enumerate{
 #'     \item Non-decision time (\eqn{t_{nd}}). Time for non-decision processes such as stimulus
 #'       encoding and response execution. Total decision time t is the sum of the decision
 #'       and non-decision times.
 #'     \item Relative start (\eqn{w}). Sets the start point of accumulation as a ratio of
 #'       the two decision thresholds. Related to the absolute start z point via equation
 #'       \eqn{z = b_l + w*(b_u - b_l)}.
-#'     \item Stimulus strength (\eqn{E_0}). Strength of the stimulus.
-#'     \item Leakage (\eqn{L}). Rate of leaky integration.
-#'     \item Urgency (\eqn{k}). Decision urgency. If \eqn{k} is small, the choice is dominated by
-#'       leakage and approximates a LM. If \eqn{k} is large, it is an urgency dominated decision.
-#'     \item ????????? \eqn{t0}
+#'     \item Stimulus strength before the flip (\eqn{E_{01}}).
+#'     \item Stimulus strength after the flip (\eqn{E_{02}}).
+#'     \item Log10-leakage (\eqn{log_{10}(L)}). Rate of leaky integration.
+#'     \item Log10-urgency (\eqn{log_{10}(k)}). Decision urgency. If \eqn{k} is small, the choice is dominated by
+#'       leakage and approximates a LIM. If \eqn{k} is large, it is an urgency dominated decision.
+#'     \item Flip-time (\eqn{t_0}). Time when stimulus strength changes.
 #'     \item Noise scale (\eqn{\sigma}). Model scaling parameter.
 #'     \item Decision thresholds (\eqn{b}). Sets the location of each decision threshold. The
 #'       upper threshold \eqn{b_u} is above 0 and the lower threshold \eqn{b_l} is below 0 such that
@@ -317,14 +319,14 @@ rUGMF <- function(n,
 #' @useDynLib "ream", .registration=TRUE
 #' @export
 dUGMF_grid <- function(rt_max = 10.0,
-                      phi = c(0.3, 0.5, 1.0, 0.5, 0.5, 0.5, 1.0, 1.5, 0.0, 0.0, 1.0),
-                      x_res = "default",
-                      t_res = "default") {
+                       phi,
+                       x_res = "default",
+                       t_res = "default") {
 
 
   # constants
   modelname <- "UGMF"
-  Nphi <- 11
+  Nphi <- 12
 
 
   # checking input

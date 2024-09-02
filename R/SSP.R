@@ -13,7 +13,7 @@
 #' @param resp vector of responses ("upper" and "lower")
 #' @param n number of samples
 #' @param phi parameter vector in the following order:
-#'   \itemize{
+#'   \enumerate{
 #'     \item Non-decision time (\eqn{t_{nd}}). Time for non-decision processes such as stimulus
 #'       encoding and response execution. Total decision time t is the sum of the decision
 #'       and non-decision times.
@@ -22,7 +22,7 @@
 #'       \eqn{z = b_l + w*(b_u - b_l)}.
 #'     \item Width of the attentional spotlight (\eqn{sd_{a0}}). Initial standard deviation of
 #'       the attentional process.
-#'     \item Linear rate of spotlight decrease (\eqn{r_d}). Spotlight width \eqn{sd_a(t) = sd_a0 - r_d*t}.
+#'     \item Linear rate of spotlight decrease (\eqn{r_d}). Spotlight width \eqn{sd_a(t) = sd_{a0} - r_d*t}.
 #'     \item Congruency parameter (\eqn{c}). In congruent condition \eqn{c = 1}, in incongruent
 #'       condition \eqn{c = -1}, and in neutral condition \eqn{c = 0}.
 #'     \item Lower bound of target’s attentional allocation (\eqn{lb_{target}}). Typically fixed to -0.5.
@@ -84,7 +84,7 @@ NULL
 #' @export
 dSSP <- function(rt,
                  resp,
-                 phi = c(0.3, 0.5, 1.0, 7.5, -1.0, -0.5, 0.5, 1.5, 3.75, 3.75, 3.75, 1.0, 0.75, 0.0, 0.0, 1.0),
+                 phi,
                  x_res = "default",
                  t_res = "default") {
 
@@ -159,7 +159,7 @@ dSSP <- function(rt,
 #' @export
 pSSP <- function(rt,
                  resp,
-                 phi = c(0.3, 0.5, 1.0, 7.5, -1.0, -0.5, 0.5, 1.5, 3.75, 3.75, 3.75, 1.0, 0.75, 0.0, 0.0, 1.0),
+                 phi,
                  x_res = "default",
                  t_res = "default") {
 
@@ -233,7 +233,7 @@ pSSP <- function(rt,
 #' @useDynLib "ream", .registration=TRUE
 #' @export
 rSSP <- function(n,
-                 phi = c(0.3, 0.5, 1.0, 7.5, -1.0, -0.5, 0.5, 1.5, 3.75, 3.75, 3.75, 1.0, 0.75, 0.0, 0.0, 1.0),
+                 phi,
                  dt = 0.00001) {
 
   # constants
@@ -284,7 +284,7 @@ rSSP <- function(n,
 #'
 #' @param rt_max maximal response time <- max(rt)
 #' @param phi parameter vector in the following order:
-#'   \itemize{
+#'   \enumerate{
 #'     \item Non-decision time (\eqn{t_{nd}}). Time for non-decision processes such as stimulus
 #'       encoding and response execution. Total decision time t is the sum of the decision
 #'       and non-decision times.
@@ -293,7 +293,7 @@ rSSP <- function(n,
 #'       \eqn{z = b_l + w*(b_u - b_l)}.
 #'     \item Width of the attentional spotlight (\eqn{sd_{a0}}). Initial standard deviation of
 #'       the attentional process.
-#'     \item Linear rate of spotlight decrease (\eqn{r_d}). Spotlight width \eqn{sd_a(t) = sd_a0 - r_d*t}.
+#'     \item Linear rate of spotlight decrease (\eqn{r_d}). Spotlight width \eqn{sd_a(t) = sd_{a0} - r_d*t}.
 #'     \item Congruency parameter (\eqn{c}). In congruent condition \eqn{c = 1}, in incongruent
 #'       condition \eqn{c = -1}, and in neutral condition \eqn{c = 0}.
 #'     \item Lower bound of target’s attentional allocation (\eqn{lb_{target}}). Typically fixed to -0.5.
@@ -325,7 +325,7 @@ rSSP <- function(n,
 #' @useDynLib "ream", .registration=TRUE
 #' @export
 dSSP_grid <- function(rt_max = 10.0,
-                      phi = c(0.3, 0.5, 1.0, 7.5, -1.0, -0.5, 0.5, 1.5, 3.75, 3.75, 3.75, 1.0, 0.75, 0.0, 0.0, 1.0),
+                      phi,
                       x_res = "default",
                       t_res = "default") {
 

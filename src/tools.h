@@ -1,4 +1,11 @@
+/* file: model_functions.cpp
+ Functions for defining model.
+ Author: Mathew Murrow and Raphael Hartmann
+ Date: Sep 02, 2024 */
 
+/* -------------------------------------------------- */
+/* -------------------------------------------------- */
+/* -------------------------------------------------- */
 
 #ifndef TOOLS_H
 #define TOOLS_H

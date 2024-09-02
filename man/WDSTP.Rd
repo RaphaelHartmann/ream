@@ -7,27 +7,11 @@
 \alias{rWDSTP}
 \title{Weibull Dual-Stage Two-Phase Model of Selective Attention}
 \usage{
-dWDSTP(
-  rt,
-  resp,
-  phi = c(0.3, 0.5, 1, 1, -1, -0.5, 8, 1, 1, 1, 2, 1.3, 0, 0, 1),
-  x_res = "default",
-  t_res = "default"
-)
+dWDSTP(rt, resp, phi, x_res = "default", t_res = "default")
 
-pWDSTP(
-  rt,
-  resp,
-  phi = c(0.3, 0.5, 1, 1, -1, -0.5, 8, 1, 1, 1, 2, 1.3, 0, 0, 1),
-  x_res = "default",
-  t_res = "default"
-)
+pWDSTP(rt, resp, phi, x_res = "default", t_res = "default")
 
-rWDSTP(
-  n,
-  phi = c(0.3, 0.5, 1, 1, -1, -0.5, 8, 1, 1, 1, 2, 1.3, 0, 0, 1),
-  dt = 1e-05
-)
+rWDSTP(n, phi, dt = 1e-05)
 }
 \arguments{
 \item{rt}{vector of response times}
@@ -35,7 +19,7 @@ rWDSTP(
 \item{resp}{vector of responses ("upper" and "lower")}
 
 \item{phi}{parameter vector in the following order:
-\itemize{
+\enumerate{
 \item Non-decision time (\eqn{t_{nd}}). Time for non-decision processes such as stimulus
 encoding and response execution. Total decision time t is the sum of the decision
 and non-decision times.

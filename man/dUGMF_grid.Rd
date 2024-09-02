@@ -4,29 +4,25 @@
 \alias{dUGMF_grid}
 \title{Generate Grid for PDF of the Urgency Gating Model With Flip}
 \usage{
-dUGMF_grid(
-  rt_max = 10,
-  phi = c(0.3, 0.5, 1, 0.5, 0.5, 0.5, 1, 1.5, 0, 0, 1),
-  x_res = "default",
-  t_res = "default"
-)
+dUGMF_grid(rt_max = 10, phi, x_res = "default", t_res = "default")
 }
 \arguments{
 \item{rt_max}{maximal response time <- max(rt)}
 
 \item{phi}{parameter vector in the following order:
-\itemize{
+\enumerate{
 \item Non-decision time (\eqn{t_{nd}}). Time for non-decision processes such as stimulus
 encoding and response execution. Total decision time t is the sum of the decision
 and non-decision times.
 \item Relative start (\eqn{w}). Sets the start point of accumulation as a ratio of
 the two decision thresholds. Related to the absolute start z point via equation
 \eqn{z = b_l + w*(b_u - b_l)}.
-\item Stimulus strength (\eqn{E_0}). Strength of the stimulus.
-\item Leakage (\eqn{L}). Rate of leaky integration.
-\item Urgency (\eqn{k}). Decision urgency. If \eqn{k} is small, the choice is dominated by
-leakage and approximates a LM. If \eqn{k} is large, it is an urgency dominated decision.
-\item ????????? \eqn{t0}
+\item Stimulus strength before the flip (\eqn{E_{01}}).
+\item Stimulus strength after the flip (\eqn{E_{02}}).
+\item Log10-leakage (\eqn{log_{10}(L)}). Rate of leaky integration.
+\item Log10-urgency (\eqn{log_{10}(k)}). Decision urgency. If \eqn{k} is small, the choice is dominated by
+leakage and approximates a LIM. If \eqn{k} is large, it is an urgency dominated decision.
+\item Flip-time (\eqn{t_0}). Time when stimulus strength changes.
 \item Noise scale (\eqn{\sigma}). Model scaling parameter.
 \item Decision thresholds (\eqn{b}). Sets the location of each decision threshold. The
 upper threshold \eqn{b_u} is above 0 and the lower threshold \eqn{b_l} is below 0 such that

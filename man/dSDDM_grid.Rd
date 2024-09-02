@@ -4,18 +4,13 @@
 \alias{dSDDM_grid}
 \title{Generate Grid for PDF of the Simple Drift Diffusion Model}
 \usage{
-dSDDM_grid(
-  rt_max = 10,
-  phi = c(0.3, 0.5, 1, 1, 0.75, 0, 0, 1),
-  x_res = "default",
-  t_res = "default"
-)
+dSDDM_grid(rt_max = 10, phi, x_res = "default", t_res = "default")
 }
 \arguments{
 \item{rt_max}{maximal response time <- max(rt)}
 
 \item{phi}{parameter vector in the following order:
-\itemize{
+\enumerate{
 \item Non-decision time (\eqn{t_{nd}}). Time for non-decision processes such as stimulus
 encoding and response execution. Total decision time t is the sum of the decision
 and non-decision times.

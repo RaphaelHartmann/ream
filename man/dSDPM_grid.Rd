@@ -4,18 +4,13 @@
 \alias{dSDPM_grid}
 \title{Generate Grid for PDF of the Sequential Dual Process Model}
 \usage{
-dSDPM_grid(
-  rt_max = 10,
-  phi = c(0.3, 1, 0.5, 1, 1, 1, 1, 0.75, 0.75, 0, 0, 1),
-  x_res = "default",
-  t_res = "default"
-)
+dSDPM_grid(rt_max = 10, phi, x_res = "default", t_res = "default")
 }
 \arguments{
 \item{rt_max}{maximal response time <- max(rt)}
 
 \item{phi}{parameter vector in the following order:
-\itemize{
+\enumerate{
 \item Non-decision time (\eqn{t_{nd}}). Time for non-decision processes such as stimulus
 encoding and response execution. Total decision time t is the sum of the decision
 and non-decision times.
@@ -26,7 +21,7 @@ the two decision thresholds. Related to the absolute start z point via equation
 of accumulation for the target selection process as a ratio of the two decision
 thresholds. Related to the absolute start \eqn{z_{ts}} point via equation
 \eqn{z_{ts} = b_{lts} + w_ts*(b_{uts} – b_{lts})}.
-    \item Stimulus strength ({\mu}).
+    \item Stimulus strength (\eqn{\mu}).
 \item Stimulus strength of process 2 (\eqn{\mu_2}).
 \item Noise scale (\eqn{\sigma}). Model scaling parameter.
 \item Effective noise scale of continuous approximation (\eqn{\sigma_{eff}}). See ream

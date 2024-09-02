@@ -10,7 +10,7 @@
 #' @param resp vector of responses ("upper" and "lower")
 #' @param n number of samples
 #' @param phi parameter vector in the following order:
-#'   \itemize{
+#'   \enumerate{
 #'     \item Non-decision time (\eqn{t_{nd}}). Time for non-decision processes such as stimulus
 #'       encoding and response execution. Total decision time t is the sum of the decision
 #'       and non-decision times.
@@ -70,7 +70,7 @@ NULL
 #' @export
 dLTM <- function(rt,
                  resp,
-                 phi = c(0.3, 0.5, 1.0, 1.0, 1.5, 1.0, 0.0, 0.0, 1.0),
+                 phi,
                  x_res = "default",
                  t_res = "default") {
 
@@ -145,7 +145,7 @@ dLTM <- function(rt,
 #' @export
 pLTM <- function(rt,
                  resp,
-                 phi = c(0.3, 0.5, 1.0, 1.0, 1.5, 1.0, 0.0, 0.0, 1.0),
+                 phi,
                  x_res = "default",
                  t_res = "default") {
 
@@ -219,7 +219,7 @@ pLTM <- function(rt,
 #' @useDynLib "ream", .registration=TRUE
 #' @export
 rLTM <- function(n,
-                 phi = c(0.3, 0.5, 1.0, 1.0, 1.5, 1.0, 0.0, 0.0, 1.0),
+                 phi,
                  dt = 0.00001) {
 
   # constants
@@ -270,7 +270,7 @@ rLTM <- function(n,
 #'
 #' @param rt_max maximal response time <- max(rt)
 #' @param phi parameter vector in the following order:
-#'   \itemize{
+#'   \enumerate{
 #'     \item Non-decision time (\eqn{t_{nd}}). Time for non-decision processes such as stimulus
 #'       encoding and response execution. Total decision time t is the sum of the decision
 #'       and non-decision times.
@@ -303,7 +303,7 @@ rLTM <- function(n,
 #' @useDynLib "ream", .registration=TRUE
 #' @export
 dLTM_grid <- function(rt_max = 10.0,
-                      phi = c(0.3, 0.5, 1.0, 1.0, 1.5, 1.0, 0.0, 0.0, 1.0),
+                      phi,
                       x_res = "default",
                       t_res = "default") {
 

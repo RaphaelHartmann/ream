@@ -7,23 +7,11 @@
 \alias{rPAM}
 \title{Piecewise Attention Model}
 \usage{
-dPAM(
-  rt,
-  resp,
-  phi = c(0.25, 0.5, -0.3, -0.3, 0.3, 0.25, 1, 0.5, 0, 0, 1),
-  x_res = "default",
-  t_res = "default"
-)
+dPAM(rt, resp, phi, x_res = "default", t_res = "default")
 
-pPAM(
-  rt,
-  resp,
-  phi = c(0.25, 0.5, -0.3, -0.3, 0.3, 0.25, 1, 0.5, 0, 0, 1),
-  x_res = "default",
-  t_res = "default"
-)
+pPAM(rt, resp, phi, x_res = "default", t_res = "default")
 
-rPAM(n, phi = c(0.25, 0.5, -0.3, -0.3, 0.3, 0.25, 1, 0.5, 0, 0, 1), dt = 1e-05)
+rPAM(n, phi, dt = 1e-05)
 }
 \arguments{
 \item{rt}{vector of response times}
@@ -31,7 +19,7 @@ rPAM(n, phi = c(0.25, 0.5, -0.3, -0.3, 0.3, 0.25, 1, 0.5, 0, 0, 1), dt = 1e-05)
 \item{resp}{vector of responses ("upper" and "lower")}
 
 \item{phi}{parameter vector in the following order:
-\itemize{
+\enumerate{
 \item Non-decision time (\eqn{t_{nd}}). Time for non-decision processes such as stimulus
 encoding and response execution. Total decision time t is the sum of the decision
 and non-decision times.

@@ -1,6 +1,11 @@
+/* file: model_functions.cpp
+ Functions for defining model.
+ Author: Raphael Hartmann and Mathew Murrow
+ Date: Sep 02, 2024 */
 
-// Chair of Social Psychology, University of Freiburg
-// Authors: Raphael Hartmann
+/* -------------------------------------------------- */
+/* -------------------------------------------------- */
+/* -------------------------------------------------- */
 
 #define R_NO_REMAP
 #include <chrono>
@@ -66,10 +71,10 @@ std::unique_ptr<Model> createModel(const std::string& modelName) {
     return std::make_unique<UGM>();
   } else if (modelName == "WTM") {
     return std::make_unique<WTM>();
-  } else if (modelName == "LMF") {
-    return std::make_unique<LMF>();
-  } else if (modelName == "LM") {
-    return std::make_unique<LM>();
+  } else if (modelName == "LIMF") {
+    return std::make_unique<LIMF>();
+  } else if (modelName == "LIM") {
+    return std::make_unique<LIM>();
   } else if (modelName == "UGMF") {
     return std::make_unique<UGMF>();
   } else if (modelName == "WDSTP") {

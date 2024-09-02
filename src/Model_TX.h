@@ -1,3 +1,12 @@
+/* file: model_functions.cpp
+ Functions for defining model.
+ Author: Raphael Hartmann and Mathew Murrow
+ Date: Sep 02, 2024 */
+
+/* -------------------------------------------------- */
+/* -------------------------------------------------- */
+/* -------------------------------------------------- */
+
 #ifndef MODEL_TX_H
 #define MODEL_TX_H
 
