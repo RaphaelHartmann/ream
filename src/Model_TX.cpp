@@ -163,7 +163,7 @@ int Model_TX::pdf(double *RsumlogPDF, double *RPDFlow, double *RPDFupp, double *
   double int_prob = 0.0;
   double gg = contamination_strength(phi);
   double g_prob = 0.0;
-  int N_cut = N_dt;
+  int N_cut = N_dt-1;
 
   /* set value of first element for first passage time array */
   p_fpt[0][0] = tnd;
@@ -550,7 +550,7 @@ int Model_TX::cdf(double *RsumlogCDF, double *RCDFlow, double *RCDFupp, double *
   double int_prob = 0.0;
   double gg = contamination_strength(phi);
   double g_prob = 0.0;
-  int N_cut = N_dt;
+  int N_cut = N_dt-1;
 
   /* set value of first element for first passage time array */
   p_fpt[0][0] = tnd;

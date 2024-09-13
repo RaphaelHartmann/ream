@@ -56,7 +56,7 @@ double unif_L();
 /* -------------------------------------------------- */
 
 /* constants used by likelihood generating function */
-const int N_deps_max = 501; /* number of spatial mesh points */
+const int N_deps_max = 1001; /* number of spatial mesh points */
 const int N_dt = 2501; /* maximum number of time steps */
 const int N_dt_ini = 25; /* number of small, initial time steps to eliminate oscillations */
 const double dt_ini_scale = 0.01; /* uset to set initial time steps, lower value gives smaller time steps */

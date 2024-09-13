@@ -316,12 +316,12 @@ protected:
 
   /* function for the target selection diffusion rate */
   double diffusion_ts(const double phi[15]) const override {
-    return phi[11];
+    return 0;
   }
 
   /* function for the upper threshold */
   double upper_threshold(const double phi[15], double t) const override {
-    return -phi[11];
+    return phi[11];
   }
 
   /* function for the lower threshold */
@@ -336,7 +336,7 @@ protected:
 
   /* function for the target selection lower threshold */
   double lower_threshold_ts(const double phi[12]) const override {
-    return -0;
+    return 0;
   }
 
   /* function for the contamination strength */
