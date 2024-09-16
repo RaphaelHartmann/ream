@@ -47,8 +47,6 @@ protected:
 
   /* function for the diffusion rate */
   double diffusion(const double phi[15], double t, double w) const override {
-    double mu1 = phi[3] + phi[4]*phi[5];
-    double mu2 = phi[6];
     double sigma = phi[8];
     double sigma_eff = phi[9];
     double D = sigma*sqrt(1.0 + sigma_eff*w);
@@ -108,7 +106,6 @@ protected:
     double sigma_ts = diffusion_ts(phi); /* diffusion rate for process 2 */
     double a_ts = upper_threshold_ts(phi) - lower_threshold_ts(phi); /* threshold separation for process 2 */
     double z_ts = w_ts*a_ts; /* start point for process 2 */
-    double v = 0.0; /* total summed drift rate for process 1 */
     int kk = 0; /* looping index  */
     int N_k = 0; /* number of iterations in infinite sum */
 
@@ -236,7 +233,6 @@ protected:
     double sigma_ts = diffusion_ts(phi); /* diffusion rate for process 2 */
     double a_ts = upper_threshold_ts(phi) - lower_threshold_ts(phi); /* threshold separation for process 2 */
     double z_ts = w_ts*a_ts; /* start point for process 2 */
-    double v = 0.0; /* total summed drift rate for process 1 */
     int kk = 0; /* looping index  */
     int N_k = 0; /* number of iterations in infinite sum */
 
@@ -306,8 +302,6 @@ protected:
 
   /* function for the diffusion rate */
   double diffusion(const double phi[15], double t, double w) const override {
-    double mu1 = phi[3] + phi[4]*phi[5];
-    double mu2 = phi[6];
     double sigma = phi[9];
     double sigma_eff = phi[10];
     double D = sigma*sqrt(1.0 + sigma_eff*w);
@@ -362,8 +356,6 @@ protected:
 
   /* function used to calculate the CDF of the target selection process, used to set w(t) */
   double ts_cdf(const double phi[15], double t) const override {
-    double mu1 = phi[3] + phi[4]*phi[5];
-    double mu2 = phi[6];
     double lamb = phi[7];
     double kappa = phi[8];
     double w = 1.0 - exp( -pow(t/lamb, kappa) );
@@ -386,14 +378,29 @@ protected:
     return phi[1];
   }
 
+  /* function for the target selection start point */
+  double relative_start_ts(const double phi[15]) const override {
+    return 0.0;
+  }
+
   /* method for the drift rate of process 1 */
   double drift(const double phi[100], double t, double w) const override {
     return phi[2];
   }
 
+  /* function for the target selection drift rate */
+  double drift_ts(const double phi [15]) const override {
+    return 0;
+  }
+
   /* method for the diffusion rate of process 1 */
   double diffusion(const double phi[100], double t, double w) const override {
     return phi[3];
+  }
+
+  /* function for the target selection diffusion rate */
+  double diffusion_ts(const double phi[15]) const override {
+    return 0.0;
   }
 
   /* method for the upper threshold of process 1 */
@@ -404,6 +411,16 @@ protected:
   /* method for the lower threshold of process 1 */
   double lower_threshold(const double phi[100], double t) const override {
     return -phi[4];
+  }
+
+  /* function for the target selection upper threshold */
+  double upper_threshold_ts(const double phi[12]) const override {
+    return 0.0;
+  }
+
+  /* function for the target selection lower threshold */
+  double lower_threshold_ts(const double phi[12]) const override {
+    return 0.0;
   }
 
   /* method for the contamination strength of process 1 */
@@ -425,6 +442,11 @@ protected:
   /* method for locally modifying the time step size */
   double modify_dt(const double phi[100], double t) const override {
     return 1.0;
+  }
+
+  /* function used to calculate the CDF of the target selection process, used to set w(t) */
+  double ts_cdf(const double phi[15], double t) const override {
+    return 0.0;
   }
 
 };

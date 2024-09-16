@@ -11,8 +11,8 @@
 #define MODEL_H
 
 #include "tools.h"
-#include <vector>
 #include <memory>
+#include <vector>
 #include <R.h>
 #include <R_ext/Random.h>
 #include <Rmath.h>
@@ -30,7 +30,7 @@ public:
   /* Constructor */
   Model();
   /* Virtual destructor */
-  ~Model();
+  virtual ~Model();
 
   /* method used to calculate model PDF function */
   virtual int pdf(double *RsumlogPDF, double *RPDFlow, double *RPDFupp, double *RlogPDFlow, double *RlogPDFupp, std::vector<double> rtl, std::vector<double> rtu, double *phi) const=0;

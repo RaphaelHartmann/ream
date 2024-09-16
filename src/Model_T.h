@@ -18,7 +18,7 @@ public:
   /* Constructor */
   Model_T();
   /* Virtual destructor */
-  ~Model_T();
+  virtual ~Model_T();
 
   /* method used to calculate model PDF function */
   int pdf(double *RsumlogPDF, double *RPDFlow, double *RPDFupp, double *RlogPDFlow, double *RlogPDFupp, std::vector<double> rtl, std::vector<double> rtu, double *phi) const override;

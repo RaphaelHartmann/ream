@@ -8,8 +8,8 @@
 /* -------------------------------------------------- */
 
 #define R_NO_REMAP
-#include <chrono>
-#include <thread>
+// #include <chrono>
+// #include <thread>
 #include "Model.h"
 #include "models_t.h"
 #include "models_tx.h"
@@ -82,9 +82,9 @@ std::unique_ptr<Model> createModel(const std::string& modelName) {
   } else if (modelName == "CSTM_T") {
     return std::make_unique<CSTM_T>();
   } else if (modelName == "CSTM_TX") {
-    return std::make_unique<CSTM_T>();
+    return std::make_unique<CSTM_TX>();
   } else if (modelName == "CSTM_TW") {
-    return std::make_unique<CSTM_T>();
+    return std::make_unique<CSTM_TW>();
   } else {
     Rprintf("unknown model name");
     return nullptr;
@@ -373,8 +373,6 @@ extern "C" {
       phi[i] = REAL(re)[i+2];
     }
 
-    Rprintf("wrapper 1\n");
-    std::this_thread::sleep_for(std::chrono::seconds(5));
     /* declare R objects for output */
     int outCnt = 0, prtCnt = 0;
     SEXP rt = PROTECT(Rf_allocVector(REALSXP, N_dt));
@@ -392,8 +390,6 @@ extern "C" {
     double *Rpdf_u = REAL(pdf_u);
     double *Rpdf_l = REAL(pdf_l);
 
-    Rprintf("wrapper 2\n");
-    std::this_thread::sleep_for(std::chrono::seconds(5));
     /* model creation */
     auto model = createModel(ModelName);
     if (!model) {
@@ -404,8 +400,6 @@ extern "C" {
     /* main likelihood function */
     model->grid_pdf(Rrt, Rpdf_u, Rpdf_l, phi);
 
-    Rprintf("wrapper 3\n");
-    std::this_thread::sleep_for(std::chrono::seconds(5));
     /* set elements of list out */
     SET_VECTOR_ELT(out,0,rt);
     SET_VECTOR_ELT(out,1,pdf_u);
@@ -418,8 +412,6 @@ extern "C" {
     SET_STRING_ELT(names,0,Rf_mkChar("rt"));
     SET_STRING_ELT(names,1,Rf_mkChar("pdf_u"));
     SET_STRING_ELT(names,2,Rf_mkChar("pdf_l"));
-    Rprintf("wrapper 4\n");
-    std::this_thread::sleep_for(std::chrono::seconds(5));
     Rf_setAttrib(out,R_NamesSymbol,names);
 
 
@@ -427,8 +419,6 @@ extern "C" {
     UNPROTECT(prtCnt);
 
     R_Free(phi);
-    Rprintf("wrapper 5\n");
-    std::this_thread::sleep_for(std::chrono::seconds(5));
 
 
     return(out);
