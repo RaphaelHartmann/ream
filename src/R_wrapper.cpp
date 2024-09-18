@@ -39,56 +39,59 @@ int N_rtu;
 int N_phi;
 
   // for likelihood
-const char *OUTPUT2;
-const char *OUTPUT3;
+// const char *OUTPUT2;
+// const char *OUTPUT3;
 
 
 
 
 /* Definition of the createModel function */
-std::unique_ptr<Model> createModel(const std::string& modelName) {
-  if (modelName == "DMC") {
+std::unique_ptr<Model> createModel(const char* modelName) {
+  std::string modelNameStr(modelName);
+
+  if (modelNameStr == "DMC") {
     return std::make_unique<DMC>();
-  } else if (modelName == "CDSTP") {
+  } else if (modelNameStr == "CDSTP") {
     return std::make_unique<CDSTP>();
-  } else if (modelName == "ETM") {
+  } else if (modelNameStr == "ETM") {
     return std::make_unique<ETM>();
-  } else if (modelName == "LTM") {
+  } else if (modelNameStr == "LTM") {
     return std::make_unique<LTM>();
-  } else if (modelName == "PAM") {
+  } else if (modelNameStr == "PAM") {
     return std::make_unique<PAM>();
-  } else if (modelName == "RDMC") {
+  } else if (modelNameStr == "RDMC") {
     return std::make_unique<RDMC>();
-  } else if (modelName == "RTM") {
+  } else if (modelNameStr == "RTM") {
     return std::make_unique<RTM>();
-  } else if (modelName == "SDDM") {
+  } else if (modelNameStr == "SDDM") {
     return std::make_unique<SDDM>();
-  } else if (modelName == "SDPM") {
+  } else if (modelNameStr == "SDPM") {
     return std::make_unique<SDPM>();
-  } else if (modelName == "SSP") {
+  } else if (modelNameStr == "SSP") {
     return std::make_unique<SSP>();
-  } else if (modelName == "UGM") {
+  } else if (modelNameStr == "UGM") {
     return std::make_unique<UGM>();
-  } else if (modelName == "WTM") {
+  } else if (modelNameStr == "WTM") {
     return std::make_unique<WTM>();
-  } else if (modelName == "LIMF") {
+  } else if (modelNameStr == "LIMF") {
     return std::make_unique<LIMF>();
-  } else if (modelName == "LIM") {
+  } else if (modelNameStr == "LIM") {
     return std::make_unique<LIM>();
-  } else if (modelName == "UGMF") {
+  } else if (modelNameStr == "UGMF") {
     return std::make_unique<UGMF>();
-  } else if (modelName == "WDSTP") {
+  } else if (modelNameStr == "WDSTP") {
     return std::make_unique<WDSTP>();
-  } else if (modelName == "CSTM_T") {
+  } else if (modelNameStr == "CSTM_T") {
     return std::make_unique<CSTM_T>();
-  } else if (modelName == "CSTM_TX") {
+  } else if (modelNameStr == "CSTM_TX") {
     return std::make_unique<CSTM_TX>();
-  } else if (modelName == "CSTM_TW") {
+  } else if (modelNameStr == "CSTM_TW") {
     return std::make_unique<CSTM_TW>();
   } else {
     Rprintf("unknown model name");
     return nullptr;
   }
+
 }
 
 
