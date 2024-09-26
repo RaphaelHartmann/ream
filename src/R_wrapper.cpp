@@ -15,6 +15,7 @@
 #include "models_tx.h"
 #include "models_tw.h"
 #include "tools.h"
+#include <string>
 #include <R.h>
 #include <Rinternals.h>
 
