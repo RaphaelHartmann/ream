@@ -66,7 +66,7 @@ double Model_TW::approx_dt(double* phi, double dt_scale) const {
       uu = unif_L() >= 0.5 ? 1.0 : -1.0;
 
       /* calculate accumulated evidence */
-      xx += dt_*vv + sqrtdt*DD*uu;
+      xx += dt_sims*vv + sqrtdt*DD*uu;
 
       /* check if accumulated evidence has crossed a decision threshold */
       if ((xx >= bu) || (xx <= bl)) {

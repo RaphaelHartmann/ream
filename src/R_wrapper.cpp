@@ -14,6 +14,7 @@
 #include "models_t.h"
 #include "models_tx.h"
 #include "models_tw.h"
+#include "models_7p.h"
 #include "tools.h"
 #include <string>
 #include <R.h>
@@ -39,6 +40,15 @@ int N_rtl;
 int N_rtu;
 int N_phi;
 
+// for DDM with 7 parameters
+int tnd_dist;
+int N_dtau = 100;
+double tnd_range = 3.5;
+int w_dist;
+int v_dist;
+int N_dv = 10;
+double v_range = 4.0;
+
   // for likelihood
 // const char *OUTPUT2;
 // const char *OUTPUT3;
@@ -54,6 +64,8 @@ std::unique_ptr<Model> createModel(const char* modelName) {
     return std::make_unique<DMC>();
   } else if (modelNameStr == "CDSTP") {
     return std::make_unique<CDSTP>();
+  } else if (modelNameStr == "DDM") {
+    return std::make_unique<DDM>();
   } else if (modelNameStr == "ETM") {
     return std::make_unique<ETM>();
   } else if (modelNameStr == "LTM") {
@@ -124,6 +136,15 @@ extern "C" {
 	  double *phi = (double*)R_Calloc(N_phi, double);
 	  for(int i=0; i<N_phi; i++) {
 	    phi[i] = REAL(re)[i+2];
+	  }
+
+	  std::string ModelNameStr(ModelName);
+	  tnd_dist = INTEGER(in)[4];
+	  w_dist = INTEGER(in)[5];
+	  if (ModelNameStr == "DDM") {
+	    v_dist = INTEGER(in)[6];
+	  } else{
+	    v_dist = 99;
 	  }
 
 
@@ -223,6 +244,16 @@ extern "C" {
       phi[i] = REAL(re)[i+2];
     }
 
+    std::string ModelNameStr(ModelName);
+    tnd_dist = INTEGER(in)[4];
+    w_dist = INTEGER(in)[5];
+    if (ModelNameStr == "DDM") {
+      v_dist = INTEGER(in)[6];
+    } else{
+      v_dist = 99;
+    }
+
+
     /* declare R objects for output */
     int outCnt = 0, prtCnt = 0;
     SEXP CDFlow = PROTECT(Rf_allocVector(REALSXP, N_rtl));
@@ -309,6 +340,15 @@ extern "C" {
 		  phi[i] = REAL(re)[i+1];
 		}
 
+		std::string ModelNameStr(ModelName);
+		tnd_dist = INTEGER(in)[2];
+		w_dist = INTEGER(in)[3];
+		if (ModelNameStr == "DDM") {
+		  v_dist = INTEGER(in)[4];
+		} else{
+		  v_dist = 99;
+		}
+
 
 		/* declare R objects for output */
 		int outCnt = 0, prtCnt = 0;
@@ -376,6 +416,16 @@ extern "C" {
     for(int i=0; i<N_phi; i++) {
       phi[i] = REAL(re)[i+2];
     }
+
+    std::string ModelNameStr(ModelName);
+    tnd_dist = INTEGER(in)[2];
+    w_dist = INTEGER(in)[3];
+    if (ModelNameStr == "DDM") {
+      v_dist = INTEGER(in)[4];
+    } else{
+      v_dist = 99;
+    }
+
 
     /* declare R objects for output */
     int outCnt = 0, prtCnt = 0;
