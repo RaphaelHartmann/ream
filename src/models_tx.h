@@ -31,7 +31,7 @@ protected:
   double drift(const double phi[11], double x, double t) const override {
     double mu1 = phi[2];
     double mu2 = phi[3];
-    double l = pow(10.0, phi[4]);
+    double l = phi[4];
     double t0 = phi[5];
     double v = 0.0;
 
@@ -108,7 +108,7 @@ protected:
   /* method for the drift rate */
   double drift(const double phi[9], double x, double t) const override {
     double mu = phi[2];
-    double l = pow(10.0, phi[3]);
+    double l = phi[3];
     double v = mu - l*x;
     return v;
   }

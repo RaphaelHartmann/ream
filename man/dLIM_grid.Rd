@@ -18,7 +18,7 @@ and non-decision times.
 the two decision thresholds. Related to the absolute start z point via equation
 \eqn{z = b_l + w*(b_u - b_l)}.
 \item Stimulus strength (\eqn{\mu}). Strength of the stimulus.
-\item Log10-leakage (\eqn{log_{10}(L)}). Rate of leaky integration.
+\item leakage (\eqn{L}). Rate of leaky integration.
 \item Noise scale (\eqn{\sigma}). Model scaling parameter.
 \item Decision thresholds (\eqn{b}). Sets the location of each decision threshold. The
 upper threshold \eqn{b_u} is above 0 and the lower threshold \eqn{b_l} is below 0 such that

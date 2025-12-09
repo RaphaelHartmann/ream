@@ -19,7 +19,7 @@ the two decision thresholds. Related to the absolute start z point via equation
 \eqn{z = b_l + w*(b_u - b_l)}.
 \item Stimulus strength 1 (\eqn{\mu_1}). Strength of the stimulus prior to \eqn{t_0}.
 \item Stimulus strength 2 (\eqn{\mu_2}). Strength of the stimulus after \eqn{t_0}.
-\item Log10-leakage (\eqn{log_{10}(L)}). Rate of leaky integration.
+\item Log10-leakage (\eqn{L}). Rate of leaky integration.
 \item Flip-time (\eqn{t_0}). Time when stimulus strength changes.
 \item Noise scale (\eqn{\sigma}). Model scaling parameter.
 \item Decision thresholds (\eqn{b}). Sets the location of each decision threshold. The
