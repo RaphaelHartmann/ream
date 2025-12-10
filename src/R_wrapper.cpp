@@ -479,3 +479,18 @@ extern "C" {
   }
 
 }
+
+
+// CUSTOM FUNCTION T X
+extern "C" SEXP register_callbacks(SEXP extptr) {
+  // extptr is an R external pointer to a ModelTX_Callbacks structure
+  ModelTX_Callbacks* cb = static_cast<ModelTX_Callbacks*>(R_ExternalPtrAddr(extptr));
+  if (cb)
+    CSTM_TX::set_callbacks(*cb);
+  return R_NilValue;
+}
+extern "C" SEXP unregister_callbacks() {
+  ModelTX_Callbacks empty;        // all fields start as nullptr
+  CSTM_TX::set_callbacks(empty);  // reset to defaults
+  return R_NilValue;
+}

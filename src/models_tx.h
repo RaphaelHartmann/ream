@@ -299,60 +299,80 @@ protected:
 };
 
 
+// ---- CUSTOM FUNCTION ----
+
+// Structure holding optional user-defined functions for all overrideable methods
+struct ModelTX_Callbacks {
+  using Fn1   = double (*)(const double*, double, double);
+  using Fn2   = double (*)(const double*, double);
+  using Fn0   = double (*)(const double*);
+
+  Fn1 drift                 = nullptr;
+  Fn1 diffusion             = nullptr;
+  Fn2 upper_threshold       = nullptr;
+  Fn2 lower_threshold       = nullptr;
+  Fn0 non_decision          = nullptr;
+  Fn0 relative_start        = nullptr;
+  Fn0 contamination_strength= nullptr;
+  Fn2 contamination_probability = nullptr;
+  Fn2 modify_dt             = nullptr;
+};
 
 class CSTM_TX : public Model_TX {
+public:
+  static void set_callbacks(const ModelTX_Callbacks& cb) { callbacks = cb; }
+
 protected:
 
-  /* method for the non-decision time of process 1 */
+  /* method for the non-decision time */
   double non_decision(const double phi[100]) const override {
-    return phi[0];
+    return callbacks.non_decision ? callbacks.non_decision(phi) : phi[0];
   }
 
-  /* method for the start point of process 1 */
+  /* method for the start point */
   double relative_start(const double phi[100]) const override {
-    return phi[1];
+    return callbacks.relative_start ? callbacks.relative_start(phi) : phi[1];
   }
 
-  /* method for the drift rate of process 1 */
+  /* method for the drift rate */
   double drift(const double phi[100], double x, double t) const override {
-    return phi[2];
+    return callbacks.drift ? callbacks.drift(phi, x, t) : phi[2];
   }
 
-  /* method for the diffusion rate of process 1 */
+  /* method for the diffusion rate */
   double diffusion(const double phi[100], double x, double t) const override {
-    return phi[3];
+    return callbacks.diffusion ? callbacks.diffusion(phi, x, t) : phi[3];
   }
 
-  /* method for the upper threshold of process 1 */
+  /* method for the upper threshold */
   double upper_threshold(const double phi[100], double t) const override {
-    return phi[4];
+    return callbacks.upper_threshold ? callbacks.upper_threshold(phi, t) : phi[4];
   }
 
-  /* method for the lower threshold of process 1 */
+  /* method for the lower threshold */
   double lower_threshold(const double phi[100], double t) const override {
-    return -phi[4];
+    return callbacks.lower_threshold ? callbacks.lower_threshold(phi, t) : -phi[4];
   }
 
-  /* method for the contamination strength of process 1 */
+  /* method for the contamination strength */
   double contamination_strength(const double phi[100]) const override {
-    return phi[5];
+    return callbacks.contamination_strength ? callbacks.contamination_strength(phi) : phi[5];
   }
 
-  /* method for the contamination probability distribution of process 1 */
+  /* method for the contamination probability distribution */
   double contamination_probability(const double phi[100], double t) const override {
-    double gl = phi[6];
-    double gu = phi[7];
-    double pg = 0.0;
-    if ((t >= gl) && (t <= gu)) {
-      pg = 1.0/(gu - gl);
-    }
-    return pg;
+    return callbacks.contamination_probability
+    ? callbacks.contamination_probability(phi, t)
+      : ((t >= phi[6] && t <= phi[7]) ? 1.0 / (phi[7] - phi[6]) : 0.0);
   }
 
   /* method for locally modifying the time step size */
   double modify_dt(const double phi[100], double t) const override {
-    return 1.0;
+    return callbacks.modify_dt ? callbacks.modify_dt(phi, t) : 1.0;
   }
+
+private:
+  static ModelTX_Callbacks callbacks;
 
 };
 

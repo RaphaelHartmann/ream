@@ -8,6 +8,7 @@
 /* -------------------------------------------------- */
 
 #include "Model_TX.h"
+#include "models_tx.h"
 
 
 /* Model_TX Constructor */
@@ -1299,3 +1300,5 @@ int Model_TX::grid_pdf(double *Rrt, double *Rpdf_u, double *Rpdf_l, double *phi)
   return 0;
 
 }
+
+ModelTX_Callbacks CSTM_TX::callbacks;

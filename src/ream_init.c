@@ -13,6 +13,7 @@ extern SEXP grid_pdf(SEXP, SEXP, SEXP);
 extern SEXP PDF(SEXP, SEXP, SEXP, SEXP, SEXP);
 extern SEXP CDF(SEXP, SEXP, SEXP, SEXP, SEXP);
 extern SEXP SIM(SEXP, SEXP, SEXP);
+extern SEXP register_callbacks(SEXP);
 
 
 static const R_CallMethodDef CallEntries[] = {
@@ -20,6 +21,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"PDF", (DL_FUNC) &PDF, 5},
     {"CDF", (DL_FUNC) &CDF, 5},
     {"SIM", (DL_FUNC) &SIM, 3},
+    {"register_callbacks", (DL_FUNC) &register_callbacks, 1},
 
     {NULL, NULL, 0}
 };
