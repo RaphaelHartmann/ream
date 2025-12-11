@@ -23,7 +23,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"CDF", (DL_FUNC) &CDF, 5},
     {"SIM", (DL_FUNC) &SIM, 3},
     {"register_callbacks", (DL_FUNC) &register_callbacks, 2},
-    {"unregister_callbacks", (DL_FUNC) &register_callbacks, 0},
+    {"unregister_callbacks", (DL_FUNC) &unregister_callbacks, 0},
 
     {NULL, NULL, 0}
 };
