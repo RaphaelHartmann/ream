@@ -321,6 +321,7 @@ struct ModelTX_Callbacks {
 class CSTM_TX : public Model_TX {
 public:
   static void set_callbacks(const ModelTX_Callbacks& cb) { callbacks = cb; }
+  static const ModelTX_Callbacks& get_callbacks() { return callbacks; }
 
 protected:
 
