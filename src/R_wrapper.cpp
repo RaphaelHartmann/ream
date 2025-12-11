@@ -481,38 +481,79 @@ extern "C" {
 }
 
 
+
 // CUSTOM FUNCTION T X
+
+// helper for preserving and releasing R objects
+auto preserveReplace = [](SEXP &slot, SEXP newfun) {
+  if (slot != R_NilValue)
+    R_ReleaseObject(slot);  // release old function
+  slot = newfun;
+  R_PreserveObject(slot);   // preserve the new one
+};
+
 extern "C" SEXP register_callbacks(SEXP method, SEXP fnptr)
 {
   if (!Rf_isString(method) || LENGTH(method) != 1)
     Rf_error("method must be a single string");
 
   const char* name = CHAR(STRING_ELT(method, 0));
-  void* p = R_ExternalPtrAddr(fnptr);
 
   // copy the current callbacks so unchanged ones remain
   ModelTX_Callbacks cb = CSTM_TX::get_callbacks();
+Rprintf("blub");
+  // R function pointer, or C++ function pointer?
+  if (Rf_isFunction(fnptr)) {
 
-  if (strcmp(name, "drift") == 0)
-    cb.drift = reinterpret_cast<ModelTX_Callbacks::Fn1>(p);
-  else if (strcmp(name, "diffusion") == 0)
-    cb.diffusion = reinterpret_cast<ModelTX_Callbacks::Fn1>(p);
-  else if (strcmp(name, "upper_threshold") == 0)
-    cb.upper_threshold = reinterpret_cast<ModelTX_Callbacks::Fn2>(p);
-  else if (strcmp(name, "lower_threshold") == 0)
-    cb.lower_threshold = reinterpret_cast<ModelTX_Callbacks::Fn2>(p);
-  else if (strcmp(name, "non_decision") == 0)
-    cb.non_decision = reinterpret_cast<ModelTX_Callbacks::Fn0>(p);
-  else if (strcmp(name, "relative_start") == 0)
-    cb.relative_start = reinterpret_cast<ModelTX_Callbacks::Fn0>(p);
-  else if (strcmp(name, "contamination_strength") == 0)
-    cb.contamination_strength = reinterpret_cast<ModelTX_Callbacks::Fn0>(p);
-  else if (strcmp(name, "contamination_probability") == 0)
-    cb.contamination_probability = reinterpret_cast<ModelTX_Callbacks::Fn2>(p);
-  else if (strcmp(name, "modify_dt") == 0)
-    cb.modify_dt = reinterpret_cast<ModelTX_Callbacks::Fn2>(p);
-  else
-    Rf_error("unknown method name: %s", name);
+    if      (strcmp(name, "drift") == 0)
+      preserveReplace(cb.r_drift, fnptr);
+    else if (strcmp(name, "diffusion") == 0)
+      preserveReplace(cb.r_diffusion, fnptr);
+    else if (strcmp(name, "upper_threshold") == 0)
+      preserveReplace(cb.r_upper_threshold, fnptr);
+    else if (strcmp(name, "lower_threshold") == 0)
+      preserveReplace(cb.r_lower_threshold, fnptr);
+    else if (strcmp(name, "non_decision") == 0)
+      preserveReplace(cb.r_non_decision, fnptr);
+    else if (strcmp(name, "relative_start") == 0)
+      preserveReplace(cb.r_relative_start, fnptr);
+    else if (strcmp(name, "contamination_strength") == 0)
+      preserveReplace(cb.r_contamination_strength, fnptr);
+    else if (strcmp(name, "contamination_probability") == 0)
+      preserveReplace(cb.r_contamination_probability, fnptr);
+    else if (strcmp(name, "modify_dt") == 0)
+      preserveReplace(cb.r_modify_dt, fnptr);
+    else
+      Rf_error("unknown R callback name: %s", name);
+
+  } else if (TYPEOF(fnptr) == EXTPTRSXP) {
+
+    void* p = R_ExternalPtrAddr(fnptr);
+
+    if (strcmp(name, "drift") == 0)
+      cb.drift = reinterpret_cast<ModelTX_Callbacks::Fn1>(p);
+    else if (strcmp(name, "diffusion") == 0)
+      cb.diffusion = reinterpret_cast<ModelTX_Callbacks::Fn1>(p);
+    else if (strcmp(name, "upper_threshold") == 0)
+      cb.upper_threshold = reinterpret_cast<ModelTX_Callbacks::Fn2>(p);
+    else if (strcmp(name, "lower_threshold") == 0)
+      cb.lower_threshold = reinterpret_cast<ModelTX_Callbacks::Fn2>(p);
+    else if (strcmp(name, "non_decision") == 0)
+      cb.non_decision = reinterpret_cast<ModelTX_Callbacks::Fn0>(p);
+    else if (strcmp(name, "relative_start") == 0)
+      cb.relative_start = reinterpret_cast<ModelTX_Callbacks::Fn0>(p);
+    else if (strcmp(name, "contamination_strength") == 0)
+      cb.contamination_strength = reinterpret_cast<ModelTX_Callbacks::Fn0>(p);
+    else if (strcmp(name, "contamination_probability") == 0)
+      cb.contamination_probability = reinterpret_cast<ModelTX_Callbacks::Fn2>(p);
+    else if (strcmp(name, "modify_dt") == 0)
+      cb.modify_dt = reinterpret_cast<ModelTX_Callbacks::Fn2>(p);
+    else
+      Rf_error("unknown method name: %s", name);
+
+  } else {
+    Rf_error("fnptr must be either a function or an external pointer");
+  }
 
   CSTM_TX::set_callbacks(cb);
   return R_NilValue;
@@ -521,8 +562,32 @@ extern "C" SEXP register_callbacks(SEXP method, SEXP fnptr)
 
 extern "C" SEXP unregister_callbacks()
 {
-  // replace the current callback set with a default‑constructed (all‑null) one
+  // Retrieve the current callback set
+  ModelTX_Callbacks old = CSTM_TX::get_callbacks();
+
+  // Release every preserved R function if it exists
+  if (old.r_drift != R_NilValue)
+    R_ReleaseObject(old.r_drift);
+  if (old.r_diffusion != R_NilValue)
+    R_ReleaseObject(old.r_diffusion);
+  if (old.r_upper_threshold != R_NilValue)
+    R_ReleaseObject(old.r_upper_threshold);
+  if (old.r_lower_threshold != R_NilValue)
+    R_ReleaseObject(old.r_lower_threshold);
+  if (old.r_non_decision != R_NilValue)
+    R_ReleaseObject(old.r_non_decision);
+  if (old.r_relative_start != R_NilValue)
+    R_ReleaseObject(old.r_relative_start);
+  if (old.r_contamination_strength != R_NilValue)
+    R_ReleaseObject(old.r_contamination_strength);
+  if (old.r_contamination_probability != R_NilValue)
+    R_ReleaseObject(old.r_contamination_probability);
+  if (old.r_modify_dt != R_NilValue)
+    R_ReleaseObject(old.r_modify_dt);
+
+  // Replace current callbacks with an empty (all–null) set
   ModelTX_Callbacks empty;
   CSTM_TX::set_callbacks(empty);
+
   return R_NilValue;
 }

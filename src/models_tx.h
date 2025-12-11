@@ -11,7 +11,7 @@
 #define MODELS_TX_H
 
 #include "Model_TX.h"
-
+#include <Rinternals.h>
 
 
 class LIMF : public Model_TX {
@@ -301,8 +301,51 @@ protected:
 
 // ---- CUSTOM FUNCTION ----
 
+// helper functions
+static double callRFunction3(SEXP fun,
+                             const double* phi, int n_phi,
+                             double x, double t) {
+  SEXP call, ans, phiR;
+  PROTECT(phiR = Rf_allocVector(REALSXP, n_phi));
+  for (int i = 0; i < n_phi; ++i)
+    REAL(phiR)[i] = phi[i];
+  PROTECT(call = Rf_lang4(fun, phiR,
+                          Rf_ScalarReal(x),
+                          Rf_ScalarReal(t)));
+  PROTECT(ans = Rf_eval(call, R_GlobalEnv));   // or another environment
+  double val = asReal(ans);
+  UNPROTECT(3);
+  return val;
+}
+
+static double callRFunction2(SEXP fun,
+                             const double* phi, int n_phi, double t) {
+  SEXP call, ans, phiR;
+  PROTECT(phiR = Rf_allocVector(REALSXP, n_phi));
+  for (int i = 0; i < n_phi; ++i)
+    REAL(phiR)[i] = phi[i];
+  PROTECT(call = Rf_lang3(fun, phiR, Rf_ScalarReal(t)));
+  PROTECT(ans = Rf_eval(call, R_GlobalEnv));   // or another environment
+  double val = asReal(ans);
+  UNPROTECT(3);
+  return val;
+}
+
+static double callRFunction1(SEXP fun, const double* phi, int n_phi) {
+  SEXP call, ans, phiR;
+  PROTECT(phiR = Rf_allocVector(REALSXP, n_phi));
+  for (int i = 0; i < n_phi; ++i)
+    REAL(phiR)[i] = phi[i];
+  PROTECT(call = Rf_lang2(fun, phiR));
+  PROTECT(ans = Rf_eval(call, R_GlobalEnv));   // or another environment
+  double val = asReal(ans);
+  UNPROTECT(3);
+  return val;
+}
+
 // Structure holding optional user-defined functions for all overrideable methods
 struct ModelTX_Callbacks {
+
   using Fn1   = double (*)(const double*, double, double);
   using Fn2   = double (*)(const double*, double);
   using Fn0   = double (*)(const double*);
@@ -316,6 +359,17 @@ struct ModelTX_Callbacks {
   Fn0 contamination_strength= nullptr;
   Fn2 contamination_probability = nullptr;
   Fn2 modify_dt             = nullptr;
+
+  SEXP r_drift = R_NilValue;
+  SEXP r_diffusion = R_NilValue;
+  SEXP r_upper_threshold = R_NilValue;
+  SEXP r_lower_threshold = R_NilValue;
+  SEXP r_non_decision = R_NilValue;
+  SEXP r_relative_start = R_NilValue;
+  SEXP r_contamination_strength = R_NilValue;
+  SEXP r_contamination_probability = R_NilValue;
+  SEXP r_modify_dt = R_NilValue;
+
 };
 
 class CSTM_TX : public Model_TX {
@@ -327,49 +381,101 @@ protected:
 
   /* method for the non-decision time */
   double non_decision(const double phi[100]) const override {
-    return callbacks.non_decision ? callbacks.non_decision(phi) : phi[0];
+    if (callbacks.non_decision) {
+      return callbacks.non_decision(phi);
+    } else if (callbacks.r_non_decision) {
+      return callRFunction1(callbacks.r_non_decision, phi, 100);
+    } else {
+      return phi[0];
+    }
   }
 
   /* method for the start point */
   double relative_start(const double phi[100]) const override {
-    return callbacks.relative_start ? callbacks.relative_start(phi) : phi[1];
+    if (callbacks.relative_start) {
+      return callbacks.relative_start(phi);
+    } else if (callbacks.r_relative_start) {
+      return callRFunction1(callbacks.r_relative_start, phi, 100);
+    } else {
+      return phi[1];
+    }
   }
 
   /* method for the drift rate */
   double drift(const double phi[100], double x, double t) const override {
-    return callbacks.drift ? callbacks.drift(phi, x, t) : phi[2];
+    if (callbacks.drift) {
+      return callbacks.drift(phi, x, t);
+    } else if (callbacks.r_drift) {
+      return callRFunction3(callbacks.r_drift, phi, 100, x, t);
+    } else {
+      return phi[2];
+    }
   }
 
   /* method for the diffusion rate */
   double diffusion(const double phi[100], double x, double t) const override {
-    return callbacks.diffusion ? callbacks.diffusion(phi, x, t) : phi[3];
+    if (callbacks.diffusion) {
+      return callbacks.diffusion(phi, x, t);
+    } else if (callbacks.r_diffusion) {
+      return callRFunction3(callbacks.r_diffusion, phi, 100, x, t);
+    } else {
+      return phi[3];
+    }
   }
 
   /* method for the upper threshold */
   double upper_threshold(const double phi[100], double t) const override {
-    return callbacks.upper_threshold ? callbacks.upper_threshold(phi, t) : phi[4];
+    if (callbacks.upper_threshold) {
+      return callbacks.upper_threshold(phi, t);
+    } else if (callbacks.r_upper_threshold) {
+      return callRFunction2(callbacks.r_upper_threshold, phi, 100, t);
+    } else {
+      return phi[4];
+    }
   }
 
   /* method for the lower threshold */
   double lower_threshold(const double phi[100], double t) const override {
-    return callbacks.lower_threshold ? callbacks.lower_threshold(phi, t) : -phi[4];
+    if (callbacks.lower_threshold) {
+      return callbacks.lower_threshold(phi, t);
+    } else if (callbacks.r_lower_threshold) {
+      return callRFunction2(callbacks.r_lower_threshold, phi, 100, t);
+    } else {
+      return -phi[4];
+    }
   }
 
   /* method for the contamination strength */
   double contamination_strength(const double phi[100]) const override {
-    return callbacks.contamination_strength ? callbacks.contamination_strength(phi) : phi[5];
+    if (callbacks.contamination_strength) {
+      return callbacks.contamination_strength(phi);
+    } else if (callbacks.r_contamination_strength) {
+      return callRFunction1(callbacks.r_contamination_strength, phi, 100);
+    } else {
+      return phi[5];
+    }
   }
 
   /* method for the contamination probability distribution */
   double contamination_probability(const double phi[100], double t) const override {
-    return callbacks.contamination_probability
-    ? callbacks.contamination_probability(phi, t)
-      : ((t >= phi[6] && t <= phi[7]) ? 1.0 / (phi[7] - phi[6]) : 0.0);
+    if (callbacks.contamination_probability) {
+      return callbacks.contamination_probability(phi, t);
+    } else if (callbacks.r_contamination_probability) {
+      return callRFunction2(callbacks.r_contamination_probability, phi, 100, t);
+    } else {
+      return (t >= phi[6] && t <= phi[7]) ? 1.0 / (phi[7] - phi[6]) : 0.0;
+    }
   }
 
   /* method for locally modifying the time step size */
   double modify_dt(const double phi[100], double t) const override {
-    return callbacks.modify_dt ? callbacks.modify_dt(phi, t) : 1.0;
+    if (callbacks.modify_dt) {
+      return callbacks.modify_dt(phi, t);
+    } else if (callbacks.r_modify_dt) {
+      return callRFunction2(callbacks.r_modify_dt, phi, 100, t);
+    } else {
+      return 1.0;
+    }
   }
 
 private:
