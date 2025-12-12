@@ -21,6 +21,7 @@
 #include <Rinternals.h>
 
 
+
 /* global variables */
 const char *PHI;
 const char *ModelName;
@@ -494,14 +495,15 @@ auto preserveReplace = [](SEXP &slot, SEXP newfun) {
 
 extern "C" SEXP register_callbacks(SEXP method, SEXP fnptr)
 {
+
   if (!Rf_isString(method) || LENGTH(method) != 1)
     Rf_error("method must be a single string");
 
   const char* name = CHAR(STRING_ELT(method, 0));
 
   // copy the current callbacks so unchanged ones remain
-  ModelTX_Callbacks cb = CSTM_TX::get_callbacks();
-Rprintf("blub");
+  ModelTX_Callbacks& cb = CSTM_TX::get_callbacks();
+
   // R function pointer, or C++ function pointer?
   if (Rf_isFunction(fnptr)) {
 
@@ -530,7 +532,7 @@ Rprintf("blub");
 
     void* p = R_ExternalPtrAddr(fnptr);
 
-    if (strcmp(name, "drift") == 0)
+    if      (strcmp(name, "drift") == 0)
       cb.drift = reinterpret_cast<ModelTX_Callbacks::Fn1>(p);
     else if (strcmp(name, "diffusion") == 0)
       cb.diffusion = reinterpret_cast<ModelTX_Callbacks::Fn1>(p);
@@ -551,6 +553,19 @@ Rprintf("blub");
     else
       Rf_error("unknown method name: %s", name);
 
+  } else if (fnptr == R_NilValue) {
+    // explicit remove
+    if      (strcmp(name, "drift") == 0) cb.r_drift = R_NilValue;
+    else if (strcmp(name, "diffusion") == 0) cb.r_diffusion = R_NilValue;
+    else if (strcmp(name, "upper_threshold") == 0) cb.r_upper_threshold = R_NilValue;
+    else if (strcmp(name, "lower_threshold") == 0) cb.r_lower_threshold = R_NilValue;
+    else if (strcmp(name, "non_decision") == 0) cb.r_non_decision = R_NilValue;
+    else if (strcmp(name, "relative_start") == 0) cb.r_relative_start = R_NilValue;
+    else if (strcmp(name, "contamination_strength") == 0) cb.r_contamination_strength = R_NilValue;
+    else if (strcmp(name, "contamination_probability") == 0) cb.r_contamination_probability = R_NilValue;
+    else if (strcmp(name, "modify_dt") == 0) cb.r_modify_dt = R_NilValue;
+    CSTM_TX::set_callbacks(cb);
+    return R_NilValue;
   } else {
     Rf_error("fnptr must be either a function or an external pointer");
   }

@@ -313,7 +313,7 @@ static double callRFunction3(SEXP fun,
                           Rf_ScalarReal(x),
                           Rf_ScalarReal(t)));
   PROTECT(ans = Rf_eval(call, R_GlobalEnv));   // or another environment
-  double val = asReal(ans);
+  double val = Rf_asReal(ans);
   UNPROTECT(3);
   return val;
 }
@@ -326,7 +326,7 @@ static double callRFunction2(SEXP fun,
     REAL(phiR)[i] = phi[i];
   PROTECT(call = Rf_lang3(fun, phiR, Rf_ScalarReal(t)));
   PROTECT(ans = Rf_eval(call, R_GlobalEnv));   // or another environment
-  double val = asReal(ans);
+  double val = Rf_asReal(ans);
   UNPROTECT(3);
   return val;
 }
@@ -338,11 +338,11 @@ static double callRFunction1(SEXP fun, const double* phi, int n_phi) {
     REAL(phiR)[i] = phi[i];
   PROTECT(call = Rf_lang2(fun, phiR));
   PROTECT(ans = Rf_eval(call, R_GlobalEnv));   // or another environment
-  double val = asReal(ans);
+  double val = Rf_asReal(ans);
   UNPROTECT(3);
   return val;
 }
-
+//
 // Structure holding optional user-defined functions for all overrideable methods
 struct ModelTX_Callbacks {
 
@@ -375,7 +375,7 @@ struct ModelTX_Callbacks {
 class CSTM_TX : public Model_TX {
 public:
   static void set_callbacks(const ModelTX_Callbacks& cb) { callbacks = cb; }
-  static const ModelTX_Callbacks& get_callbacks() { return callbacks; }
+  static ModelTX_Callbacks& get_callbacks() { return callbacks; }
 
 protected:
 
@@ -383,7 +383,7 @@ protected:
   double non_decision(const double phi[100]) const override {
     if (callbacks.non_decision) {
       return callbacks.non_decision(phi);
-    } else if (callbacks.r_non_decision) {
+    } else if (callbacks.r_non_decision != R_NilValue) {
       return callRFunction1(callbacks.r_non_decision, phi, 100);
     } else {
       return phi[0];
@@ -394,7 +394,7 @@ protected:
   double relative_start(const double phi[100]) const override {
     if (callbacks.relative_start) {
       return callbacks.relative_start(phi);
-    } else if (callbacks.r_relative_start) {
+    } else if (callbacks.r_relative_start != R_NilValue) {
       return callRFunction1(callbacks.r_relative_start, phi, 100);
     } else {
       return phi[1];
@@ -405,7 +405,7 @@ protected:
   double drift(const double phi[100], double x, double t) const override {
     if (callbacks.drift) {
       return callbacks.drift(phi, x, t);
-    } else if (callbacks.r_drift) {
+    } else if (callbacks.r_drift != R_NilValue) {
       return callRFunction3(callbacks.r_drift, phi, 100, x, t);
     } else {
       return phi[2];
@@ -416,7 +416,7 @@ protected:
   double diffusion(const double phi[100], double x, double t) const override {
     if (callbacks.diffusion) {
       return callbacks.diffusion(phi, x, t);
-    } else if (callbacks.r_diffusion) {
+    } else if (callbacks.r_diffusion != R_NilValue) {
       return callRFunction3(callbacks.r_diffusion, phi, 100, x, t);
     } else {
       return phi[3];
@@ -427,7 +427,7 @@ protected:
   double upper_threshold(const double phi[100], double t) const override {
     if (callbacks.upper_threshold) {
       return callbacks.upper_threshold(phi, t);
-    } else if (callbacks.r_upper_threshold) {
+    } else if (callbacks.r_upper_threshold != R_NilValue) {
       return callRFunction2(callbacks.r_upper_threshold, phi, 100, t);
     } else {
       return phi[4];
@@ -438,7 +438,7 @@ protected:
   double lower_threshold(const double phi[100], double t) const override {
     if (callbacks.lower_threshold) {
       return callbacks.lower_threshold(phi, t);
-    } else if (callbacks.r_lower_threshold) {
+    } else if (callbacks.r_lower_threshold != R_NilValue) {
       return callRFunction2(callbacks.r_lower_threshold, phi, 100, t);
     } else {
       return -phi[4];
@@ -449,7 +449,7 @@ protected:
   double contamination_strength(const double phi[100]) const override {
     if (callbacks.contamination_strength) {
       return callbacks.contamination_strength(phi);
-    } else if (callbacks.r_contamination_strength) {
+    } else if (callbacks.r_contamination_strength != R_NilValue) {
       return callRFunction1(callbacks.r_contamination_strength, phi, 100);
     } else {
       return phi[5];
@@ -460,7 +460,7 @@ protected:
   double contamination_probability(const double phi[100], double t) const override {
     if (callbacks.contamination_probability) {
       return callbacks.contamination_probability(phi, t);
-    } else if (callbacks.r_contamination_probability) {
+    } else if (callbacks.r_contamination_probability != R_NilValue) {
       return callRFunction2(callbacks.r_contamination_probability, phi, 100, t);
     } else {
       return (t >= phi[6] && t <= phi[7]) ? 1.0 / (phi[7] - phi[6]) : 0.0;
@@ -471,7 +471,7 @@ protected:
   double modify_dt(const double phi[100], double t) const override {
     if (callbacks.modify_dt) {
       return callbacks.modify_dt(phi, t);
-    } else if (callbacks.r_modify_dt) {
+    } else if (callbacks.r_modify_dt != R_NilValue) {
       return callRFunction2(callbacks.r_modify_dt, phi, 100, t);
     } else {
       return 1.0;
