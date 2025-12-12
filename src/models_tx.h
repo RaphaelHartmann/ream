@@ -301,62 +301,20 @@ protected:
 
 // ---- CUSTOM FUNCTION ----
 
-// helper functions
-static double callRFunction3(SEXP fun,
-                             const double* phi, int n_phi,
-                             double x, double t) {
-  SEXP call, ans, phiR;
-  PROTECT(phiR = Rf_allocVector(REALSXP, n_phi));
-  for (int i = 0; i < n_phi; ++i)
-    REAL(phiR)[i] = phi[i];
-  PROTECT(call = Rf_lang4(fun, phiR,
-                          Rf_ScalarReal(x),
-                          Rf_ScalarReal(t)));
-  PROTECT(ans = Rf_eval(call, R_GlobalEnv));   // or another environment
-  double val = Rf_asReal(ans);
-  UNPROTECT(3);
-  return val;
-}
-
-static double callRFunction2(SEXP fun,
-                             const double* phi, int n_phi, double t) {
-  SEXP call, ans, phiR;
-  PROTECT(phiR = Rf_allocVector(REALSXP, n_phi));
-  for (int i = 0; i < n_phi; ++i)
-    REAL(phiR)[i] = phi[i];
-  PROTECT(call = Rf_lang3(fun, phiR, Rf_ScalarReal(t)));
-  PROTECT(ans = Rf_eval(call, R_GlobalEnv));   // or another environment
-  double val = Rf_asReal(ans);
-  UNPROTECT(3);
-  return val;
-}
-
-static double callRFunction1(SEXP fun, const double* phi, int n_phi) {
-  SEXP call, ans, phiR;
-  PROTECT(phiR = Rf_allocVector(REALSXP, n_phi));
-  for (int i = 0; i < n_phi; ++i)
-    REAL(phiR)[i] = phi[i];
-  PROTECT(call = Rf_lang2(fun, phiR));
-  PROTECT(ans = Rf_eval(call, R_GlobalEnv));   // or another environment
-  double val = Rf_asReal(ans);
-  UNPROTECT(3);
-  return val;
-}
-//
 // Structure holding optional user-defined functions for all overrideable methods
 struct ModelTX_Callbacks {
 
-  using Fn1   = double (*)(const double*, double, double);
+  using Fn3   = double (*)(const double*, double, double);
   using Fn2   = double (*)(const double*, double);
-  using Fn0   = double (*)(const double*);
+  using Fn1   = double (*)(const double*);
 
-  Fn1 drift                 = nullptr;
-  Fn1 diffusion             = nullptr;
+  Fn3 drift                 = nullptr;
+  Fn3 diffusion             = nullptr;
   Fn2 upper_threshold       = nullptr;
   Fn2 lower_threshold       = nullptr;
-  Fn0 non_decision          = nullptr;
-  Fn0 relative_start        = nullptr;
-  Fn0 contamination_strength= nullptr;
+  Fn1 non_decision          = nullptr;
+  Fn1 relative_start        = nullptr;
+  Fn1 contamination_strength= nullptr;
   Fn2 contamination_probability = nullptr;
   Fn2 modify_dt             = nullptr;
 

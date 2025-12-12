@@ -8,6 +8,7 @@
 /* -------------------------------------------------- */
 
 #include "Model_T.h"
+#include "models_t.h"
 
 
 /* Model_T Constructor */
@@ -1300,3 +1301,5 @@ int Model_T::grid_pdf(double *Rrt, double *Rpdf_u, double *Rpdf_l, double *phi) 
   return 0;
 
 }
+
+ModelT_Callbacks CSTM_T::callbacks;

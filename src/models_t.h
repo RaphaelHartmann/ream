@@ -698,62 +698,148 @@ protected:
 
 
 
+
+// ---- CUSTOM FUNCTION ----
+
+// Structure holding optional user-defined functions for all overrideable methods
+struct ModelT_Callbacks {
+
+  using Fn3   = double (*)(const double*, double, double);
+  using Fn2   = double (*)(const double*, double);
+  using Fn1   = double (*)(const double*);
+
+  Fn2 drift                 = nullptr;
+  Fn3 diffusion             = nullptr;
+  Fn2 upper_threshold       = nullptr;
+  Fn2 lower_threshold       = nullptr;
+  Fn1 non_decision          = nullptr;
+  Fn1 relative_start        = nullptr;
+  Fn1 contamination_strength= nullptr;
+  Fn2 contamination_probability = nullptr;
+  Fn2 modify_dt             = nullptr;
+
+  SEXP r_drift = R_NilValue;
+  SEXP r_diffusion = R_NilValue;
+  SEXP r_upper_threshold = R_NilValue;
+  SEXP r_lower_threshold = R_NilValue;
+  SEXP r_non_decision = R_NilValue;
+  SEXP r_relative_start = R_NilValue;
+  SEXP r_contamination_strength = R_NilValue;
+  SEXP r_contamination_probability = R_NilValue;
+  SEXP r_modify_dt = R_NilValue;
+
+};
+
 class CSTM_T : public Model_T {
+public:
+  static void set_callbacks(const ModelT_Callbacks& cb) { callbacks = cb; }
+  static ModelT_Callbacks& get_callbacks() { return callbacks; }
+
 protected:
 
-  /* method for the non-decision time of process 1 */
+  /* method for the non-decision time */
   double non_decision(const double phi[100]) const override {
-    return phi[0];
-  }
-
-  /* method for the start point of process 1 */
-  double relative_start(const double phi[100]) const override {
-    return phi[1];
-  }
-
-  /* method for the drift rate of process 1 */
-  double drift(const double phi[100], double t) const override {
-    return phi[2];
-  }
-
-  /* method for the diffusion rate of process 1 */
-  double diffusion(const double phi[100], double x, double t) const override {
-    return phi[3];
-  }
-
-  /* method for the upper threshold of process 1 */
-  double upper_threshold(const double phi[100], double t) const override {
-    return phi[4];
-  }
-
-  /* method for the lower threshold of process 1 */
-  double lower_threshold(const double phi[100], double t) const override {
-    return -phi[4];
-  }
-
-  /* method for the contamination strength of process 1 */
-  double contamination_strength(const double phi[100]) const override {
-    return phi[5];
-  }
-
-  /* method for the contamination probability distribution of process 1 */
-  double contamination_probability(const double phi[100], double t) const override {
-    double gl = phi[6];
-    double gu = phi[7];
-    double pg = 0.0;
-    if ((t >= gl) && (t <= gu)) {
-      pg = 1.0/(gu - gl);
+    if (callbacks.non_decision) {
+      return callbacks.non_decision(phi);
+    } else if (callbacks.r_non_decision != R_NilValue) {
+      return callRFunction1(callbacks.r_non_decision, phi, 100);
+    } else {
+      return phi[0];
     }
-    return pg;
+  }
+
+  /* method for the start point */
+  double relative_start(const double phi[100]) const override {
+    if (callbacks.relative_start) {
+      return callbacks.relative_start(phi);
+    } else if (callbacks.r_relative_start != R_NilValue) {
+      return callRFunction1(callbacks.r_relative_start, phi, 100);
+    } else {
+      return phi[1];
+    }
+  }
+
+  /* method for the drift rate */
+  double drift(const double phi[100], double t) const override {
+    if (callbacks.drift) {
+      return callbacks.drift(phi, t);
+    } else if (callbacks.r_drift != R_NilValue) {
+      return callRFunction2(callbacks.r_drift, phi, 100, t);
+    } else {
+      return phi[2];
+    }
+  }
+
+  /* method for the diffusion rate */
+  double diffusion(const double phi[100], double x, double t) const override {
+    if (callbacks.diffusion) {
+      return callbacks.diffusion(phi, x, t);
+    } else if (callbacks.r_diffusion != R_NilValue) {
+      return callRFunction3(callbacks.r_diffusion, phi, 100, x, t);
+    } else {
+      return phi[3];
+    }
+  }
+
+  /* method for the upper threshold */
+  double upper_threshold(const double phi[100], double t) const override {
+    if (callbacks.upper_threshold) {
+      return callbacks.upper_threshold(phi, t);
+    } else if (callbacks.r_upper_threshold != R_NilValue) {
+      return callRFunction2(callbacks.r_upper_threshold, phi, 100, t);
+    } else {
+      return phi[4];
+    }
+  }
+
+  /* method for the lower threshold */
+  double lower_threshold(const double phi[100], double t) const override {
+    if (callbacks.lower_threshold) {
+      return callbacks.lower_threshold(phi, t);
+    } else if (callbacks.r_lower_threshold != R_NilValue) {
+      return callRFunction2(callbacks.r_lower_threshold, phi, 100, t);
+    } else {
+      return -phi[4];
+    }
+  }
+
+  /* method for the contamination strength */
+  double contamination_strength(const double phi[100]) const override {
+    if (callbacks.contamination_strength) {
+      return callbacks.contamination_strength(phi);
+    } else if (callbacks.r_contamination_strength != R_NilValue) {
+      return callRFunction1(callbacks.r_contamination_strength, phi, 100);
+    } else {
+      return phi[5];
+    }
+  }
+
+  /* method for the contamination probability distribution */
+  double contamination_probability(const double phi[100], double t) const override {
+    if (callbacks.contamination_probability) {
+      return callbacks.contamination_probability(phi, t);
+    } else if (callbacks.r_contamination_probability != R_NilValue) {
+      return callRFunction2(callbacks.r_contamination_probability, phi, 100, t);
+    } else {
+      return (t >= phi[6] && t <= phi[7]) ? 1.0 / (phi[7] - phi[6]) : 0.0;
+    }
   }
 
   /* method for locally modifying the time step size */
   double modify_dt(const double phi[100], double t) const override {
-    return 1.0;
+    if (callbacks.modify_dt) {
+      return callbacks.modify_dt(phi, t);
+    } else if (callbacks.r_modify_dt != R_NilValue) {
+      return callRFunction2(callbacks.r_modify_dt, phi, 100, t);
+    } else {
+      return 1.0;
+    }
   }
 
-};
+private:
+  static ModelT_Callbacks callbacks;
 
+};
 
 
 #endif

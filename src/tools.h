@@ -15,6 +15,7 @@
 #include <iterator>
 #include <vector>
 #include <R.h>
+#include <Rinternals.h>
 
 /* -------------------------------------------------- */
 /* -------------------------------------------------- */
@@ -102,6 +103,12 @@ const double pi = 3.14159265358979323846;
 
 /* function for the drift rate in SSP */
 double ncdf(double x);
+
+/* helper functions for cleaning r function calls */
+static double callRFunction3(SEXP, const double*, int, double, double);
+static double callRFunction2(SEXP, const double*, int, double);
+static double callRFunction1(SEXP fun, const double*, int);
+
 
 
 #endif

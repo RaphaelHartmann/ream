@@ -24,3 +24,45 @@ double unif_L() {
 double ncdf(double x) {
   return 0.5 * ( 1.0 + erf(x / sqrt(2.0)) );
 }
+
+// helper functions
+static double callRFunction3(SEXP fun,
+                             const double* phi, int n_phi,
+                             double x, double t) {
+  SEXP call, ans, phiR;
+  PROTECT(phiR = Rf_allocVector(REALSXP, n_phi));
+  for (int i = 0; i < n_phi; ++i)
+    REAL(phiR)[i] = phi[i];
+  PROTECT(call = Rf_lang4(fun, phiR,
+                          Rf_ScalarReal(x),
+                          Rf_ScalarReal(t)));
+  PROTECT(ans = Rf_eval(call, R_GlobalEnv));   // or another environment
+  double val = Rf_asReal(ans);
+  UNPROTECT(3);
+  return val;
+}
+
+static double callRFunction2(SEXP fun,
+                             const double* phi, int n_phi, double t) {
+  SEXP call, ans, phiR;
+  PROTECT(phiR = Rf_allocVector(REALSXP, n_phi));
+  for (int i = 0; i < n_phi; ++i)
+    REAL(phiR)[i] = phi[i];
+  PROTECT(call = Rf_lang3(fun, phiR, Rf_ScalarReal(t)));
+  PROTECT(ans = Rf_eval(call, R_GlobalEnv));   // or another environment
+  double val = Rf_asReal(ans);
+  UNPROTECT(3);
+  return val;
+}
+
+static double callRFunction1(SEXP fun, const double* phi, int n_phi) {
+  SEXP call, ans, phiR;
+  PROTECT(phiR = Rf_allocVector(REALSXP, n_phi));
+  for (int i = 0; i < n_phi; ++i)
+    REAL(phiR)[i] = phi[i];
+  PROTECT(call = Rf_lang2(fun, phiR));
+  PROTECT(ans = Rf_eval(call, R_GlobalEnv));   // or another environment
+  double val = Rf_asReal(ans);
+  UNPROTECT(3);
+  return val;
+}

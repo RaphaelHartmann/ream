@@ -8,6 +8,7 @@
 /* -------------------------------------------------- */
 
 #include "Model_TW.h"
+#include "models_tw.h"
 
 
 /* Model_TW Constructor */
@@ -1289,3 +1290,5 @@ int Model_TW::grid_pdf(double *Rrt, double *Rpdf_u, double *Rpdf_l, double *phi)
   return 0;
 
 }
+
+ModelTW_Callbacks CSTM_TW::callbacks;

@@ -13,8 +13,12 @@ extern SEXP grid_pdf(SEXP, SEXP, SEXP);
 extern SEXP PDF(SEXP, SEXP, SEXP, SEXP, SEXP);
 extern SEXP CDF(SEXP, SEXP, SEXP, SEXP, SEXP);
 extern SEXP SIM(SEXP, SEXP, SEXP);
-extern SEXP register_callbacks(SEXP, SEXP);
-extern SEXP unregister_callbacks();
+extern SEXP register_callbacks_tx(SEXP, SEXP);
+extern SEXP unregister_callbacks_tx();
+extern SEXP register_callbacks_t(SEXP, SEXP);
+extern SEXP unregister_callbacks_t();
+extern SEXP register_callbacks_tw(SEXP, SEXP);
+extern SEXP unregister_callbacks_tw();
 
 
 static const R_CallMethodDef CallEntries[] = {
@@ -22,8 +26,12 @@ static const R_CallMethodDef CallEntries[] = {
     {"PDF", (DL_FUNC) &PDF, 5},
     {"CDF", (DL_FUNC) &CDF, 5},
     {"SIM", (DL_FUNC) &SIM, 3},
-    {"register_callbacks", (DL_FUNC) &register_callbacks, 2},
-    {"unregister_callbacks", (DL_FUNC) &unregister_callbacks, 0},
+    {"register_callbacks_tx", (DL_FUNC) &register_callbacks_tx, 2},
+    {"unregister_callbacks_tx", (DL_FUNC) &unregister_callbacks_tx, 0},
+    {"register_callbacks_t", (DL_FUNC) &register_callbacks_t, 2},
+    {"unregister_callbacks_t", (DL_FUNC) &unregister_callbacks_t, 0},
+    {"register_callbacks_tw", (DL_FUNC) &register_callbacks_tw, 2},
+    {"unregister_callbacks_tw", (DL_FUNC) &unregister_callbacks_tw, 0},
 
     {NULL, NULL, 0}
 };

@@ -16,7 +16,7 @@ dist_checks <- function(rt, resp, phi, Nphi, x_res, t_res, modelname) {
 
 dist_options <- function(rt, x_res, t_res) {
 
-  char_res <- c("default", "high", "higher", "max")
+  char_res <- c("default", "high", "higher", "very_high", "max")
 
   # setting options
   x_ind <- which(char_res == x_res)
@@ -24,8 +24,8 @@ dist_options <- function(rt, x_res, t_res) {
 
   out <- vector(mode = "list", length = 3L)
   out[[1]] <- max(rt)
-  out[[2]] <- 151 + c(0, 100, 200, 300)[x_ind]
-  out[[3]] <- 0.025 * c(1, 0.75, .5, 0.25)[t_ind]
+  out[[2]] <- 151 + c(0, 100, 200, 300, 850)[x_ind]
+  out[[3]] <- 0.025 * c(1, 0.75, .5, 0.25, 0.1)[t_ind]
 
   return(out)
 
