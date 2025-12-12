@@ -35,7 +35,7 @@ sim_checks <- function(n, phi, Nphi, dt, modelname) {
 
   # checking input
   if (!is.numeric(n) | n %% 1 != 0) stop("n must be a whole number")
-  if (length(phi) != Nphi) stop(paste0("phi must be of length" , Nphi, " for the ", modelname))
+  if (length(phi) != Nphi) stop(paste0("phi must be of length " , Nphi, " for the ", modelname))
   if (!is.numeric(dt)) stop("dt must be a numeric value")
 
 }
