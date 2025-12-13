@@ -105,9 +105,9 @@ const double pi = 3.14159265358979323846;
 double ncdf(double x);
 
 /* helper functions for cleaning r function calls */
-static double callRFunction3(SEXP, const double*, int, double, double);
-static double callRFunction2(SEXP, const double*, int, double);
-static double callRFunction1(SEXP fun, const double*, int);
+double callRFunction3x(SEXP, const double*, int, double, double);
+double callRFunction2x(SEXP, const double*, int, double);
+double callRFunction1x(SEXP fun, const double*, int);
 
 
 

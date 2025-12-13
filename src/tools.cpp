@@ -26,7 +26,7 @@ double ncdf(double x) {
 }
 
 // helper functions
-static double callRFunction3(SEXP fun,
+double callRFunction3x(SEXP fun,
                              const double* phi, int n_phi,
                              double x, double t) {
   SEXP call, ans, phiR;
@@ -42,7 +42,7 @@ static double callRFunction3(SEXP fun,
   return val;
 }
 
-static double callRFunction2(SEXP fun,
+double callRFunction2x(SEXP fun,
                              const double* phi, int n_phi, double t) {
   SEXP call, ans, phiR;
   PROTECT(phiR = Rf_allocVector(REALSXP, n_phi));
@@ -55,7 +55,7 @@ static double callRFunction2(SEXP fun,
   return val;
 }
 
-static double callRFunction1(SEXP fun, const double* phi, int n_phi) {
+double callRFunction1x(SEXP fun, const double* phi, int n_phi) {
   SEXP call, ans, phiR;
   PROTECT(phiR = Rf_allocVector(REALSXP, n_phi));
   for (int i = 0; i < n_phi; ++i)

@@ -11,6 +11,7 @@
 #define MODELS_TW_H
 
 #include "Model_TW.h"
+#include "tools.h"
 #include <Rinternals.h>
 
 
@@ -419,7 +420,7 @@ protected:
     if (callbacks.non_decision) {
       return callbacks.non_decision(phi);
     } else if (callbacks.r_non_decision != R_NilValue) {
-      return callRFunction1(callbacks.r_non_decision, phi, 100);
+      return callRFunction1x(callbacks.r_non_decision, phi, 100);
     } else {
       return phi[0];
     }
@@ -430,7 +431,7 @@ protected:
     if (callbacks.relative_start) {
       return callbacks.relative_start(phi);
     } else if (callbacks.r_relative_start != R_NilValue) {
-      return callRFunction1(callbacks.r_relative_start, phi, 100);
+      return callRFunction1x(callbacks.r_relative_start, phi, 100);
     } else {
       return phi[1];
     }
@@ -441,7 +442,7 @@ protected:
     if (callbacks.relative_start_ts) {
       return callbacks.relative_start_ts(phi);
     } else if (callbacks.r_relative_start_ts != R_NilValue) {
-      return callRFunction1(callbacks.r_relative_start_ts, phi, 100);
+      return callRFunction1x(callbacks.r_relative_start_ts, phi, 100);
     } else {
       return 0.0;
     }
@@ -452,7 +453,7 @@ protected:
     if (callbacks.drift) {
       return callbacks.drift(phi, t, w);
     } else if (callbacks.r_drift != R_NilValue) {
-      return callRFunction3(callbacks.r_drift, phi, 100, t, w);
+      return callRFunction3x(callbacks.r_drift, phi, 100, t, w);
     } else {
       return phi[2];
     }
@@ -463,7 +464,7 @@ protected:
     if (callbacks.drift_ts) {
       return callbacks.drift_ts(phi);
     } else if (callbacks.r_drift_ts != R_NilValue) {
-      return callRFunction1(callbacks.r_drift_ts, phi, 100);
+      return callRFunction1x(callbacks.r_drift_ts, phi, 100);
     } else {
       return 0.0;
     }
@@ -474,7 +475,7 @@ protected:
     if (callbacks.diffusion) {
       return callbacks.diffusion(phi, t, w);
     } else if (callbacks.r_diffusion != R_NilValue) {
-      return callRFunction3(callbacks.r_diffusion, phi, 100, t, w);
+      return callRFunction3x(callbacks.r_diffusion, phi, 100, t, w);
     } else {
       return phi[3];
     }
@@ -485,7 +486,7 @@ protected:
     if (callbacks.diffusion_ts) {
       return callbacks.diffusion_ts(phi);
     } else if (callbacks.r_diffusion_ts != R_NilValue) {
-      return callRFunction1(callbacks.r_diffusion_ts, phi, 100);
+      return callRFunction1x(callbacks.r_diffusion_ts, phi, 100);
     } else {
       return phi[3];
     }
@@ -496,7 +497,7 @@ protected:
     if (callbacks.upper_threshold) {
       return callbacks.upper_threshold(phi, t);
     } else if (callbacks.r_upper_threshold != R_NilValue) {
-      return callRFunction2(callbacks.r_upper_threshold, phi, 100, t);
+      return callRFunction2x(callbacks.r_upper_threshold, phi, 100, t);
     } else {
       return phi[4];
     }
@@ -507,7 +508,7 @@ protected:
     if (callbacks.lower_threshold) {
       return callbacks.lower_threshold(phi, t);
     } else if (callbacks.r_lower_threshold != R_NilValue) {
-      return callRFunction2(callbacks.r_lower_threshold, phi, 100, t);
+      return callRFunction2x(callbacks.r_lower_threshold, phi, 100, t);
     } else {
       return -phi[4];
     }
@@ -518,7 +519,7 @@ protected:
     if (callbacks.upper_threshold_ts) {
       return callbacks.upper_threshold_ts(phi);
     } else if (callbacks.r_upper_threshold_ts != R_NilValue) {
-      return callRFunction1(callbacks.r_upper_threshold_ts, phi, 100);
+      return callRFunction1x(callbacks.r_upper_threshold_ts, phi, 100);
     } else {
       return phi[4];
     }
@@ -529,7 +530,7 @@ protected:
     if (callbacks.lower_threshold_ts) {
       return callbacks.lower_threshold_ts(phi);
     } else if (callbacks.r_lower_threshold_ts != R_NilValue) {
-      return callRFunction1(callbacks.r_lower_threshold_ts, phi, 100);
+      return callRFunction1x(callbacks.r_lower_threshold_ts, phi, 100);
     } else {
       return -phi[4];
     }
@@ -540,7 +541,7 @@ protected:
     if (callbacks.contamination_strength) {
       return callbacks.contamination_strength(phi);
     } else if (callbacks.r_contamination_strength != R_NilValue) {
-      return callRFunction1(callbacks.r_contamination_strength, phi, 100);
+      return callRFunction1x(callbacks.r_contamination_strength, phi, 100);
     } else {
       return phi[5];
     }
@@ -551,7 +552,7 @@ protected:
     if (callbacks.contamination_probability) {
       return callbacks.contamination_probability(phi, t);
     } else if (callbacks.r_contamination_probability != R_NilValue) {
-      return callRFunction2(callbacks.r_contamination_probability, phi, 100, t);
+      return callRFunction2x(callbacks.r_contamination_probability, phi, 100, t);
     } else {
       return (t >= phi[6] && t <= phi[7]) ? 1.0 / (phi[7] - phi[6]) : 0.0;
     }
@@ -562,7 +563,7 @@ protected:
     if (callbacks.modify_dt) {
       return callbacks.modify_dt(phi, t);
     } else if (callbacks.r_modify_dt != R_NilValue) {
-      return callRFunction2(callbacks.r_modify_dt, phi, 100, t);
+      return callRFunction2x(callbacks.r_modify_dt, phi, 100, t);
     } else {
       return 1.0;
     }
@@ -573,7 +574,7 @@ protected:
     if (callbacks.ts_cdf) {
       return callbacks.ts_cdf(phi, t);
     } else if (callbacks.r_ts_cdf != R_NilValue) {
-      return callRFunction2(callbacks.r_ts_cdf, phi, 100, t);
+      return callRFunction2x(callbacks.r_ts_cdf, phi, 100, t);
     } else {
       return 1.0;
     }
