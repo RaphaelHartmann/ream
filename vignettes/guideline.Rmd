@@ -1,0 +1,950 @@
+---
+title: "ream: guideline"
+author: "Raphael Hartmann and Matthew Murrow"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{ream: guideline}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+# R Package to Calculate the PDF and CDF of Evidence Accumulation Models
+
+## Overview
+
+In the package the following functions are implemented: 
+
+- random sampling first-passage times (and their thresholds)
+- calculating the defective probability density function (for simplicity just called PDF) 
+- calculating the defective cumulative distribution (for simplicity just called CDF)
+- simple plotting function for the PDF
+
+All these functions can be used for the following evidence accumulation models (EAM):
+
+| Model name                          | Short model name |
+| :---------------------------------- | :--------------- |
+| 7-parameter DDM                     | DDM              |
+| Diffusion model of conflict         | DMC              |
+| Dual process model                  | DPM              |
+| Dual-stage two-process model        | DSTP             |
+| Exponential threshold model         | ETM              |
+| Leaky integration model             | LIM              |
+| Leaky integration model with flip   | LIMF             |
+| Linear threshold model              | LTM              |
+| Piecewise attention model           | PAM              |
+| Revised diffusion model of conflict | RDMC             |
+| Rational threshold model            | RTM              |
+| Simple DDM                          | SDDM             |
+| Sequential dual process model       | SDPM             |
+| Shrinking spotlight model           | SSP              |
+| Urgency gating model                | UGM              |
+| Weibull dual-stage two-phase model  | WDSTP            |
+| Weibull threshold model             | WTM              |
+
+In this guideline the following use cases are discussed:
+
+1. Sampling from a specific EAM
+2. Calculating the PDF and CDF of a specific EAM (and plotting the PDF)
+3. Fitting a specific EAM to data
+4. Implement your custom EAM
+
+## 0 Preparation
+
+The package can be installed from CRAN directly or through GitHub using these function calls:
+```{r, eval=FALSE}
+devtools::install_github("RaphaelHartmann/ream")  # installing from GitHub
+```
+Load the package as you typically would:
+```{r, eval=TRUE}
+library(ream)
+```
+
+```{r, eval=TRUE, echo=FALSE}
+set.seed(12345)
+```
+
+## 1 Random Sampling
+For taking random samples (first-passage/response times and thresholds/responses) you can use the same logic as for R-native random sampling functions like `rnorm()`; Just prepend an `r` in front of the short model name (see table above; e.g., for the DMC it would be `rDMC()`). The random sampling function has three arguments: `n` the number of random samples, `phi` the vector of model parameters in a specific order which can be found on its help file, and `dt` the step size of the time in the trajectory.
+
+For example, sampling from the diffusion model of conflict (DMC) one would call the function `rDMC()` like this: 
+```{r, eval=TRUE}
+?rDMC # check the help file
+(samp <- rDMC(n = 10, phi = c(0.3, 0.5, -1, 0.2, 0.05, 2.5, 3, 1, 0.5, 0, 0, 1), dt = 1e-4))
+```
+
+
+## 2 Calculating the PDF and CDF
+For calculating the PDF and CDF you can also use the same logic as for native PDFs and CDFs like `dnorm()` and `pnorm()`, respectively; Just prepend a `d` or `p`, respectively, in front of the short model name (see table above; e.g., for the DMC it would be `dDMC()` and `pDMC()`, respectively). These functions have five arguments: `rt` the response times (in seconds) as a vector, `resp` the responses (`"upper"` and `"lower"`), `phi` the vector of model parameters in a specific order which can be found on its help file, `x_res` the spatial/evidence resolution (`"A"`, `"B"`, `"C"`, or `"D"`), and `t_res` the time resolution (`"A"`, `"B"`, `"C"`, or `"D"`).
+
+For example, calculating the PDF and CDF of the above samples `samp` for the diffusion model of conflict (DMC) would look like this: 
+```{r, eval=TRUE}
+?dDMC # check the help file
+(PDF <- dDMC(rt = samp$rt, resp = samp$resp, phi = c(0.3, 0.5, -1, 0.2, 0.05, 2.5, 3, 1, 0.5, 0, 0, 1), x_res = "default", t_res = "default"))
+(CDF <- dDMC(rt = samp$rt, resp = samp$resp, phi = c(0.3, 0.5, -1, 0.2, 0.05, 2.5, 3, 1, 0.5, 0, 0, 1), x_res = "default", t_res = "default"))
+```
+The functions calculate the PDF (or CDF), their log values, and the sum of the log values all together and save them in a list.
+
+GRID
+
+## 3 Fitting a Model to Data
+For fitting an EAM to data one can use the `optim()` function with the `"L-BFGS-B"` method (or `nlminb()` function). The `"L-BFGS-B"` method allows for defining lower and upper bounds for the parameters to be fitted.
+
+Before we fit a model, we generate some data. For simplicity we simulate only one subject with 100 congruent and 100 incongruent trials.
+```{r, eval=TRUE}
+N <- 100
+con <- rDMC(n = N, phi = c(0.3, 0.5, 1, 0.2, 0.05, 2.5, 3, 1, 0.5, 0, 0, 1), dt = 1e-05)
+incon <- rDMC(n = N, phi = c(0.3, 0.5, -1, 0.2, 0.05, 2.5, 3, 1, 0.5, 0, 0, 1), dt = 1e-05)
+data <- data.frame(congruency = rep(1:2, each = N), rt = c(con$rt, incon$rt), resp = c(con$resp, incon$resp))
+```
+We now want to fit the DMC to the data. We start with defining the function to maximize.
+```{r, eval=TRUE}
+deviation <- function(pars, data) {
+  ind_con <- which(data$congruency==1)
+  ind_incon <- which(data$congruency==2)
+  ls_con <- dDMC(rt = data$rt[ind_con], resp = data$resp[ind_con], phi = c(pars[1:2], 1, pars[3:6], 1, 0.5, 0, 0, 1), x_res = "higher", t_res = "higher")$sum_log_pdf
+  ls_incon <- dDMC(rt = data$rt[ind_incon], resp = data$resp[ind_incon], phi = c(pars[1:2], -1, pars[3:6], 1, 0.5, 0, 0, 1), x_res = "higher", t_res = "higher")$sum_log_pdf
+  return(-2*(ls_con+ls_incon))
+}
+```
+Now we only need to call the `optim()` function.
+```{r, eval=TRUE}
+set.seed(3210)
+(start_pars <- c(runif(1, .2, .6), runif(1, .3, .7), runif(1, .1, .6), runif(1, 0, .1), runif(1, 1.5, 4.5), runif(1, 0, 5)))
+optim(par = start_pars, fn = deviation, method = "L-BFGS-B", lower = c(.2, .1, .1, 0.001, 1, 0.001), upper = c(.6, .9, .6, .1, 5, 5), data = data)
+```
+Keep in mind, that more data with more experimental conditions might be needed for better estimations.
+
+## 4. Implement your custom EAM
+Implementing your own EAM is not very difficult. There are three options to achieve this.
+All the options will be explained in the following. Option 1 and 2 are possible since
+`ream` version 1.0-9 and do not require rebuilding the package, like in option 3.
+
+First you need to choose a template. There are three cases. In all of them, ther following
+functions can be defined:
+
+- `non_decision()`: non-decision time function. Depends only on the parameters (`phi`).
+- `relative_start()`: relative start point. Depends only on the parameters (`phi`).
+- `drift()`: drift rate. See cases below.
+- `diffusion()`: diffusion constant. See cases below.
+- `upper_threshold()`: upper threshold. Depends on parameters (`phi`) and time *t*.
+- `lower_threshold()`: lower threshold. Depends on parameters (`phi`) and time *t*.
+- `contamination_strength()`: contamination strength. Depends only on the parameters (`phi`). Advised to leave as is.
+- `contamination_probability()`: contamination probability. Depends on parameters (`phi`) and time *t*. Advised to leave as is.
+- `modify_dt()`: modify time step size. Depends on pameters (`phi`) and time. *t* Advised to leave as is.
+- `ts_cdf()`: function to calculate the CDF of the target selection process. Depends on pameters (`phi`) and time *t*. Only relevant for case 3 (see below).
+- relative_start, drift, diffusion, upper_threshold, and lower_threshold have a second function, respectively for case 3. This model class assumes that there are two processes. See cases below.
+
+The three cases are:
+
+**Case 1**: drift rate function depends on parameters (`phi`) and on time *t*, but not on evidence state *x* or some weight *w*. Simplest case. The diffusion rate depends parameters (`phi`), on time *t*, and evidence state *x*. This model class is called `Model_T`. The diffusion model for conflicts (DMC) is a member of this class. It has the following definition:
+
+<details>
+<summary style="color:blue;">Click to open the DMC definition</summary>
+```{r, engine='cpp', eval=FALSE}
+class DMC : public Model_T {
+
+  /* function for the non-decision time */
+  double non_decision(const double phi[12]) const override {
+    return phi[0];
+  }
+
+  /* function for the start point */
+  double relative_start(const double phi[12]) const override {
+    return phi[1];
+  }
+
+  /* function for the drift rate */
+  double drift(const double phi[12], double t) const override {
+    double e = exp(1.0); /* natural exponent */
+    double t_floor = 1.0e-9; /* min t to prevent singularity at zero */
+    double con = phi[2]; /* congruency (1.0 is congruent, -1.0 is incongruent) */
+    double A = phi[3]; /* peak amplitude of automatic process drift rate */
+    double tau = phi[4]; /* characteristic time of automatic process drift rate */
+    double alpha = phi[5]; /* shape of automatic process drift rate */
+    double mu_c = phi[6]; /* drift rate for controlled process */
+    double v = con*A*exp(-t/tau) * pow( (t*e)/( (alpha-1.0)*tau )  , alpha-1.0 ) * ( (alpha-1.0)/(t + t_floor) - 1.0/tau ) + mu_c; /* total DMC drift rate */
+    return v;
+  }
+
+  /* function for the diffusion rate */
+  double diffusion(const double phi[12], double x, double t) const override {
+    return phi[7];
+  }
+
+  /* function for the upper threshold */
+  double upper_threshold(const double phi[12], double t) const override {
+    return phi[8];
+  }
+
+  /* function for the lower threshold */
+  double lower_threshold(const double phi[12], double t) const override {
+    return -phi[8];
+  }
+
+  /* function for the contamination strength */
+  double contamination_strength(const double phi[12]) const override {
+    return phi[9];
+  }
+
+  /* function for the contamination probability distribution */
+  double contamination_probability(const double phi[12], double t) const override {
+    double gl = phi[10];
+    double gu = phi[11];
+    double pg = 0.0;
+    if ((t >= gl) && (t <= gu)) {
+      pg = 1.0/(gu - gl);
+    }
+    return pg;
+  }
+
+  /* function for locally modifying the time step size */
+  double modify_dt(const double phi[12], double t) const override {
+    return 1.0;
+  }
+
+};
+```
+</details>
+
+**Case 2**: drift rate and diffusion rate functions depend on parameters (`phi`), on time *t*, and evidence state *x*. This model class is called `Model_TX`. The leaky integration model (LIM) is a member of this class. It has the following definition:
+
+<details>
+<summary style="color:blue;">Click to open the LIM definition</summary>
+```{r, engine='cpp', eval=FALSE}
+class LIM : public Model_TX {
+
+  /* method for the non-decision time */
+  double non_decision(const double phi[9]) const override {
+    return phi[0];
+  }
+
+  /* method for the start point */
+  double relative_start(const double phi[9]) const override {
+    return phi[1];
+  }
+
+  /* method for the drift rate */
+  double drift(const double phi[9], double x, double t) const override {
+    double mu = phi[2];
+    double l = phi[3];
+    double v = mu - l*x;
+    return v;
+  }
+
+  /* method for the diffusion rate */
+  double diffusion(const double phi[9], double x, double t) const override {
+    return phi[4];
+  }
+
+  /* method for the upper threshold */
+  double upper_threshold(const double phi[9], double t) const override {
+    return phi[5];
+  }
+
+  /* method for the lower threshold */
+  double lower_threshold(const double phi[9], double t) const override {
+    return -phi[5];
+  }
+
+  /* method for the contamination strength */
+  double contamination_strength(const double phi[9]) const override {
+    return phi[6];
+  }
+
+  /* method for the contamination probability distribution */
+  double contamination_probability(const double phi[9], double t) const override {
+    double gl = phi[7];
+    double gu = phi[8];
+    double pg = 0.0;
+    if ((t >= gl) && (t <= gu)) {
+      pg = 1.0/(gu - gl);
+    }
+    return pg;
+  }
+
+  /* method for locally modifying the time step size */
+  double modify_dt(const double phi[9], double t) const override {
+    return 1.0;
+  }
+
+};
+```
+</details>
+
+**Case 3**: drift rate and diffusion rate functions depend on parameters (`phi`), on time *t* and some weighting *w*, but not on evidence state *x*. For the target stimuli (ts) there are additional functions `relative_start_ts()`, `drift_ts()`, `diffusion_ts()`, `upper_threshold_ts()`, and `lower_threshold_ts()`, which all depend only on parameters (`phi`). This model class is called `Model_TW`. The sequential dual process model (SDPM) is a member of this class. 
+
+<details>
+<summary style="color:blue;">Click to open the SDPM definition</summary>
+```{r, engine='cpp', eval=FALSE}
+class SDPM : public Model_TW {
+
+  /* function for the non-decision time */
+  double non_decision(const double phi[12]) const override {
+    return phi[0];
+  }
+
+  /* function for the start point */
+  double relative_start(const double phi[12]) const override {
+    return phi[1]*phi[2];
+  }
+
+  /* function for the target selection start point */
+  double relative_start_ts(const double phi[12]) const override {
+    return phi[2];
+  }
+
+  /* function for the drift rate */
+  double drift(const double phi[12], double t, double w) const override {
+    double mu2 = phi[3];
+    double v = w*mu2;
+    return v;
+  }
+
+  /* function for the target selection drift rate */
+  double drift_ts(const double phi[12]) const override {
+    return phi[4];
+  }
+
+  /* function for the diffusion rate */
+  double diffusion(const double phi[12], double t, double w) const override {
+    double sigma = phi[5];
+    double sigma_eff = phi[6];
+    double D = sigma*sqrt(1.0 + sigma_eff*w);
+    return D;
+  }
+
+  /* function for the target selection diffusion rate */
+  double diffusion_ts(const double phi[12]) const override {
+    return phi[5];
+  }
+
+  /* function for the upper threshold */
+  double upper_threshold(const double phi[12], double t) const override {
+    return phi[7];
+  }
+
+  /* function for the lower threshold */
+  double lower_threshold(const double phi[12], double t) const override {
+    return -phi[7];
+  }
+
+  /* function for the target selection upper threshold */
+  double upper_threshold_ts(const double phi[12]) const override {
+    return phi[8];
+  }
+
+  /* function for the target selection lower threshold */
+  double lower_threshold_ts(const double phi[12]) const override {
+    return -phi[8];
+  }
+
+  /* function for the contamination strength */
+  double contamination_strength(const double phi[12]) const override {
+    return phi[9];
+  }
+
+  /* function for the contamination probability distribution */
+  double contamination_probability(const double phi[12], double t) const override {
+    double gl = phi[10];
+    double gu = phi[11];
+    double pg = 0.0;
+    if ((t >= gl) && (t <= gu)) {
+      pg = 1.0/(gu - gl);
+    }
+    return pg;
+  }
+
+  /* function for locally modifying the time step size */
+  double modify_dt(const double phi[12], double t) const override {
+    return 1.0;
+  }
+
+  /* function used to calculate the CDF of the target selection process, used to set w(t) */
+  double ts_cdf(const double phi[12], double t) const override {
+    double w_ts = relative_start_ts(phi); /* relative start point for process 2 */
+    double v_ts = drift_ts(phi); /* drift rate for process 2 */
+    double sigma_ts = diffusion_ts(phi); /* diffusion rate for process 2 */
+    double a_ts = upper_threshold_ts(phi) - lower_threshold_ts(phi); /* threshold separation for process 2 */
+    double z_ts = w_ts*a_ts; /* start point for process 2 */
+    int kk = 0; /* looping index  */
+    int N_k = 0; /* number of iterations in infinite sum */
+
+    /* set number of iterations in infinite sum */
+    if (t <= flip) {
+      N_k = its_smalltime;
+    } else {
+      N_k = its_bigtime;
+    }
+
+    /* calculate probability p of process 2 crossing upper and lower threhsolds */
+    double p_lower = ( exp(-2.0*v_ts*a_ts/(sigma_ts*sigma_ts)) - exp(-2.0*v_ts*z_ts/(sigma_ts*sigma_ts)) ) / ( exp(-2.0*v_ts*a_ts/(sigma_ts*sigma_ts)) - 1.0 );
+
+    /* calculate cumulative probability g for upper and lower threhsolds */
+    double g_lower = 0.0;
+    for (kk = 1; kk < N_k; kk++) {
+      g_lower += 2.0*kk*sin(kk*pi*z_ts/a_ts)*exp(-0.5*t*((v_ts*v_ts)/(sigma_ts*sigma_ts) + (pi*pi)*(kk*kk)*(sigma_ts*sigma_ts)/(a_ts*a_ts))) / ((v_ts*v_ts)/(sigma_ts*sigma_ts) + (pi*pi)*(kk*kk)*(sigma_ts*sigma_ts)/(a_ts*a_ts));
+    }
+    g_lower = p_lower - pi*(sigma_ts*sigma_ts)/(a_ts*a_ts)*exp(-v_ts*z_ts/(sigma_ts*sigma_ts))*g_lower;
+
+    /* calculate w(t) */
+    double weight = g_lower/p_lower;
+    if (weight < 0.0) {
+      weight = 0.0;
+    }
+    if (weight > 1.0){
+      weight = 1.0;
+    }
+
+    return weight;
+  }
+
+};
+```
+</details>
+
+Depending on your case, you have to choose between the three custom models `CSTM_T` (case 1), `CSTM_TX` (case 2), and `CSTM_TW` (case 3). These models all have a default implementation (see below), which you have to overwrite, or at least part of it (see 4.1, 4.2, and 4.3). After you have done so, you can call their sampling function (e.g., `rCSTM_T()`), their density function (e.g., `dCSTM_T()`), and their cumulative distribution function (e.g., `pCSTM_T()`).
+
+<details>
+<summary style="color:blue;">Open the `CSTM_T` template</summary>
+```{r, engine='cpp', eval=FALSE}
+class CSTM_T : public Model_T {
+
+  /* method for the non-decision time */
+  double non_decision(const double phi[100]) const override {
+    return phi[0];
+  }
+
+  /* method for the start point */
+  double relative_start(const double phi[100]) const override {
+    return phi[1];
+  }
+
+  /* method for the drift rate */
+  double drift(const double phi[100], double t) const override {
+    return phi[2];
+  }
+
+  /* method for the diffusion rate */
+  double diffusion(const double phi[100], double x, double t) const override {
+    return phi[3];
+  }
+
+  /* method for the upper threshold */
+  double upper_threshold(const double phi[100], double t) const override {
+  if (callbacks.upper_threshold) {
+    return phi[4];
+  }
+
+  /* method for the lower threshold */
+  double lower_threshold(const double phi[100], double t) const override {
+  if (callbacks.lower_threshold) {
+    return -phi[4];
+  }
+
+  /* method for the contamination strength */
+  double contamination_strength(const double phi[100]) const override {
+    return phi[5];
+  }
+
+  /* method for the contamination probability distribution */
+  double contamination_probability(const double phi[100], double t) const override {
+    return (t >= phi[6] && t <= phi[7]) ? 1.0 / (phi[7] - phi[6]) : 0.0;
+  }
+
+  /* method for locally modifying the time step size */
+  double modify_dt(const double phi[100], double t) const override {
+    return 1.0;
+  }
+
+};
+```
+</details>
+
+<details>
+<summary style="color:blue;">Open the `CSTM_TX` template</summary>
+```{r, engine='cpp', eval=FALSE}
+class CSTM_TX : public Model_TX {
+
+  /* method for the non-decision time */
+  double non_decision(const double phi[100]) const override {
+    return phi[0];
+  }
+
+  /* method for the start point */
+  double relative_start(const double phi[100]) const override {
+    return phi[1];
+  }
+
+  /* method for the drift rate */
+  double drift(const double phi[100], double x, double t) const override {
+    return phi[2];
+  }
+
+  /* method for the diffusion rate */
+  double diffusion(const double phi[100], double x, double t) const override {
+    return phi[3];
+  }
+
+  /* method for the upper threshold */
+  double upper_threshold(const double phi[100], double t) const override {
+    return phi[4];
+  }
+
+  /* method for the lower threshold */
+  double lower_threshold(const double phi[100], double t) const override {
+    return -phi[4];
+  }
+
+  /* method for the contamination strength */
+  double contamination_strength(const double phi[100]) const override {
+    return phi[5];
+  }
+
+  /* method for the contamination probability distribution */
+  double contamination_probability(const double phi[100], double t) const override {
+    return (t >= phi[6] && t <= phi[7]) ? 1.0 / (phi[7] - phi[6]) : 0.0;
+  }
+
+  /* method for locally modifying the time step size */
+  double modify_dt(const double phi[100], double t) const override {
+    return 1.0;
+  }
+
+};
+```
+</details>
+
+<details>
+<summary style="color:blue;">Open the `CSTM_TW` template</summary>
+```{r, engine='cpp', eval=FALSE}
+class CSTM_TW : public Model_TW {
+
+  /* method for the non-decision time of process 1 */
+  double non_decision(const double phi[100]) const override {
+    return phi[0];
+  }
+
+  /* method for the start point of process 1 */
+  double relative_start(const double phi[100]) const override {
+    return phi[1];
+  }
+
+  /* function for the target selection start point */
+  double relative_start_ts(const double phi[100]) const override {
+    return 0.5;
+  }
+
+  /* method for the drift rate of process 1 */
+  double drift(const double phi[100], double t, double w) const override {
+    return phi[2];
+  }
+
+  /* function for the target selection drift rate */
+  double drift_ts(const double phi[100]) const override {
+    return 0.0;
+  }
+
+  /* method for the diffusion rate of process 1 */
+  double diffusion(const double phi[100], double t, double w) const override {
+    return phi[3];
+  }
+
+  /* function for the target selection diffusion rate */
+  double diffusion_ts(const double phi[100]) const override {
+    return phi[3];
+  }
+
+  /* method for the upper threshold of process 1 */
+  double upper_threshold(const double phi[100], double t) const override {
+    return phi[4];
+  }
+
+  /* method for the lower threshold of process 1 */
+  double lower_threshold(const double phi[100], double t) const override {
+    return -phi[4];
+  }
+
+  /* function for the target selection upper threshold */
+  double upper_threshold_ts(const double phi[100]) const override {
+    return phi[4];
+  }
+
+  /* function for the target selection lower threshold */
+  double lower_threshold_ts(const double phi[100]) const override {
+    return -phi[4];
+  }
+
+  /* method for the contamination strength */
+  double contamination_strength(const double phi[100]) const override {
+    return phi[5];
+  }
+
+  /* method for the contamination probability distribution */
+  double contamination_probability(const double phi[100], double t) const override {
+    return (t >= phi[6] && t <= phi[7]) ? 1.0 / (phi[7] - phi[6]) : 0.0;
+  }
+
+  /* method for locally modifying the time step size */
+  double modify_dt(const double phi[100], double t) const override {
+    return 1.0;
+  }
+
+  /* function used to calculate the CDF of the target selection process, used to set w(t) */
+  double ts_cdf(const double phi[100], double t) const override {
+    return 1.0;
+  }
+
+};
+```
+</details>
+
+### 4.1 Option 1: use R or Rcpp functions
+Define R (or Rcpp) functions. This option is much slower than option 2 or 3, but is easy to implement and does not require knowledge about the C++ syntax and/or building R packages. Even when using Rcpp functions, there is not much gain compared to using pure R functions.
+
+#### 4.1.1 Define R or Rcpp functions
+As an example, we will recreate the LIM. For that we need to look at the `CSTM_TX` template. The first two functions (`non_decision()` and `relative_start()`) are fine as they are. However, from `drift()` on we need to redefine the functions. Since for the definition of `modify_dt()` no argument is actually used, we can leave it as is, too. So, we define:
+```{r}
+# /* method for the drift rate */
+drift <- function(phi, x, t)  {
+  mu = phi[3];
+  l = phi[4];
+  v = mu - l*x;
+  return(v);
+}
+
+# /* method for the diffusion rate */
+diffusion <- function(phi, x, t)  {
+    return(phi[5]);
+}
+
+# /* method for the upper threshold */
+upper_threshold <- function(phi, t)  {
+    return(phi[6]);
+}
+
+# /* method for the lower threshold */
+lower_threshold <- function(phi, t)  {
+    return(-phi[6]);
+}
+
+# /* method for the contamination strength */
+contamination_strength <- function(phi)  {
+    return(phi[7]);
+}
+
+# /* method for the contamination probability distribution */
+contamination_probability <- function(phi, t)  {
+    gl = phi[8];
+    gu = phi[9];
+    pg = 0.0;
+    if ((t >= gl) && (t <= gu)) {
+      pg = 1.0/(gu - gl);
+    }
+    return(pg);
+}
+```
+The arguments of each function must match those in the `CSTM_TX` template. `phi` must be a vector and *x* and *t* a scalar. In the template, `phi` is of size 100, but that does not matter. This is just to make sure we are not running out of `phi` elements.
+
+#### 4.1.2 Register the functions for `ream`
+In order for `ream` to actually see the new function definitions, we need to register them. This can easily be done like this:
+```{r}
+.Call("register_callbacks_tx", "drift", drift)
+.Call("register_callbacks_tx", "diffusion", diffusion)
+.Call("register_callbacks_tx", "upper_threshold", upper_threshold)
+.Call("register_callbacks_tx", "lower_threshold", lower_threshold)
+.Call("register_callbacks_tx", "contamination_strength", contamination_strength)
+.Call("register_callbacks_tx", "contamination_probability", contamination_probability)
+```
+That is, we call the C++ function `register_callbacks_tx()` (through the `.Call()` function) and specify the function we want to replace (e.g., `"drift"`) and the new function we want to provide (e.g., `drift`).
+
+#### 4.1.3 Run the new implementation of LIM and compare it to LIM
+We first define our `phi` vector, then call both density functions (`dCSTM_TX()` and `dLIM()`) and finally, we un-register the functions again to clean up. Calling `unregister_callbacks_tx()` will set everything to the default again.
+```{r, echo=TRUE}
+phi <- c(0.3, 0.5, 1.0, 0.5, 1.0, 0.5, 0.0, 0.0, 1.0)
+
+set.seed(123)
+dCSTM_TX(2, resp = "upper", phi = phi, x_res = "high", t_res = "high")
+set.seed(123)
+dLIM(2, resp = "upper", phi = phi, x_res = "high", t_res = "high")
+
+# unregister the custom function
+.Call("unregister_callbacks_tx")
+```
+
+#### 4.1.4 Using Rcpp instead
+Using Rcpp works exactly the same, except that the R function is not defined by pure R code (4.1.1), but by using Rcpp source:
+
+<details>
+<summary style="color:blue;">Open the `Rcpp` function definitions</summary>
+```{r, eval=FALSE}
+Rcpp::sourceCpp(code = 
+"
+  #include <Rcpp.h>
+  #include <math.h>
+  using namespace Rcpp;
+
+  /* method for the drift rate */
+  // [[Rcpp::export]]
+  double drift_cpp(NumericVector phi, double x, double t) {
+    double mu = phi[2];
+    double l = phi[3];
+    double v = mu - l*x;
+    return v;
+  }
+
+  /* method for the diffusion rate */
+  // [[Rcpp::export]]
+  double diffusion_cpp(NumericVector phi, double x, double t)  {
+    return phi[4];
+  }
+
+  /* method for the upper threshold */
+  // [[Rcpp::export]]
+  double upper_threshold_cpp(NumericVector phi, double t)  {
+    return phi[5];
+  }
+
+  /* method for the lower threshold */
+  // [[Rcpp::export]]
+  double lower_threshold_cpp(NumericVector phi, double t)  {
+    return -phi[5];
+  }
+
+  /* method for the contamination strength */
+  // [[Rcpp::export]]
+  double contamination_strength_cpp(NumericVector phi)  {
+    return phi[6];
+  }
+
+  /* method for the contamination probability distribution */
+  // [[Rcpp::export]]
+  double contamination_probability_cpp(NumericVector phi, double t)  {
+    double gl = phi[7];
+    double gu = phi[8];
+    double pg = 0.0;
+    if ((t >= gl) && (t <= gu)) {
+      pg = 1.0/(gu - gl);
+    }
+    return pg;
+  }
+")
+```
+</details>
+
+### 4.2 Option 2: use C++ functions
+Define C++ functions. This option is as fast as option 3, but does not require knowledge about building R packages.
+
+#### 4.2.1 Define C++ functions
+As an example, we will recreate the LIM. For that we need to look at the `CSTM_TX` template. The first two functions (`non_decision()` and `relative_start()`) are fine as they are. However, from `drift()` on we need to redefine the functions. Since for the definition of `modify_dt()` no argument is actually used, we can leave it as is, too. So, we create a C++ file (e.g., `my_lim.cpp`):
+```{r, engine='cpp', eval=FALSE}
+// my_lim.cpp
+
+#include <math.h>
+
+/* method for the drift rate */
+extern "C" double drift(const double *phi, double x, double t)  {
+  double mu = phi[2];
+  double l = phi[3];
+  double v = mu - l*x;
+  return v;
+}
+
+/* method for the diffusion rate */
+extern "C" double diffusion(const double *phi, double x, double t)  {
+  return phi[4];
+}
+
+/* method for the upper threshold */
+extern "C" double upper_threshold(const double *phi, double t)  {
+  return phi[5];
+}
+
+/* method for the lower threshold */
+extern "C" double lower_threshold(const double *phi, double t)  {
+  return -phi[5];
+}
+
+/* method for the contamination strength */
+extern "C" double contamination_strength(const double *phi)  {
+  return phi[6];
+}
+
+/* method for the contamination probability distribution */
+extern "C" double contamination_probability(const double *phi, double t)  {
+  double gl = phi[7];
+  double gu = phi[8];
+  double pg = 0.0;
+  if ((t >= gl) && (t <= gu)) {
+    pg = 1.0/(gu - gl);
+  }
+  return pg;
+}
+```
+The arguments of each function must match those in the `CSTM_TX` template. `phi` must be a double pointer and *x* and *t* a double. In the template, `phi` is of size 100, but that does not matter here. This is just to make sure we are not running out of `phi` elements.
+
+Other than in the R example, we need to compile the C++ code. Assuming you created your `.cpp` file in the current working directory, just run:
+```{r, eval=FALSE}
+system("R CMD SHLIB my_lim.cpp")
+
+# under Windows
+dyn.load("my_lim.dll")
+
+# under Linux/MacOS
+dyn.load("my_lim.so")
+
+# check if you find my_lim.dll or my_lim.so
+tail(getLoadedDLLs(), 1)
+```
+
+```{r, echo=FALSE}
+cppfile <- system.file("extdata", "my_lim.cpp", package = "ream")
+dll <- file.path(tempdir(), paste0("my_lim", .Platform$dynlib.ext))
+
+cmd <- paste(shQuote(file.path(R.home("bin"), "R")),
+             "CMD SHLIB", shQuote(cppfile),
+             "-o", shQuote(dll))
+system(cmd)
+
+# Load the plugin dynamic library
+dyn.load(dll)
+
+dllinfo <- tail(getLoadedDLLs(), 1)
+dllinfo$my_lim$path <- "my_lim.so"
+dllinfo
+```
+
+
+
+#### 4.2.2 Register the functions for `ream`
+In order for `ream` to actually see the new function definitions, we need to register them. This needs an extra step in comparison to R function registration, though:
+```{r}
+# Get the memory address of the custom C function
+ptr.drift <- getNativeSymbolInfo("drift", PACKAGE = "my_lim")$address
+ptr.diff <- getNativeSymbolInfo("diffusion", PACKAGE = "my_lim")$address
+ptr.u_thr <- getNativeSymbolInfo("upper_threshold", PACKAGE = "my_lim")$address
+ptr.l_thr <- getNativeSymbolInfo("lower_threshold", PACKAGE = "my_lim")$address
+ptr.cont_str <- getNativeSymbolInfo("contamination_strength", PACKAGE = "my_lim")$address
+ptr.cont_prob <- getNativeSymbolInfo("contamination_probability", PACKAGE = "my_lim")$address
+
+# Register the function pointer with your package
+.Call("register_callbacks_tx", "drift", ptr.drift)
+.Call("register_callbacks_tx", "diffusion", ptr.diff)
+.Call("register_callbacks_tx", "upper_threshold", ptr.u_thr)
+.Call("register_callbacks_tx", "lower_threshold", ptr.l_thr)
+.Call("register_callbacks_tx", "contamination_strength", ptr.cont_str)
+.Call("register_callbacks_tx", "contamination_probability", ptr.cont_prob)
+```
+That is, we first find the function pointer for each C++ function, then call the C++ function `register_callbacks_tx()` (through the `.Call()` function) and specify the function we want to replace (e.g., `"drift"`) and the new function we want to provide (e.g., `drift`).
+
+#### 4.2.3 Run the new implementation of LIM and compare it to LIM
+We first define our `phi` vector, then call both density functions (`dCSTM_TX()` and `dLIM()`) and finally, we un-register the functions again to clean up. Calling `unregister_callbacks_tx()` will set everything to the default again.
+```{r}
+phi <- c(0.3, 0.5, 1.0, 0.5, 1.0, 0.5, 0.0, 0.0, 1.0)
+
+set.seed(123)
+dCSTM_TX(2, resp = "upper", phi = phi, x_res = "high", t_res = "high")
+set.seed(123)
+dLIM(2, resp = "upper", phi = phi, x_res = "high", t_res = "high")
+
+# un-register the custom function
+.Call("unregister_callbacks_tx")
+```
+
+```{r, eval=FALSE}
+# under Windows
+dyn.unload("my_lim.dll")
+
+# under Linux/MacOS
+dyn.unload("my_lim.so")
+```
+
+```{r, echo=FALSE}
+# un-load the dynamic linked library
+dyn.unload(dll)
+```
+
+
+### 4.3 Option 3: change the package
+This option is obviously the most cumbersome one. However, it will run fast.
+
+#### 4.3.1 Get the source code
+Download from [GitHub](https://github.com/RaphaelHartmann/ream/) or from [CRAN](https://CRAN.R-project.org/package=ream) the source code and extract it.
+
+#### 4.3.2 Get your system ready
+Every operating has some special requirements for building R packages. You can find them, for example, in the book [R Packages](https://r-pkgs.org/setup.html#setup-tools) by Wickham and Bryan.
+
+#### 4.3.3 What source files to modify
+Depending on the case at hand, a different source file should be modified in the source code under `ream/src/`. Modify the following class methods depending on the case at hand:
+
+- Case 1: In `models_t.h` -> class `CSTM_T`
+- Case 2: In `models_tx.h` -> class `CSTM_TX`
+- Case 3: In `models_tw.h` -> class `CSTM_TW`
+
+These are already prepared classes for custom models and have corresponding R functions (e.g., `dCSTM_T()`). The only thing to do is to change the methods of the classes and to recompile the R package (probably with a different version number).
+
+
+#### 4.3.4 How to modify the necessary class methods
+Do not change the arguments! 
+
+Only change the content of the function. For example, if you want to change the threshold to be dependent on time in an exponential way (like the ETM) change the following method (e.g., inside the `CSTM_T` class) from
+
+```{r, engine='cpp', eval=FALSE}
+  /* method for the upper threshold */
+  double upper_threshold(const double phi[100], double t) const override {
+    if (callbacks.upper_threshold) {
+      return callbacks.upper_threshold(phi, t);
+    } else if (callbacks.r_upper_threshold != R_NilValue) {
+      return callRFunction2x(callbacks.r_upper_threshold, phi, 100, t);
+    } else {
+      return phi[4];
+    }
+  }
+```
+
+to 
+
+```{r, engine='cpp', eval=FALSE}
+double upper_threshold(const double phi[100], double t) const override {
+  double b = phi[4];
+  double tau = pow(10.0, phi[5]);
+  double thres = b*exp(-t/tau);
+  return thres;
+}
+```
+
+In this example, one would also change the lower threshold to:
+
+```{r, engine='cpp', eval=FALSE}
+double lower_threshold(const double phi[100], double t) const override {
+  return -upper_threshold(phi, t);
+}
+```
+
+Make sure to get the indexing in `phi[i]` correct. In our example, `phi[5]` is already used by the next function `contamination_strength()`, and should therefore be changed to `phi[6]` and so on. The easiest way is to go from the first method to the last method in the class with increasing index of `phi[i]` (see the other classes).
+
+#### 4.3.5 Recompile the R package
+In the Terminal (of RStudio) navigate to the folder on top of `ream` and execute:
+
+1. `R CMD build rtmpt`
+2. `R CMD check rtmpt_<version_number>.tar.gz --as-cran`
+3. `R CMD INSTALL rtmpt_<version_number>.tar.gz`
+
+where `<version_number>` is the version number from the downloaded package or the one you changed the package to in `DESCRIPTION`.
+
+Or, if you have set up RStudio correctly and made an R-project of the package you can also click the following instead of using the terminal:
+
+1. `Build>Load All` (Ctrl+Shift+L)
+2. `Build>Check Package` (Ctrl+Shift+E)
+3. `Build>Install Package` (Ctrl+Shift+B)
+
+You should now be ready to use the corresponding R functions `r`CSTM_T()`, `dCSTM_T()`, and `pCSTM_T()` with your custom model once you have loaded the correct version of the package.
+
+### 4.3.6 Some notes
+If you have two or more custom models of the same case, we suggest copying the source package multiple times, make each copy a different version, and do the above steps for each copy. Note that the package/project folder should always be called `ream`. Therefore, copy it to different top-level folders (e.g., `.../REAM1/ream/` and `.../REAM2/ream/`).
+
+
+## References
+* Wickham, H., & Bryan, J. (2023). R packages. " O'Reilly Media, Inc.".
+* Murrow, M., & Holmes, W. R. (2023). PyBEAM: A Bayesian approach to parameter inference for a wide class of binary evidence accumulation models. *Behavior Research Methods*, 56(3), 2636–2656. https://doi.org/10.3758/s13428-023-02162-w
+* R Core Team (2023). R: A language and environment for statistical computing. *R Foundation for Statistical Computing*, Vienna, Austria. https://www.R-project.org/.
