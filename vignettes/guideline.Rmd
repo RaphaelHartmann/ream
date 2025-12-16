@@ -141,7 +141,7 @@ The three cases are:
 
 <details>
 <summary style="color:blue;">Click to open the DMC definition</summary>
-```{r, engine='cpp', eval=FALSE}
+```cpp
 class DMC : public Model_T {
 
   /* function for the non-decision time */
@@ -211,7 +211,7 @@ class DMC : public Model_T {
 
 <details>
 <summary style="color:blue;">Click to open the LIM definition</summary>
-```{r, engine='cpp', eval=FALSE}
+```cpp
 class LIM : public Model_TX {
 
   /* method for the non-decision time */
@@ -276,7 +276,7 @@ class LIM : public Model_TX {
 
 <details>
 <summary style="color:blue;">Click to open the SDPM definition</summary>
-```{r, engine='cpp', eval=FALSE}
+```cpp
 class SDPM : public Model_TW {
 
   /* function for the non-decision time */
@@ -407,7 +407,7 @@ Depending on your case, you have to choose between the three custom models `CSTM
 
 <details>
 <summary style="color:blue;">Open the `CSTM_T` template</summary>
-```{r, engine='cpp', eval=FALSE}
+```cpp
 class CSTM_T : public Model_T {
 
   /* method for the non-decision time */
@@ -463,7 +463,7 @@ class CSTM_T : public Model_T {
 
 <details>
 <summary style="color:blue;">Open the `CSTM_TX` template</summary>
-```{r, engine='cpp', eval=FALSE}
+```cpp
 class CSTM_TX : public Model_TX {
 
   /* method for the non-decision time */
@@ -517,7 +517,7 @@ class CSTM_TX : public Model_TX {
 
 <details>
 <summary style="color:blue;">Open the `CSTM_TW` template</summary>
-```{r, engine='cpp', eval=FALSE}
+```cpp
 class CSTM_TW : public Model_TW {
 
   /* method for the non-decision time of process 1 */
@@ -737,7 +737,7 @@ Define C++ functions. This option is as fast as option 3, but does not require k
 
 #### 4.2.1 Define C++ functions
 As an example, we will recreate the LIM. For that we need to look at the `CSTM_TX` template. The first two functions (`non_decision()` and `relative_start()`) are fine as they are. However, from `drift()` on we need to redefine the functions. Since for the definition of `modify_dt()` no argument is actually used, we can leave it as is, too. So, we create a C++ file (e.g., `my_lim.cpp`):
-```{r, engine='cpp', eval=FALSE}
+```cpp
 // my_lim.cpp
 
 #include <math.h>
@@ -799,10 +799,18 @@ tail(getLoadedDLLs(), 1)
 
 ```{r, echo=FALSE}
 cppfile <- system.file("extdata", "my_lim.cpp", package = "ream")
-dll <- file.path(tempdir(), paste0("my_lim", .Platform$dynlib.ext))
+tmp_dir <- normalizePath(tempdir(), winslash = "/", mustWork = TRUE)
+cppfile_cpy <- paste0(tmp_dir, "/my_lim.cpp")
 
+# copy source code to temp folder
+invisible(file.copy(from = cppfile, to = cppfile_cpy, overwrite = TRUE))
+
+# prepare dll or so file
+dll <- file.path(tmp_dir, paste0("my_lim", .Platform$dynlib.ext))
+
+# generate dll file
 cmd <- paste(shQuote(file.path(R.home("bin"), "R")),
-             "CMD SHLIB", shQuote(cppfile),
+             "CMD SHLIB", shQuote(cppfile_cpy),
              "-o", shQuote(dll))
 system(cmd)
 
@@ -889,7 +897,7 @@ Do not change the arguments!
 
 Only change the content of the function. For example, if you want to change the threshold to be dependent on time in an exponential way (like the ETM) change the following method (e.g., inside the `CSTM_T` class) from
 
-```{r, engine='cpp', eval=FALSE}
+```cpp
   /* method for the upper threshold */
   double upper_threshold(const double phi[100], double t) const override {
     if (callbacks.upper_threshold) {
@@ -904,7 +912,7 @@ Only change the content of the function. For example, if you want to change the 
 
 to 
 
-```{r, engine='cpp', eval=FALSE}
+```cpp
 double upper_threshold(const double phi[100], double t) const override {
   double b = phi[4];
   double tau = pow(10.0, phi[5]);
@@ -915,7 +923,7 @@ double upper_threshold(const double phi[100], double t) const override {
 
 In this example, one would also change the lower threshold to:
 
-```{r, engine='cpp', eval=FALSE}
+```cpp
 double lower_threshold(const double phi[100], double t) const override {
   return -upper_threshold(phi, t);
 }
