@@ -444,7 +444,7 @@ protected:
     } else if (callbacks.r_relative_start_ts != R_NilValue) {
       return callRFunction1x(callbacks.r_relative_start_ts, phi, 100);
     } else {
-      return 0.0;
+      return 0.5;
     }
   }
 
