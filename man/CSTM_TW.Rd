@@ -35,7 +35,9 @@ and the sum of the log-CDFs, and for the random sampler a list of response
 times (rt) and response thresholds (resp).
 }
 \description{
-Density (PDF), distribution function (CDF), and random sampler for a custom time- and weight-dependent (CSTM_TW) drift diffusion model.
+Density (PDF), distribution function (CDF), and random sampler for a custom time- and
+weight-dependent (CSTM_TW) drift diffusion model. Run
+\code{vignette("guideline", package = "ream")} to see how custom models work.
 }
 \references{
 Murrow, M., & Holmes, W. R. (2023). PyBEAM: A Bayesian approach to parameter

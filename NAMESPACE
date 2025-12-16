@@ -2,10 +2,7 @@
 
 export(dCSTM_T)
 export(dCSTM_TW)
-export(dCSTM_TW_grid)
 export(dCSTM_TX)
-export(dCSTM_TX_grid)
-export(dCSTM_T_grid)
 export(dDDM)
 export(dDDM_grid)
 export(dDMC)

@@ -3,7 +3,9 @@
 
 #' Custom Time- and Weight-Dependent Drift Diffusion Model
 #'
-#' Density (PDF), distribution function (CDF), and random sampler for a custom time- and weight-dependent (CSTM_TW) drift diffusion model.
+#' Density (PDF), distribution function (CDF), and random sampler for a custom time- and
+#'   weight-dependent (CSTM_TW) drift diffusion model. Run
+#'   \code{vignette("guideline", package = "ream")} to see how custom models work.
 #'
 #' @param rt vector of response times
 #' @param resp vector of responses ("upper" and "lower")
@@ -226,70 +228,3 @@ rCSTM_TW <- function(n,
 
 }
 
-
-
-
-########### GRID PDF ###########
-
-
-
-#' Generate Grid for PDF of Custom Time- and Weight-Dependent Drift Diffusion Model
-#'
-#' Beschreibung.
-#'
-#' @param rt_max maximal response time <- max(rt)
-#' @param phi parameter vector in your order
-#' @param x_res spatial/evidence resolution
-#' @param t_res time resolution
-#' @return such and such
-#' @references
-#' Murrow, M., & Holmes, W. R. (2023). PyBEAM: A Bayesian approach to parameter inference for a wide class of binary evidence accumulation models.
-#'   Behavior Research Methods.
-#' @author Raphael Hartmann & Matthew Murrow
-#' @useDynLib "ream", .registration=TRUE
-#' @export
-dCSTM_TW_grid <- function(rt_max = 10.0,
-                          phi,
-                          x_res = "default",
-                          t_res = "default") {
-
-
-  # constants
-  modelname <- "CSTM_TW"
-  phi_len <- length(phi)
-  phi <- c(phi, rep(0, 100-phi_len))
-  Nphi <- 100
-
-
-  # checking input
-  grid_checks(rt_max, phi, Nphi, x_res, t_res, modelname)
-
-
-  # more specific checks
-
-
-  # setting options
-  opt <- grid_options(x_res, t_res)
-
-
-  # prepare arguments for r
-  dt_scale <- N_deps <- NULL
-
-  CHAR <- modelname
-
-  REAL <- c(dt_scale = dt_scale, rt_max = rt_max, phi = phi)
-
-  INTEGER <- c(N_deps = N_deps, N_phi = length(phi))
-
-
-  # call C++ function
-  out <- .Call("grid_pdf",
-               as.double(REAL),
-               as.integer(INTEGER),
-               as.character(CHAR))
-
-
-
-  return(out)
-
-}

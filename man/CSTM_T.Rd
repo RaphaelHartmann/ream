@@ -35,7 +35,9 @@ and the sum of the log-CDFs, and for the random sampler a list of response
 times (rt) and response thresholds (resp).
 }
 \description{
-Density (PDF), distribution function (CDF), and random sampler for a custom time-dependent (CSTM_T) drift diffusion model.
+Density (PDF), distribution function (CDF), and random sampler for a custom
+time-dependent (CSTM_T) drift diffusion model. Run
+\code{vignette("guideline", package = "ream")} to see how custom models work.
 }
 \examples{
 # Probability density function
