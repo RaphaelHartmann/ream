@@ -340,9 +340,9 @@ extern "C" {
 		}
 
 		std::string ModelNameStr(ModelName);
-		tnd_dist = INTEGER(in)[2];
-		w_dist = INTEGER(in)[3];
 		if (ModelNameStr == "DDM") {
+		  tnd_dist = INTEGER(in)[2];
+		  w_dist = INTEGER(in)[3];
 		  v_dist = INTEGER(in)[4];
 		} else{
 		  v_dist = 99;

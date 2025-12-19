@@ -1,6 +1,6 @@
 Package: ream
 Title: Density, Distribution, and Sampling Functions for Evidence Accumulation Models
-Version: 1.0-9
+Version: 1.0-10
 Authors@R: 
     c(person("Raphael", "Hartmann", email = "raphael.hartmann@protonmail.com", role = c("aut", "cre"), 
              comment = c(ORCID = "0000-0003-4686-9329")),
@@ -26,6 +26,8 @@ Description: Calculate the probability density functions (PDFs) for two threshol
     and 'PyBEAM' publications. Additionally, one can calculate the cumulative distribution 
     functions of and sampling from the EAMs.
 Suggests: knitr, rmarkdown
+NeedsCompilation: yes
+SystemRequirements: C++17
 VignetteBuilder: knitr
 License: GPL (>= 2)
 Encoding: UTF-8

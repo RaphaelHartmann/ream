@@ -14,11 +14,11 @@ extern SEXP PDF(SEXP, SEXP, SEXP, SEXP, SEXP);
 extern SEXP CDF(SEXP, SEXP, SEXP, SEXP, SEXP);
 extern SEXP SIM(SEXP, SEXP, SEXP);
 extern SEXP register_callbacks_tx(SEXP, SEXP);
-extern SEXP unregister_callbacks_tx();
+extern SEXP unregister_callbacks_tx(void);
 extern SEXP register_callbacks_t(SEXP, SEXP);
-extern SEXP unregister_callbacks_t();
+extern SEXP unregister_callbacks_t(void);
 extern SEXP register_callbacks_tw(SEXP, SEXP);
-extern SEXP unregister_callbacks_tw();
+extern SEXP unregister_callbacks_tw(void);
 
 
 static const R_CallMethodDef CallEntries[] = {
