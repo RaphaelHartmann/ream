@@ -1,7 +1,7 @@
 
 dist_checks <- function(rt, resp, phi, Nphi, x_res, t_res, modelname) {
 
-  char_res <- c("default", "high", "higher", "max")
+  char_res <- c("default", "high", "higher", "very_high", "max")
 
   # checking input
   if (any(rt < 0)) stop("rt must be larger than 0.")
