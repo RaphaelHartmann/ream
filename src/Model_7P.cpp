@@ -1652,10 +1652,10 @@ int Model_7P::rand(double *Rrt, double *phi) const {
     if (w_dist == 0) {
       ww = w_mean;
     } else if (w_dist == 1) {
-      ww = Rf_runif(w_min, w_max); // Uniform distribution within [w_min, w_max]
+      ww = Rf_runif(w_mean - w_std, w_mean + w_std); // Uniform distribution within [w_min, w_max]
     } else if (w_dist == 2) {
       do {
-        ww = Rf_rnorm(w_mean, (w_max - w_min) / 2.0); // Normal distribution
+        ww = Rf_rnorm(w_mean, w_std); // Normal distribution
       } while ((ww < w_min) || (ww > w_max)); // Ensure ww is within bounds
     }
     xx = bl + ww * (bu - bl); // Scale start point to the desired range
